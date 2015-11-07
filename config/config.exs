@@ -22,3 +22,19 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+# This file is responsible for configuring your application
+# and its dependencies with the aid of the Mix.Config module.
+use Mix.Config
+
+# The configuration defined here will only affect the dependencies
+# in the apps directory when commands are executed from the umbrella
+# project. For this reason, it is preferred to configure each child
+# application directly and import its configuration, as done below.
+import_config "../apps/*/config/config.exs"
+
+# Sample configuration (overrides the imported configuration above):
+#
+#     config :logger, :console,
+#       level: :info,
+#       format: "$date $time [$level] $metadata$message\n",
+#       metadata: [:user_id]
