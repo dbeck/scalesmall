@@ -7,7 +7,10 @@ defmodule GroupManager.Mixfile do
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps,
+     deps_path: "../../deps",
+     lockfile: "../../mix.lock"
+   ]
   end
 
   def application do
