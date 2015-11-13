@@ -82,7 +82,7 @@ defmodule GroupManager.Master do
   TODO
   """
   def locate do
-    case Process.whereis(:GroupManager.Master) do
+    case Process.whereis(__MODULE__) do
       master_pid when is_pid(master_pid) ->
         master_pid
     end

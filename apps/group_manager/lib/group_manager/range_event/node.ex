@@ -4,6 +4,7 @@ defmodule GroupManager.RangeEvent.Node do
   """
   
   defstruct type: nil, node: nil, point: nil
+
   
   
 end
