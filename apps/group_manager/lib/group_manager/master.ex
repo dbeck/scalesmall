@@ -50,13 +50,13 @@ defmodule GroupManager.Master do
   @doc """
   TODO
   """
-  def leave_group(group_name, prefix \\ nil) do
+  def leave_group(master_pid, group_name, prefix \\ nil) when is_pid(master_pid) do
     case GroupManager.Chatter.locate(group_name, prefix) do      
       chatter_pid when is_pid(chatter_pid) ->
         GroupManager.Chatter.stop(chatter_pid)
         case GroupManager.Worker.locate(group_name, prefix) do
           worker_pid when is_pid(worker_pid) ->
-            Supervisor.terminate_child(locate(), worker_pid)
+            Supervisor.terminate_child(master_pid, worker_pid)
           nil ->
             {:error, :no_worker}
         end

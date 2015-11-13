@@ -45,6 +45,7 @@ defmodule GroupManager do
   
   """
   def leave(group_name) do
-    GroupManager.Master.leave_group(group_name)
+    master_pid = GroupManager.Master.locate()
+    GroupManager.Master.leave_group(master_pid, group_name)
   end
 end
