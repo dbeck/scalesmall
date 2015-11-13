@@ -1,4 +1,4 @@
-defmodule GroupManagerLogTest do
+defmodule GroupManager.LogTest do
   use ExUnit.Case
 
   test "the truth" do

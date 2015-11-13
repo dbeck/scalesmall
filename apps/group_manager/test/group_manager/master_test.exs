@@ -1,4 +1,4 @@
-defmodule GroupManagerMasterTest do
+defmodule GroupManager.MasterTest do
   use ExUnit.Case
 
   test "the truth" do

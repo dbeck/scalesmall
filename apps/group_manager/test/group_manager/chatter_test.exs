@@ -1,4 +1,4 @@
-defmodule GroupManagerChatterTest do
+defmodule GroupManager.ChatterTest do
   use ExUnit.Case
 
   test "the truth" do
