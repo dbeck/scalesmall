@@ -3,6 +3,6 @@ defmodule GroupManager.RangeEvent.Demote do
   TODO
   """
   
-  defstruct node: nil, point: nil
+  defstruct type: nil, node: nil, point: nil
   
 end
