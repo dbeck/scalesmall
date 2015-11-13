@@ -5,12 +5,12 @@ defmodule GroupManager.RangeEvent.Event do
   
   defstruct split: [], release: [], register: [], promote: [], demote: []
 
-  def merge(events) when is_list(events) do
-    List.foldl(events, %GroupManager.RangeEvent.Event{}, fn(x, acc) -> merge_two(x, acc) end)
-  end
-  
   alias GroupManager.RangeEvent.Event, as: Event
-  
+
+  def merge(events) when is_list(events) do
+    List.foldl(events, %Event{}, fn(x, acc) -> merge_two(x, acc) end)
+  end
+    
   def merge_two(lhs, rhs) when is_map(lhs) and is_map(rhs) do
 
     %Event{split: l_split, release: l_rel, register: l_reg, promote: l_prom, demote: l_dem} = lhs
