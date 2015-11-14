@@ -10,10 +10,17 @@ defmodule GroupManager.RangeEvent.Node do
   - :promote
   - :demote
   """
-  defstruct type: nil, node: nil, point: 1.0
+  defstruct type: :register, node: nil, point: 1.0
   
   alias GroupManager.RangeEvent.Node, as: Node
   alias GroupManager.RangeEvent.Split, as: Split
+  
+  def merge(lhs, rhs) when is_list(lhs) and is_list(rhs) do
+    lhs ++ rhs
+    |> List.flatten
+    |> Enum.sort(&(is_greater(&2, &1)))
+    |> Enum.uniq
+  end
   
   def split(foreign_splits, own_events)
   when is_list(foreign_splits) and is_list(own_events)

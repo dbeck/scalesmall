@@ -10,17 +10,32 @@ defmodule GroupManager.RangeEvent.Event do
   def merge(events) when is_list(events) do
     List.foldl(events, %Event{}, fn(x, acc) -> merge_two(x, acc) end)
   end
-    
+
   def merge_two(lhs, rhs) when is_map(lhs) and is_map(rhs) do
 
-    %Event{split: l_split, release: l_rel, register: l_reg, promote: l_prom, demote: l_dem} = lhs
-    %Event{split: r_split, release: r_rel, register: r_reg, promote: r_prom, demote: r_dem} = rhs
+    %Event{split: l_split, release: l_release, register: l_register, promote: l_promote, demote: l_demote} = lhs
+    %Event{split: r_split, release: r_release, register: r_register, promote: r_promote, demote: r_demote} = rhs
     
-    # TODO
-    %Event{ split:    l_split ++ r_split,
-            release:  l_rel ++ r_rel,
-            register: l_reg ++ r_reg,
-            promote:  l_prom ++ r_prom,
-            demote:   l_dem ++ r_dem }
+    # release events
+    merged_release = GroupManager.RangeEvent.Node.split(l_split, r_release)
+    |> GroupManager.RangeEvent.Node.merge(GroupManager.RangeEvent.Node.split(r_split, l_release))
+
+    # register events
+    merged_register = GroupManager.RangeEvent.Node.split(l_split, r_register)
+    |> GroupManager.RangeEvent.Node.merge(GroupManager.RangeEvent.Node.split(r_split, l_register))
+    
+    # promote events
+    merged_promote = GroupManager.RangeEvent.Node.split(l_split, r_promote)
+    |> GroupManager.RangeEvent.Node.merge(GroupManager.RangeEvent.Node.split(r_split, l_promote))
+
+    # demote events
+    merged_demote = GroupManager.RangeEvent.Node.split(l_split, r_demote)
+    |> GroupManager.RangeEvent.Node.merge(GroupManager.RangeEvent.Node.split(r_split, l_demote))
+
+    %Event{split:    GroupManager.RangeEvent.Split.merge(l_split ++ r_split),
+           release:  merged_release,
+           register: merged_register,
+           promote:  merged_promote,
+           demote:   merged_demote }
   end
 end
