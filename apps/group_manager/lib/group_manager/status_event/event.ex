@@ -1,5 +1,5 @@
 defmodule GroupManager.StatusEvent.Event do
-  
+
   @moduledoc """
   TODO
   """
@@ -9,23 +9,17 @@ defmodule GroupManager.StatusEvent.Event do
   - :join
   - :leave
   """
-  defstruct type: :register, node: nil
+  defstruct events: []
   
   alias GroupManager.StatusEvent.Event, as: Event
   
-  def merge(lhs, rhs) when is_list(lhs) and is_list(rhs) do
-    # TODO
-    lhs ++ rhs
-    |> List.flatten
-    |> Enum.sort(&(is_greater(&2, &1)))
-    |> Enum.uniq
+  def merge(events) when is_list(events) do
+    List.foldl(events, %Event{}, fn(x, acc) -> merge_two(x, acc) end)
   end
-  
-  def is_greater(%Event{type: l_type, node: l_name},
-                 %Event{type: r_type, node: r_name})
-  when is_atom(l_type) and l_type == r_type
+
+  def merge_two(%Event{events: l_events}, %Event{events: r_events})
+  when is_list(l_events) and is_list(r_events)
   do
-    # TODO
-    l_name > r_name
-  end
+    %Event{events: GroupManager.StatusEvent.Status.merge(l_events, r_events)}
+  end  
 end

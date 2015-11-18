@@ -1,4 +1,4 @@
-defmodule GroupManager.Message do
+defmodule GroupManager.MessageTest do
   use ExUnit.Case
 
   test "the truth" do

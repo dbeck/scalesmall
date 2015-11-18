@@ -37,8 +37,8 @@ defmodule GroupManager.RangeEvent.NodeTest do
   test "split nodes twice doesn't change the list" do
     node   = %GroupManager.RangeEvent.Node{type: :register, node: "", point: 0.5}
     node2  = %GroupManager.RangeEvent.Node{type: :register, node: "", point: 0.3}
-    split = %GroupManager.RangeEvent.Split{point: 0.3}
-    [n1, n2] = GroupManager.RangeEvent.Node.split([split], [node])
-    assert [n1, n2] = GroupManager.RangeEvent.Node.split([split, split, split], [n1, n2])
+    split  = %GroupManager.RangeEvent.Split{point: 0.3}
+    [n1, n2] = GroupManager.RangeEvent.Node.split([split], [node, node2])
+    assert [n1, n2] == GroupManager.RangeEvent.Node.split([split, split, split], [n1, n2])
   end
 end
