@@ -8,7 +8,6 @@ defmodule GroupManager.Message do
 
   alias GroupManager.Message, as: Message
   
-  # update :
-  #  - add(GroupManager.Message)
-  # lookup
+
+  
 end

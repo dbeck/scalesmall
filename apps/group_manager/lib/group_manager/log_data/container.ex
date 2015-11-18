@@ -7,5 +7,12 @@ defmodule GroupManager.LogData.Container do
   
   # update :
   #  - add(GroupManager.Message)
-  # lookup
+  
+  # what we can get: Data, LogEntry, NodeStatus
+  
+  # lookup :
+  #  - 
+  
+  # hashes_after(act-hash)
+  # node_status(node) -> :state, :hash
 end
