@@ -1,4 +1,4 @@
-defmodule GroupManager.StatusEvent.CalculatorTest do
+defmodule GroupManager.Message do
   use ExUnit.Case
 
   test "the truth" do
