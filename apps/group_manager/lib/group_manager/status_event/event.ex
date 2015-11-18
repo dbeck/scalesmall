@@ -14,7 +14,9 @@ defmodule GroupManager.StatusEvent.Event do
   alias GroupManager.StatusEvent.Event, as: Event
   alias GroupManager.StatusEvent.State, as: State
   
-  def merge(events) when is_list(events) do
+  def merge(events)
+  when is_list(events)
+  do
     List.foldl(events, %Event{}, fn(x, acc) -> merge_two(x, acc) end)
   end
 

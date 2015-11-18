@@ -13,7 +13,9 @@ defmodule GroupManager.StatusEvent.State do
   
   alias GroupManager.StatusEvent.State, as: State
   
-  def merge(lhs, rhs) when is_list(lhs) and is_list(rhs) do
+  def merge(lhs, rhs)
+  when is_list(lhs) and is_list(rhs)
+  do
     # TODO
     lhs ++ rhs
     |> List.flatten

@@ -15,7 +15,9 @@ defmodule GroupManager.RangeEvent.Node do
   alias GroupManager.RangeEvent.Node, as: Node
   alias GroupManager.RangeEvent.Split, as: Split
   
-  def merge(lhs, rhs) when is_list(lhs) and is_list(rhs) do
+  def merge(lhs, rhs)
+  when is_list(lhs) and is_list(rhs)
+  do
     lhs ++ rhs
     |> List.flatten
     |> Enum.sort(&(is_greater(&2, &1)))

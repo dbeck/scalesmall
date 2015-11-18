@@ -9,5 +9,10 @@ defmodule GroupManager.LogData.Data do
   defstruct prev_hash: 0, status_event: %StatusEvent{}, range_event: %RangeEvent{}
 
   alias GroupManager.LogData.Data, as: Data
-
+  
+  def hash(data)
+  when is_map(data)
+  do
+    :xxhash.hash64(:erlang.term_to_binary(data), 1)
+  end
 end
