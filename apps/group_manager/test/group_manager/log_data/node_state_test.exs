@@ -1,4 +1,4 @@
-defmodule GroupManager.LogData.NodeStatusTest do
+defmodule GroupManager.LogData.NodeStateTest do
   use ExUnit.Case
 
   test "the truth" do

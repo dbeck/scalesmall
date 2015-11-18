@@ -1,4 +1,4 @@
-defmodule GroupManager.StatusEvent.Status do
+defmodule GroupManager.StateEvent.Status do
   
   @moduledoc """
   TODO
@@ -11,7 +11,7 @@ defmodule GroupManager.StatusEvent.Status do
   """
   defstruct type: :join, node: nil, hash: 0
   
-  alias GroupManager.StatusEvent.Status, as: Status
+  alias GroupManager.StatusEvent.State, as: State
   
   def merge(lhs, rhs) when is_list(lhs) and is_list(rhs) do
     # TODO
@@ -21,8 +21,8 @@ defmodule GroupManager.StatusEvent.Status do
     |> Enum.uniq
   end
   
-  def is_greater(%Status{type: l_type, node: l_name, hash: l_hash},
-                 %Status{type: r_type, node: r_name, hash: r_hash})
+  def is_greater(%State{type: l_type, node: l_name, hash: l_hash},
+                 %State{type: r_type, node: r_name, hash: r_hash})
   when is_atom(l_type) and is_atom(r_type) and is_integer(l_hash) and is_integer(r_hash)
   do
     # TODO
