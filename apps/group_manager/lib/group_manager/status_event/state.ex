@@ -1,4 +1,4 @@
-defmodule GroupManager.StateEvent.Status do
+defmodule GroupManager.StatusEvent.State do
   
   @moduledoc """
   TODO

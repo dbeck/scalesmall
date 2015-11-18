@@ -8,7 +8,7 @@ defmodule GroupManager.LogData.Container do
   # update :
   #  - add(GroupManager.Message)
   
-  # what we can get: Data, LogEntry, NodeStatus
+  # what we can get: Data, LogEntry, NodeState
   
   # lookup :
   #  - 

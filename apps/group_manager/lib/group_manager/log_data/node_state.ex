@@ -3,8 +3,10 @@ defmodule GroupManager.LogData.NodeState do
   TODO
   """
   
-  defstruct states: %{}
+  alias GroupManager.StatusEvent.State, as: State
+  
+  defstruct node_state: %State{}
 
   alias GroupManager.LogData.NodeState, as: NodeState
-  
+
 end

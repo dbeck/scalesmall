@@ -8,6 +8,4 @@ defmodule GroupManager.Message do
 
   alias GroupManager.Message, as: Message
   
-
-  
 end
