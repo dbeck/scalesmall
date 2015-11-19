@@ -30,9 +30,9 @@ defmodule GroupManager do
   - for other errors, see `Supervisor.start_child/2` documentation
   
   """
-  def join(_remote_name, group_name) do
+  def join(remote_name, group_name) do
     master_pid = GroupManager.Master.locate()
-    GroupManager.Master.start_group(master_pid, _remote_name, group_name) 
+    GroupManager.Master.start_group(master_pid, remote_name, group_name) 
   end
   
   @doc """

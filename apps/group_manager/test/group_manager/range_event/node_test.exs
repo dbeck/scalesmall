@@ -1,8 +1,8 @@
 defmodule GroupManager.RangeEvent.NodeTest do
   use ExUnit.Case
   
-  alias GroupManager.RangeEvent.Node, as: Node
-  alias GroupManager.RangeEvent.Split, as: Split
+  alias GroupManager.RangeEvent.Node
+  alias GroupManager.RangeEvent.Split
 
   test "order between Nodes favor larger point" do
     smaller = %Node{type: :register, node: "", point: 0.5}

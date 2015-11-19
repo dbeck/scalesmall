@@ -1,7 +1,7 @@
 defmodule GroupManager.LogData.DataTest do
   use ExUnit.Case
   
-  alias GroupManager.LogData.Data, as: Data
+  alias GroupManager.LogData.Data
 
   test "can generate a deterministic hash" do
     data = %Data{prev_hash: 123}

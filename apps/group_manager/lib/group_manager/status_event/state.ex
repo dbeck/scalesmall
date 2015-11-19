@@ -12,7 +12,7 @@ defmodule GroupManager.StatusEvent.State do
   """
   defstruct type: :join, node: nil, hash: 0
   
-  alias GroupManager.StatusEvent.State, as: State
+  alias GroupManager.StatusEvent.State
   
   def merge(lhs, rhs)
   when is_list(lhs) and is_list(rhs)

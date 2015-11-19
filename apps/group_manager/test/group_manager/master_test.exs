@@ -1,7 +1,7 @@
 defmodule GroupManager.MasterTest do
   use ExUnit.Case
   
-  alias GroupManager.Master, as: Master
+  alias GroupManager.Master
 
   test "only one master can be started with a name" do
     assert {:ok, pid} = Master.start_link([name: :test_group_master])

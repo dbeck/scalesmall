@@ -5,9 +5,9 @@ defmodule GroupManager.LogData.Container do
   
   defstruct logs: %HashDict{}, forward_links: %HashDict{}
 
-  alias GroupManager.LogData.Container, as: Container
-  alias GroupManager.LogData.LogEntry,  as: LogEntry
-  alias GroupManager.LogData.Data,      as: Data
+  alias GroupManager.LogData.Container
+  alias GroupManager.LogData.LogEntry
+  alias GroupManager.LogData.Data
 
   def add(container, log_entry)
   when is_map(container) and is_map(log_entry)

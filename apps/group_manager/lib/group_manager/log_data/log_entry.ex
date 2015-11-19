@@ -3,7 +3,7 @@ defmodule GroupManager.LogData.LogEntry do
   TODO
   """
 
-  alias GroupManager.LogData.Data, as: Data
+  alias GroupManager.LogData.Data
   
   defstruct data: %Data{}, new_hash: 0
 

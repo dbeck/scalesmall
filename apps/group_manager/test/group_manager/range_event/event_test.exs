@@ -1,9 +1,9 @@
 defmodule EventTest do
   use ExUnit.Case
   
-  alias GroupManager.RangeEvent.Node, as: Node
-  alias GroupManager.RangeEvent.Split, as: Split
-  alias GroupManager.RangeEvent.Event, as: Event
+  alias GroupManager.RangeEvent.Node
+  alias GroupManager.RangeEvent.Split
+  alias GroupManager.RangeEvent.Event
 
   test "one node registers, other node splits before" do
     register_event = %Node{type: :register, node: "", point: 0.5}    

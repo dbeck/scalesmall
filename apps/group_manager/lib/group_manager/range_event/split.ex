@@ -5,7 +5,7 @@ defmodule GroupManager.RangeEvent.Split do
   
   defstruct point: 1.0
 
-  alias GroupManager.RangeEvent.Split, as: Split
+  alias GroupManager.RangeEvent.Split
   
   def merge(events)
   when is_list(events)

@@ -12,8 +12,8 @@ defmodule GroupManager.RangeEvent.Node do
   """
   defstruct type: :register, node: nil, point: 1.0
   
-  alias GroupManager.RangeEvent.Node, as: Node
-  alias GroupManager.RangeEvent.Split, as: Split
+  alias GroupManager.RangeEvent.Node
+  alias GroupManager.RangeEvent.Split
   
   def merge(lhs, rhs)
   when is_list(lhs) and is_list(rhs)

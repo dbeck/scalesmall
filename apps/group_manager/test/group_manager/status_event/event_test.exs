@@ -1,8 +1,8 @@
 defmodule GroupManager.StatusEvent.EventTest do
   use ExUnit.Case
   
-  alias GroupManager.StatusEvent.Event, as: Event
-  alias GroupManager.StatusEvent.State, as: State
+  alias GroupManager.StatusEvent.Event
+  alias GroupManager.StatusEvent.State
 
   test "merging empty events" do
     a = %Event{}

@@ -11,8 +11,8 @@ defmodule GroupManager.StatusEvent.Event do
   """
   defstruct events: []
   
-  alias GroupManager.StatusEvent.Event, as: Event
-  alias GroupManager.StatusEvent.State, as: State
+  alias GroupManager.StatusEvent.Event
+  alias GroupManager.StatusEvent.State
   
   def merge(events)
   when is_list(events)

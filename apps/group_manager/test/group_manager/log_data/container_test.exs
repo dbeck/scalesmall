@@ -3,10 +3,10 @@ defmodule GroupManager.LogData.ContainerTest do
   
   defstruct dummy: nil
 
-  alias GroupManager.LogData.Container, as: Container
-  alias GroupManager.LogData.LogEntry, as: LogEntry
-  alias GroupManager.LogData.Data, as: Data
-  alias GroupManager.LogData.ContainerTest, as: ContainerTest
+  alias GroupManager.LogData.Container
+  alias GroupManager.LogData.LogEntry
+  alias GroupManager.LogData.Data
+  alias GroupManager.LogData.ContainerTest
 
   test "cannot add to uninitialized container" do
     c = %Container{}

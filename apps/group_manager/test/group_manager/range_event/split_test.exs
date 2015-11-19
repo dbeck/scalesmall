@@ -1,7 +1,7 @@
 defmodule GroupManager.RangeEvent.SplitTest do
   use ExUnit.Case
 
-  alias GroupManager.RangeEvent.Split, as: Split
+  alias GroupManager.RangeEvent.Split
 
   test "can merge the same values into one" do
     a = %Split{point: 0.5}

@@ -1,7 +1,7 @@
 defmodule GroupManager.StatusEvent.StateTest do
   use ExUnit.Case
 
-  alias GroupManager.StatusEvent.State, as: State
+  alias GroupManager.StatusEvent.State
 
   test "can merge the same values into one" do
     a = %State{}
