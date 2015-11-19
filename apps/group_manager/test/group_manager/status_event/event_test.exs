@@ -11,15 +11,15 @@ defmodule GroupManager.StatusEvent.EventTest do
   end
 
   test "merging empty and non empty events" do
-    s1 = %State{type: :join,  node: "test"}
+    s1 = %State{type: :ready,  node: "test"}
     a = %Event{}
     b = %Event{events: [s1]}
     assert b == Event.merge([a, b])
   end
 
   test "merging non-empty events" do
-    s1 = %State{type: :join,  node: "test"}
-    s2 = %State{type: :leave,  node: "test"}
+    s1 = %State{type: :gone,  node: "test"}
+    s2 = %State{type: :ready, node: "test"}
     a = %Event{events: [s1]}
     b = %Event{events: [s2]}
     c = %Event{events: [s1, s2]}

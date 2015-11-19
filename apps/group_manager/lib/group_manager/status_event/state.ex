@@ -6,8 +6,9 @@ defmodule GroupManager.StatusEvent.State do
   
   @doc """
   valid types are:
-  - :join
-  - :leave
+  - :ready
+  - :gone
+  - :busy
   """
   defstruct type: :join, node: nil, hash: 0
   

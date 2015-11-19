@@ -9,5 +9,4 @@ defmodule GroupManager.LogData.DataTest do
     hash2 = Data.hash(data) 
     assert hash1 == hash2
   end
-
 end

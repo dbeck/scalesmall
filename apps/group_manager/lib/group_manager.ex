@@ -48,4 +48,45 @@ defmodule GroupManager do
     master_pid = GroupManager.Master.locate()
     GroupManager.Master.leave_group(master_pid, group_name)
   end
+  
+  #######################################################################################
+  # TODO : implement these API functions
+  
+  def register(_group_name, _point)
+  do
+    raise "implement me"
+  end
+  
+  def release(_group_name, _point)
+  do
+    raise "implement me"
+  end
+  
+  def promote(_group_name, _point)
+  do
+    raise "implement me"
+  end
+
+  def demote(_group_name, _point)
+  do
+    raise "implement me"
+  end
+  
+  # TODO: implement theses accessors/query/info functions
+  
+  def get_peers(_group_name, point)
+  when is_number(point)
+  do
+    raise "implement me"
+  end
+  
+  def get_all_peers(_group_name, _options) # :all, :ready, :gone, :busy
+  do
+    raise "implement me"
+  end
+  
+  def get_ranges(_group_name, _options) # {:all}, {:self}, {:nodes, [node1, node2, ...]}
+  do
+    raise "implement me"
+  end
 end

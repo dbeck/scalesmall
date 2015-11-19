@@ -10,8 +10,8 @@ defmodule GroupManager.StatusEvent.StateTest do
   end
   
   test "can merge distinct event types for the same host" do
-    a = %State{type: :join,  node: "test"}
-    b = %State{type: :leave, node: "test"}
+    a = %State{type: :gone,  node: "test"}
+    b = %State{type: :ready, node: "test"}
     c = [a, b]
     assert c == State.merge([a],[b])
     assert c == State.merge([b],[a])

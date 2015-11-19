@@ -8,5 +8,8 @@ defmodule GroupManager.LogData.NodeState do
   defstruct node_state: %State{}
 
   alias GroupManager.LogData.NodeState, as: NodeState
+  
+  # !!! THIS MODULE TO BE GONE SOON !!!
+  # redundant StatusEvent.State
 
 end

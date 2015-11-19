@@ -15,4 +15,12 @@ defmodule GroupManager.LogData.Data do
   do
     :xxhash.hash64(:erlang.term_to_binary(data), 1)
   end
+  
+  def prev_hash(data)
+  when is_map(data)
+  do
+    %Data{prev_hash: retval} = data
+    retval
+  end  
+
 end
