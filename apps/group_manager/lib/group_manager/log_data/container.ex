@@ -3,7 +3,7 @@ defmodule GroupManager.LogData.Container do
   TODO
   """
   
-  defstruct logs: %HashDict{}
+  defstruct logs: %HashDict{}, forward_links: %HashDict{}
 
   alias GroupManager.LogData.Container, as: Container
   alias GroupManager.LogData.LogEntry,  as: LogEntry
@@ -13,19 +13,31 @@ defmodule GroupManager.LogData.Container do
   when is_map(container) and is_map(log_entry)
   do
     # unwrap data
-    %Container{logs: logs} = container
+    %Container{logs: logs, forward_links: forward_links} = container
     %LogEntry{data: %Data{prev_hash: prev_hash}, new_hash: new_hash} = log_entry
     
     if HashDict.has_key?(logs, prev_hash) do
-      
       case HashDict.fetch(logs, new_hash) do
         :error ->
+          # update forward links too
+          new_links =  case HashDict.fetch(forward_links, prev_hash) do
+            :error ->
+              [new_hash]
+            {:ok, links} when is_list(links) ->
+              [new_hash] ++ links
+          end
+          # add data to the container too
           HashDict.put(logs, new_hash, log_entry)
-          {:ok, %Container{logs: HashDict.put(logs, new_hash, log_entry)}, :inserted}
+          { :ok,
+            %Container{logs: HashDict.put(logs, new_hash, log_entry),
+                       forward_links: HashDict.put(forward_links, prev_hash, new_links)},
+            :inserted
+          }
         
         {:ok, %LogEntry{data: %Data{prev_hash: ^prev_hash}, new_hash: ^new_hash}} ->
+          # entry already exists, thus I assume it has forward links too
           {:ok, container, :already_exists}
-      end    
+      end      
     else
       {:error, :missing_parent}
     end
@@ -34,17 +46,29 @@ defmodule GroupManager.LogData.Container do
   def init(container)
   when is_map(container)
   do
+    first = first_entry()
     %Container{logs: logs} = container
-    data = %Data{}
-    new_hash = Data.hash(data)
-    log_entry = %LogEntry{data: %Data{}, new_hash: new_hash}
+    %LogEntry{data: _, new_hash: new_hash} = first
     
     if HashDict.has_key?(logs, new_hash) do
       {:error, :already_initialized}
     else
-      {:ok, %Container{logs: HashDict.put(logs, new_hash, log_entry)}}
+      {:ok, %Container{logs: HashDict.put(logs, new_hash, first)}}
     end
   end
+  
+  def latest(container)
+  when is_map(container)
+  do
+    %Container{logs: logs, forward_links: _} = container
+  end
+  
+  def first_entry() do
+    data = %Data{}
+    new_hash = Data.hash(data)
+    %LogEntry{data: %Data{}, new_hash: new_hash}
+  end
+    
     
   ########################################
   

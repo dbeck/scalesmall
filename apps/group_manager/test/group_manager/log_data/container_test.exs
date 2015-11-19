@@ -5,9 +5,10 @@ defmodule GroupManager.LogData.ContainerTest do
 
   alias GroupManager.LogData.Container, as: Container
   alias GroupManager.LogData.LogEntry, as: LogEntry
+  alias GroupManager.LogData.Data, as: Data
   alias GroupManager.LogData.ContainerTest, as: ContainerTest
 
-  test "cannot add empty LogEntry to the container" do
+  test "cannot add to uninitialized container" do
     c = %Container{}
     l = %LogEntry{}
     
@@ -31,6 +32,29 @@ defmodule GroupManager.LogData.ContainerTest do
       Container.add(c, l)
     end
   end
+
+  test "cannot add first_entry to an initialized container" do
+    c = %Container{}
+    first = Container.first_entry()
+    {:ok, newc} = Container.init(c)
+    assert {:error, _} = Container.add(newc, first)
+  end 
+  
+  test "can add to initialized container" do
+    c = %Container{}
+    assert {:ok, c} = Container.init(c)
+    
+    # create a new entry, linked to the first one
+    %LogEntry{data: _, new_hash: first_hash} = Container.first_entry()
+    data = %Data{prev_hash: first_hash}
+    new_entry = %LogEntry{data: data, new_hash: Data.hash(data)}
+
+    # add the new entry
+    assert {:ok, c2, :inserted} = Container.add(c, new_entry)
+    
+    # add the new entry again
+    assert {:ok, c2, :already_exists} == Container.add(c2, new_entry)
+  end
   
   test "can initialize container once" do
     c = %Container{}
@@ -41,6 +65,13 @@ defmodule GroupManager.LogData.ContainerTest do
     c = %Container{}
     assert {:ok, new_c} = Container.init(c)
     assert {:error, _} = Container.init(new_c)
+  end
+  
+  test "cannot initialize unsupported container type" do
+    c = %ContainerTest{}
+    assert_raise MatchError, fn ->
+      Container.init(c)
+    end
   end
 
 end
