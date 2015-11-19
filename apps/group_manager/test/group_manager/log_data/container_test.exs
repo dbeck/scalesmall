@@ -33,7 +33,7 @@ defmodule GroupManager.LogData.ContainerTest do
     end
   end
 
-  test "cannot add first_entry to an initialized container" do
+  test "cannot add first_entry to an initialized container because first entry should already be there" do
     c = %Container{}
     first = Container.first_entry()
     {:ok, newc} = Container.init(c)
@@ -72,6 +72,18 @@ defmodule GroupManager.LogData.ContainerTest do
     assert_raise MatchError, fn ->
       Container.init(c)
     end
+  end
+  
+  test "latest in an empty container is an empty list" do
+    c = %Container{}
+    assert [] == Container.latest(c)
+  end
+  
+  test "latest in an initialized container is the first entry" do
+    c = %Container{}
+    {:ok, c} = Container.init(c)
+    %LogEntry{data: _, new_hash: first_hash} = Container.first_entry()
+    assert [first_hash] == Container.latest(c)
   end
 
 end

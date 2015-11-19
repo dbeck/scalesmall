@@ -56,19 +56,27 @@ defmodule GroupManager.LogData.Container do
       {:ok, %Container{logs: HashDict.put(logs, new_hash, first)}}
     end
   end
-  
-  def latest(container)
-  when is_map(container)
-  do
-    %Container{logs: logs, forward_links: _} = container
-  end
-  
+    
   def first_entry() do
     data = %Data{}
     new_hash = Data.hash(data)
     %LogEntry{data: %Data{}, new_hash: new_hash}
   end
-    
+  
+  def latest(container)
+  when is_map(container)
+  do
+    %Container{logs: logs, forward_links: links} = container
+    List.foldl(HashDict.keys(logs), [], fn(x, acc) ->
+      if HashDict.has_key?(links, x) do
+        []
+      else
+        [x]
+      end
+    end)
+    |> List.flatten
+  end
+  
     
   ########################################
   
