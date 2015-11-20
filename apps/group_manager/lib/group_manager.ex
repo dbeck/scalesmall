@@ -3,12 +3,14 @@ defmodule GroupManager do
   TODO
   """
   use Application
+  
+  alias GroupManager.Master
 
   @doc """
   Starts GroupManager.Master supervisor
   """
   def start(_type, _args) do
-    GroupManager.Master.start_link([])
+    Master.start_link([])
   end
   
   @doc """
@@ -31,8 +33,8 @@ defmodule GroupManager do
   
   """
   def join(remote_name, group_name) do
-    master_pid = GroupManager.Master.locate()
-    GroupManager.Master.start_group(master_pid, remote_name, group_name) 
+    master_pid = Master.locate()
+    Master.start_group(master_pid, remote_name, group_name) 
   end
   
   @doc """
@@ -45,48 +47,77 @@ defmodule GroupManager do
   
   """
   def leave(group_name) do
-    master_pid = GroupManager.Master.locate()
-    GroupManager.Master.leave_group(master_pid, group_name)
+    master_pid = Master.locate()
+    Master.leave_group(master_pid, group_name)
+  end
+    
+  @doc """
+  TODO
+  """
+  def register(group_name, point)
+  when is_number(point) and point >= 0.0 and point <= 1.0
+  do
+    master_pid = Master.locate()
+    Master.register_node_at(master_pid, group_name, point)
   end
   
-  #######################################################################################
-  # TODO : implement these API functions
-  
-  def register(_group_name, _point)
+  @doc """
+  TODO
+  """
+  def release(group_name, point)
+  when is_number(point) and point >= 0.0 and point <= 1.0
   do
-    raise "implement me"
+    master_pid = Master.locate()
+    Master.release_node_from(master_pid, group_name, point)
   end
   
-  def release(_group_name, _point)
+  @doc """
+  TODO
+  """
+  def promote(group_name, point)
+  when is_number(point) and point >= 0.0 and point <= 1.0
   do
-    raise "implement me"
-  end
-  
-  def promote(_group_name, _point)
-  do
-    raise "implement me"
+    master_pid = Master.locate()
+    Master.promote_node_at(master_pid, group_name, point)
   end
 
-  def demote(_group_name, _point)
+  @doc """
+  TODO
+  """
+  def demote(group_name, point)
+  when is_number(point) and point >= 0.0 and point <= 1.0
   do
-    raise "implement me"
+    master_pid = Master.locate()
+    Master.demote_node_at(master_pid, group_name, point)
   end
   
-  # TODO: implement theses accessors/query/info functions
-  
-  def get_peers(_group_name, point)
-  when is_number(point)
+  @doc """
+  TODO
+  """
+  def get_peers(group_name, point)
+  when is_number(point) and point >= 0.0 and point <= 1.0
   do
-    raise "implement me"
+    master_pid = Master.locate()
+    Master.get_peers_at(master_pid, group_name, point)
   end
   
-  def get_all_peers(_group_name, _options) # :all, :ready, :gone, :busy
+  @doc """
+  TODO
+  """
+  def get_all_peers(group_name, options \\ {:all} ) # :all, :ready, :gone, :busy
+  when is_tuple(options)
   do
-    raise "implement me"
+    master_pid = Master.locate()
+    Master.get_all_peers(master_pid, group_name, options)
   end
   
-  def get_ranges(_group_name, _options) # {:all}, {:self}, {:nodes, [node1, node2, ...]}
+  @doc """
+  TODO
+  """
+  def get_topology(group_name, options \\ {:all} ) # {:all}, {:self}, {:nodes, [node1, node2, ...]}
+  when is_tuple(options)
   do
-    raise "implement me"
+    master_pid = Master.locate()
+    Master.get_topology(master_pid, group_name, options)
   end
 end
