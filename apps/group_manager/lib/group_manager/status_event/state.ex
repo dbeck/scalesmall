@@ -28,9 +28,6 @@ defmodule GroupManager.StatusEvent.State do
                  %State{type: r_type, node: r_name, hash: r_hash})
   when is_atom(l_type) and is_atom(r_type) and is_integer(l_hash) and is_integer(r_hash)
   do
-    # TODO
-    l_name > r_name
-    #
     cond do
       l_name > r_name -> true
       l_name < r_name -> false
