@@ -8,7 +8,6 @@ defmodule GroupManager.LogData.ContainerTest do
   alias GroupManager.LogData.Data
   alias GroupManager.LogData.ContainerTest
   alias GroupManager.RangeEvent.Split
-  alias GroupManager.RangeEvent.Node
   alias GroupManager.RangeEvent.Event
 
   test "cannot add to uninitialized container" do

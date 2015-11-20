@@ -7,7 +7,7 @@ defmodule GroupManager.LogData.LogEntry do
   
   defstruct data: %Data{}, new_hash: 0
 
-  alias GroupManager.LogData.LogEntry, as: LogEntry
+  # alias GroupManager.LogData.LogEntry, as: LogEntry
 
   
 end

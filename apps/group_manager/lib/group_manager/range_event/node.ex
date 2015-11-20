@@ -48,7 +48,8 @@ defmodule GroupManager.RangeEvent.Node do
   end
   
   def split_node(%Split{point: split_at}, %Node{type: node_type, node: name, point: event_loc}, acc)
-  when is_number(split_at) and is_atom(node_type) and is_number(event_loc) and is_list(acc)
+  when is_number(split_at) and is_atom(node_type) and is_number(event_loc) and is_list(acc) and
+       event_loc >= 0.0 and event_loc <= 1.0 and split_at >= 0.0 and split_at <= 1.0
   do
     #
     orig = %Node{type: node_type, node: name, point: event_loc}
@@ -63,7 +64,8 @@ defmodule GroupManager.RangeEvent.Node do
   
   def is_greater(%Node{type: l_type, node: l_name, point: l_loc},
                  %Node{type: r_type, node: r_name, point: r_loc})
-  when is_number(l_loc) and is_number(r_loc) and is_atom(l_type) and l_type == r_type
+  when is_number(l_loc) and is_number(r_loc) and is_atom(l_type) and l_type == r_type and
+       l_loc >= 0.0 and l_loc <= 1.0 and r_loc >= 0.0 and r_loc <= 1.0
   do
     #
     cond do

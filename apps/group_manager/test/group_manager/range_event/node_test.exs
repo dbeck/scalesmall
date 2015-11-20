@@ -44,4 +44,36 @@ defmodule GroupManager.RangeEvent.NodeTest do
     [n1, n2] = Node.split([split], [node, node2])
     assert [n1, n2] == Node.split([split, split, split], [n1, n2])
   end
+  
+  test "Node point less than zero : out of range" do
+    node = %Node{type: :register, node: "", point: -0.5}
+    split = %Split{point: 0.3}
+    assert_raise FunctionClauseError, fn ->
+      Node.split_node(split, node, [])
+    end
+  end
+  
+  test "Node point is greater than 1.0 : out of range" do
+    node = %Node{type: :register, node: "", point: 1.5}
+    split = %Split{point: 0.3}
+    assert_raise FunctionClauseError, fn ->
+      Node.split_node(split, node, [])
+    end
+  end
+  
+  test "Split point less than zero : out of range" do
+    node = %Node{type: :register, node: "", point: 0.5}
+    split = %Split{point: -0.3}
+    assert_raise FunctionClauseError, fn ->
+      Node.split_node(split, node, [])
+    end
+  end
+  
+  test "Split point is greater than 1.0 : out of range" do
+    node = %Node{type: :register, node: "", point: 0.5}
+    split = %Split{point: 10.3}
+    assert_raise FunctionClauseError, fn ->
+      Node.split_node(split, node, [])
+    end
+  end
 end

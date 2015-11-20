@@ -15,7 +15,7 @@ defmodule GroupManager.RangeEvent.Split do
   end
   
   def is_greater(%Split{point: lhs}, %Split{point: rhs})
-  when is_number(lhs) and is_number(rhs)
+  when is_number(lhs) and is_number(rhs) and rhs >= 0.0 and rhs <= 1.0
   do
     lhs > rhs
   end
