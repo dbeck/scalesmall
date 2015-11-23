@@ -15,4 +15,36 @@ defmodule GroupManager.RangeEvent.SplitTest do
     c = [a, b]
     assert c == Split.merge([a,b])
   end
+  
+  test "cannot compare invalid / negative values " do
+    a = %Split{point: -0.5}
+    b = %Split{point: 0.6}
+    assert_raise FunctionClauseError, fn ->
+      Split.is_greater(a,b)
+    end
+  end
+
+  test "cannot compare invalid out-of-range values " do
+    a = %Split{point: 1.5}
+    b = %Split{point: 0.6}
+    assert_raise FunctionClauseError, fn ->
+      Split.is_greater(a,b)
+    end
+  end
+  
+  test "cannot merge invalid / negative values " do
+    a = %Split{point: -0.5}
+    b = %Split{point: 0.6}
+    assert_raise FunctionClauseError, fn ->
+      Split.merge([a,b])
+    end
+  end
+
+  test "cannot merge invalid out-of-range values " do
+    a = %Split{point: 1.5}
+    b = %Split{point: 0.6}
+    assert_raise FunctionClauseError, fn ->
+      Split.merge([a,b])
+    end
+  end  
 end

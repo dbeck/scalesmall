@@ -3,6 +3,8 @@ defmodule GroupManager.Engine do
   TODO
   """
   
+  # TODO : state machine
+  
   use ExActor.GenServer
 
   @doc """

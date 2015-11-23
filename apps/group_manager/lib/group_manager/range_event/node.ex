@@ -10,10 +10,12 @@ defmodule GroupManager.RangeEvent.Node do
   - :promote
   - :demote
   """
-  defstruct type: :register, node: nil, point: 1.0
-  
   alias GroupManager.RangeEvent.Node
   alias GroupManager.RangeEvent.Split
+  
+  @type node_event_type :: :register | :release | :promote | :demote
+  defstruct type: :register, node: nil, point: 1.0
+  @type t :: %Node{type: node_event_type, node: String.t, point: float}
   
   def merge(lhs, rhs)
   when is_list(lhs) and is_list(rhs)
@@ -48,7 +50,7 @@ defmodule GroupManager.RangeEvent.Node do
   end
   
   def split_node(%Split{point: split_at}, %Node{type: node_type, node: name, point: event_loc}, acc)
-  when is_number(split_at) and is_atom(node_type) and is_number(event_loc) and is_list(acc) and
+  when is_float(split_at) and is_atom(node_type) and is_float(event_loc) and is_list(acc) and
        event_loc >= 0.0 and event_loc <= 1.0 and split_at >= 0.0 and split_at <= 1.0
   do
     #
@@ -64,7 +66,7 @@ defmodule GroupManager.RangeEvent.Node do
   
   def is_greater(%Node{type: l_type, node: l_name, point: l_loc},
                  %Node{type: r_type, node: r_name, point: r_loc})
-  when is_number(l_loc) and is_number(r_loc) and is_atom(l_type) and l_type == r_type and
+  when is_float(l_loc) and is_float(r_loc) and is_atom(l_type) and l_type == r_type and
        l_loc >= 0.0 and l_loc <= 1.0 and r_loc >= 0.0 and r_loc <= 1.0
   do
     #

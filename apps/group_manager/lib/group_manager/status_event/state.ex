@@ -8,9 +8,9 @@ defmodule GroupManager.StatusEvent.State do
   valid types are:
   - :ready
   - :gone
-  - :busy
+  - :follower
   """
-  defstruct type: :join, node: nil, hash: 0
+  defstruct type: :follower, node: nil, hash: 0
   
   alias GroupManager.StatusEvent.State
   

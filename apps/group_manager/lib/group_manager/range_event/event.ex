@@ -3,9 +3,9 @@ defmodule GroupManager.RangeEvent.Event do
   TODO
   """
   
+  alias GroupManager.RangeEvent.Event  
   defstruct split: [], release: [], register: [], promote: [], demote: []
 
-  alias GroupManager.RangeEvent.Event
 
   def merge(events)
   when is_list(events)
