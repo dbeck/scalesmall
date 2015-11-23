@@ -1,4 +1,4 @@
-defmodule GroupManager.Msg.GetLogsTest do
+defmodule GroupManager.Msg.QueryLogsTest do
   use ExUnit.Case
 
   test "the truth" do

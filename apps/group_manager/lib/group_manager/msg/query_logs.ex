@@ -1,8 +1,8 @@
-defmodule GroupManager.Msg.GetLogs do
+defmodule GroupManager.Msg.QueryLogs do
   @moduledoc """
   TODO
   """
   
-  alias GroupManager.Msg.GetLogs
+  alias GroupManager.Msg.QueryLogs
     
 end

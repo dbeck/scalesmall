@@ -1,7 +1,7 @@
-defmodule GroupManager.Msg.GetNodeStates do
+defmodule GroupManager.Msg.QueryNodeStates do
   @moduledoc """
   TODO
   """
   
-  alias GroupManager.Msg.GetNodeStates    
+  alias GroupManager.Msg.QueryNodeStates    
 end
