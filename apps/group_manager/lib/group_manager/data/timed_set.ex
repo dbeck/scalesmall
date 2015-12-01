@@ -3,8 +3,16 @@ defmodule GroupManager.Data.TimedSet do
   TODO
   """
   
-  alias GroupManager.Data.TimedSet
+  alias GroupManager.Data.TimedItem
   
-  # timed_item *
+  # The TimedSet.t type
+  @type t :: { :timed_set, list(TimedItem.t) }
   
+  @spec new() :: t
+  def new(), do: { :timed_set, [] }
+  
+  # setters:
+  # getters:
+  # manipulators:  
+  # accessors:
 end

@@ -3,8 +3,17 @@ defmodule GroupManager.Data.TimedItem do
   TODO
   """
   
-  alias GroupManager.Data.TimedItem
+  alias GroupManager.Data.Item
+  alias GroupManager.Data.LocalClock
   
-  # item, local_clock
+  # The TimedItem.t type
+  @type t :: { :timed_item, Item.t, LocalClock.t }
   
+  @spec new(term) :: t
+  def new(id), do: { :timed_item, Item.new(id), LocalClock.new(id) }
+  
+  # setters:
+  # getters:
+  # manipulators:  
+  # accessors:
 end

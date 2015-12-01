@@ -3,8 +3,16 @@ defmodule GroupManager.Data.WorldClock do
   TODO
   """
   
-  alias GroupManager.Data.WorldClock
+  alias GroupManager.Data.LocalClock
   
-  # local_clock *
+  # The WorldClock.t type
+  @type t :: { :world_clock, list(LocalClock.t) }
   
+  @spec new() :: t
+  def new(), do: { :world_clock, [] }
+  
+  # setters:
+  # getters:
+  # manipulators:  
+  # accessors:
 end
