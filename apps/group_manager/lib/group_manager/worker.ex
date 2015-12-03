@@ -1,13 +1,7 @@
 defmodule GroupManager.Worker do
-  @moduledoc """
-  TODO
-  """
   
   use Supervisor
   
-  @doc """
-  TODO
-  """
   def start_link(args, opts) do
     case args do
       [group_name: _, prefix: _] ->
@@ -18,9 +12,6 @@ defmodule GroupManager.Worker do
       end
   end
 
-  @doc """
-  TODO
-  """
   def init([group_name: group_name, prefix: prefix]) do
     
     chatter_name   = GroupManager.Chatter.id_atom(group_name, prefix)
@@ -45,16 +36,10 @@ defmodule GroupManager.Worker do
     {:ok, pid} = supervise(children, strategy: :one_for_all)
   end
   
-  @doc """
-  TODO
-  """
   def locate(group_name, prefix \\ nil) do
     Process.whereis(id_atom(group_name, prefix))
   end
   
-  @doc """
-  TODO
-  """
   def id_atom(group_name, prefix \\ nil) do
     case prefix do
       nil -> String.to_atom("GroupManager.Worker." <> group_name)

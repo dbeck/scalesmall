@@ -50,74 +50,10 @@ defmodule GroupManager do
     master_pid = Master.locate()
     Master.leave_group(master_pid, group_name)
   end
+  
+  # add me
+  # my entries
+  # remove me
+  # get topology
     
-  @doc """
-  TODO
-  """
-  def register(group_name, point)
-  when is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    master_pid = Master.locate()
-    Master.register_node_at(master_pid, group_name, point)
-  end
-  
-  @doc """
-  TODO
-  """
-  def release(group_name, point)
-  when is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    master_pid = Master.locate()
-    Master.release_node_from(master_pid, group_name, point)
-  end
-  
-  @doc """
-  TODO
-  """
-  def promote(group_name, point)
-  when is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    master_pid = Master.locate()
-    Master.promote_node_at(master_pid, group_name, point)
-  end
-
-  @doc """
-  TODO
-  """
-  def demote(group_name, point)
-  when is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    master_pid = Master.locate()
-    Master.demote_node_at(master_pid, group_name, point)
-  end
-  
-  @doc """
-  TODO
-  """
-  def get_peers(group_name, point)
-  when is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    master_pid = Master.locate()
-    Master.get_peers_at(master_pid, group_name, point)
-  end
-  
-  @doc """
-  TODO
-  """
-  def get_all_peers(group_name, options \\ {:all} ) # :all, :ready, :gone, :busy
-  when is_tuple(options)
-  do
-    master_pid = Master.locate()
-    Master.get_all_peers(master_pid, group_name, options)
-  end
-  
-  @doc """
-  TODO
-  """
-  def get_topology(group_name, options \\ {:all} ) # {:all}, {:self}, {:nodes, [node1, node2, ...]}
-  when is_tuple(options)
-  do
-    master_pid = Master.locate()
-    Master.get_topology(master_pid, group_name, options)
-  end
 end

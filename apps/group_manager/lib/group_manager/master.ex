@@ -40,9 +40,6 @@ defmodule GroupManager.Master do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  @doc """
-  TODO
-  """
   def start_group(master_pid, _peer, group_name, prefix \\ nil)
   when is_pid(master_pid)
   do
@@ -61,9 +58,6 @@ defmodule GroupManager.Master do
     end
   end
   
-  @doc """
-  TODO
-  """
   def leave_group(master_pid, group_name, prefix \\ nil)
   when is_pid(master_pid)
   do
@@ -82,72 +76,6 @@ defmodule GroupManager.Master do
     end
   end
   
-  @doc """
-  TODO
-  """
-  def register_node_at(master_pid, group_name, point, prefix \\ nil)
-  when is_pid(master_pid) and is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    raise "implement me"
-  end
-  
-  @doc """
-  TODO
-  """
-  def release_node_from(master_pid, group_name, point, prefix \\ nil)
-  when is_pid(master_pid) and is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    raise "implement me"
-  end
-  
-  @doc """
-  TODO
-  """
-  def promote_node_at(master_pid, group_name, point, prefix \\ nil)
-  when is_pid(master_pid) and is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    raise "implement me"
-  end
-  
-  @doc """
-  TODO
-  """
-  def demote_node_at(master_pid, group_name, point, prefix \\ nil)
-  when is_pid(master_pid) and is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    raise "implement me"
-  end
-  
-  @doc """
-  TODO
-  """
-  def get_peers_at(master_pid, group_name, point, prefix \\ nil)
-  when is_pid(master_pid) and is_number(point) and point >= 0.0 and point <= 1.0
-  do
-    raise "implement me"
-  end
-  
-  @doc """
-  TODO
-  """
-  def get_all_peers(master_pid, group_name, options, prefix \\ nil)
-  when is_pid(master_pid) and is_tuple(options)
-  do
-    raise "implement me"
-  end
-  
-  @doc """
-  TODO
-  """
-  def get_topology(master_pid, group_name, options, prefix \\ nil)
-  when is_pid(master_pid) and is_tuple(options)
-  do
-    raise "implement me"
-  end
-
-  @doc """
-  TODO
-  """
   def locate do
     case Process.whereis(__MODULE__) do
       master_pid when is_pid(master_pid) ->
