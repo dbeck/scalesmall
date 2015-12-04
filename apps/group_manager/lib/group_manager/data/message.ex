@@ -26,7 +26,7 @@ defmodule GroupManager.Data.Message do
   end
       
   @doc """
-  Validate as much we can about the `data` parameter which should be an Message record.
+  Validate as much as we can about the `data` parameter which should be a Message record.
    
   Validation rules are:
   
@@ -121,15 +121,25 @@ defmodule GroupManager.Data.Message do
   def add(msg, timed_item)
   when is_valid(msg) and TimedItem.is_valid(timed_item)
   do
-    {:message, time, added, removed} = msg
-    {:message, WorldClock.add(time, TimedItem.updated_at(timed_item)), TimedItem.add(added, timed_item), removed}
+    { :message, time, added, removed } = msg
+    {
+      :message,
+      WorldClock.add(time, TimedItem.updated_at(timed_item)),
+      TimedSet.add_newer(added, removed, timed_item),
+      TimedSet.remove_older(removed, timed_item)
+    }
   end
   
   @spec remove(t, TimedItem.t) :: t
   def remove(msg, timed_item)
   when is_valid(msg) and TimedItem.is_valid(timed_item)
   do
-    {:message, time, added, removed} = msg
-    {:message, WorldClock.add(time, TimedItem.updated_at(timed_item)), added, TimedItem.add(removed, timed_item) }
+    { :message, time, added, removed } = msg
+    {
+      :message,
+      WorldClock.add(time, TimedItem.updated_at(timed_item)),
+      TimedSet.remove_older(added, timed_item),
+      TimedSet.add_newer(removed, added, timed_item)
+    }
   end
 end

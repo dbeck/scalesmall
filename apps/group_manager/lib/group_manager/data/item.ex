@@ -25,7 +25,7 @@ defmodule GroupManager.Data.Item do
   end
   
   @doc """
-  Validate as much we can about the `data` parameter which should be an Item record.
+  Validate as much as we can about the `data` parameter which should be an Item record.
    
   Validation rules are:
   

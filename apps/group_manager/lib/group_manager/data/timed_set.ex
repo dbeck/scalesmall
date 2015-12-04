@@ -5,6 +5,9 @@ defmodule GroupManager.Data.TimedSet do
   """
   
   require Record
+  require GroupManager.Data.Item
+  require GroupManager.Data.LocalClock
+  require GroupManager.Data.TimedItem
   alias GroupManager.Data.TimedItem
   
   Record.defrecord :timed_set, items: []
@@ -17,7 +20,7 @@ defmodule GroupManager.Data.TimedSet do
   end
   
   @doc """
-  Validate as much we can about the `data` parameter which should be an TimedSet record.
+  Validate as much as we can about the `data` parameter which should be a TimedSet record.
    
   Validation rules are:
   
@@ -83,7 +86,19 @@ defmodule GroupManager.Data.TimedSet do
   do
     false
   end
-    
-  # manipulators:
-  # accessors:
+
+  @spec add_newer(t, t, TimedItem.t) :: t
+  def add_newer(added, removed, item)
+  when is_valid(added) and is_valid(removed) and TimedItem.is_valid(item)
+  do
+    :ok
+  end
+  
+  @spec remove_older(t, TimedItem.t) :: t
+  def remove_older(set, item)
+  when is_valid(set) and TimedItem.is_valid(item)
+  do
+    :ok
+  end
+
 end

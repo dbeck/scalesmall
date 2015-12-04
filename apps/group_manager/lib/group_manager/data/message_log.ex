@@ -21,7 +21,7 @@ defmodule GroupManager.Data.MessageLog do
   end
   
   @doc """
-  Validate as much we can about the `data` parameter which should be an MessageLog record.
+  Validate as much as we can about the `data` parameter which should be a MessageLog record.
    
   Validation rules are:
   

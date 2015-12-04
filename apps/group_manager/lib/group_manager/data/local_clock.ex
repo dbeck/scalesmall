@@ -21,7 +21,7 @@ defmodule GroupManager.Data.LocalClock do
   end
   
   @doc """
-  Validate as much we can about the `data` parameter which should be an LocalClock record.
+  Validate as much as we can about the `data` parameter which should be a LocalClock record.
    
   Validation rules are:
   

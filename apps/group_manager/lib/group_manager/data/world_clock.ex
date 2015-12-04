@@ -18,7 +18,7 @@ defmodule GroupManager.Data.WorldClock do
   end
 
   @doc """
-  Validate as much we can about the `data` parameter which should be an WorldClock record.
+  Validate as much as we can about the `data` parameter which should be a WorldClock record.
    
   Validation rules are:
   

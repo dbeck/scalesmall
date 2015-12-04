@@ -1,6 +1,6 @@
 defmodule GroupManager.Data.TimedItem do
   @moduledoc """
-  TimedItem is a state (`Item`) as seen by the various members at a give LocalClock time.
+  TimedItem is a state (`Item`) as seen by the various members at a given LocalClock time.
   """
   
   require Record
@@ -19,7 +19,7 @@ defmodule GroupManager.Data.TimedItem do
   end
   
   @doc """
-  Validate as much we can about the `data` parameter which should be an TimedItem record.
+  Validate as much as we can about the `data` parameter which should be a TimedItem record.
    
   Validation rules are:
   
