@@ -22,4 +22,6 @@ defmodule GroupManager.Data.MessageLogTest do
   end
   
   # add
+  #test "add new message to the message log" do
+  #end
 end

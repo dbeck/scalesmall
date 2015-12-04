@@ -5,9 +5,12 @@ defmodule GroupManager.Data.MessageLog do
   `MessageLog` itself is a Record type that we manipulate and access with the methods provided in the module.
   """
   
-  alias GroupManager.Data.Message
-  
   require Record
+  require GroupManager.Data.Message
+  require GroupManager.Data.WorldClock
+  require GroupManager.Data.TimedSet
+  alias GroupManager.Data.Message
+    
   Record.defrecord :message_log, entries: []
   @type t :: record( :message_log, entries: list(Message.t) )
   
@@ -55,11 +58,7 @@ defmodule GroupManager.Data.MessageLog do
   end
   
   def valid?(_), do: false
-  
-  require GroupManager.Data.Message
-  require GroupManager.Data.WorldClock
-  require GroupManager.Data.TimedSet
-  
+
   @spec add(t, Message.t) :: t
   def add(log, msg)
   when is_valid(log) and Message.is_valid(msg) and Message.is_empty(msg) == false
@@ -69,10 +68,8 @@ defmodule GroupManager.Data.MessageLog do
   end
   
   # manipulators:
-  # - add message
   # - compact
   
   # accessors:
-  # - 
   # - state of world
 end

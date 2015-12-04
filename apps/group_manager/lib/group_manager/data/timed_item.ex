@@ -3,10 +3,12 @@ defmodule GroupManager.Data.TimedItem do
   TimedItem is a state (`Item`) as seen by the various members at a give LocalClock time.
   """
   
+  require Record
+  require GroupManager.Data.Item
+  require GroupManager.Data.LocalClock
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
   
-  require Record
   Record.defrecord :timed_item, item: nil, updated_at: nil
   @type t :: record( :timed_item, item: Item.t, updated_at: LocalClock.t)
   
@@ -15,9 +17,6 @@ defmodule GroupManager.Data.TimedItem do
   do
     timed_item(item: Item.new(id)) |> timed_item(updated_at: LocalClock.new(id))
   end
-  
-  require GroupManager.Data.Item
-  require GroupManager.Data.LocalClock
   
   @doc """
   Validate as much we can about the `data` parameter which should be an TimedItem record.
@@ -83,6 +82,10 @@ defmodule GroupManager.Data.TimedItem do
     timed_item(item: item) |> timed_item(updated_at: LocalClock.next(updated_at))
   end
 
-  # manipulators:  
-  # accessors:
+  @spec updated_at(Item.t) :: LocalClock.t
+  def updated_at(item)
+  when is_valid(item)
+  do
+    timed_item(item, :updated_at)
+  end
 end

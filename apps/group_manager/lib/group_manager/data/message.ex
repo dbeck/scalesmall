@@ -6,10 +6,16 @@ defmodule GroupManager.Data.Message do
   `Message` itself is a Record type that we manipulate and access with the methods provided in the module.
   """
   
+  require Record
+  require GroupManager.Data.WorldClock
+  require GroupManager.Data.TimedSet
+  require GroupManager.Data.TimedItem
+  require GroupManager.Data.Item
+  require GroupManager.Data.LocalClock
   alias GroupManager.Data.WorldClock
   alias GroupManager.Data.TimedSet
+  alias GroupManager.Data.TimedItem
   
-  require Record
   Record.defrecord :message, time: nil, added: nil, removed: nil
   @type t :: record( :message, time: WorldClock.t, added: TimedSet.t, removed: TimedSet.t )
   
@@ -18,10 +24,7 @@ defmodule GroupManager.Data.Message do
   do
     message(time: WorldClock.new()) |> message(added: TimedSet.new()) |> message(removed: TimedSet.new())
   end
-  
-  require GroupManager.Data.WorldClock
-  require GroupManager.Data.TimedSet
-  
+      
   @doc """
   Validate as much we can about the `data` parameter which should be an Message record.
    
@@ -114,5 +117,19 @@ defmodule GroupManager.Data.Message do
     false
   end
   
-  # add()
+  @spec add(t, TimedItem.t) :: t
+  def add(msg, timed_item)
+  when is_valid(msg) and TimedItem.is_valid(timed_item)
+  do
+    {:message, time, added, removed} = msg
+    {:message, WorldClock.add(time, TimedItem.updated_at(timed_item)), TimedItem.add(added, timed_item), removed}
+  end
+  
+  @spec remove(t, TimedItem.t) :: t
+  def remove(msg, timed_item)
+  when is_valid(msg) and TimedItem.is_valid(timed_item)
+  do
+    {:message, time, added, removed} = msg
+    {:message, WorldClock.add(time, TimedItem.updated_at(timed_item)), added, TimedItem.add(removed, timed_item) }
+  end
 end

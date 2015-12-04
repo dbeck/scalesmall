@@ -1,6 +1,7 @@
 defmodule GroupManager.Data.WorldClockTest do
   use ExUnit.Case
   alias GroupManager.Data.WorldClock
+  alias GroupManager.Data.LocalClock
 
   # TODO
   # doctest GroupManager.Data.WorldClock 
@@ -31,4 +32,16 @@ defmodule GroupManager.Data.WorldClockTest do
     assert_raise FunctionClauseError, fn -> WorldClock.empty?({}) end
     assert_raise FunctionClauseError, fn -> WorldClock.empty?(nil) end
   end
+  
+  test "adding a local clock to the world clock" do
+    w = WorldClock.new()
+    l = LocalClock.new(:a)
+    new_clock = WorldClock.add(w, l)
+    assert 1 == WorldClock.size(new_clock)
+    assert l == WorldClock.get(new_clock, :a)
+  end
+
+  # add
+  # size
+  # get
 end

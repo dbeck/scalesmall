@@ -4,9 +4,9 @@ defmodule GroupManager.Data.TimedSet do
   seen by the members of the group at their LocalClock time.
   """
   
+  require Record
   alias GroupManager.Data.TimedItem
   
-  require Record
   Record.defrecord :timed_set, items: []
   @type t :: record( :timed_set, items: list(TimedItem.t) )
   

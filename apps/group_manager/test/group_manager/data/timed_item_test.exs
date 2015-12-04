@@ -22,4 +22,5 @@ defmodule GroupManager.Data.TimedItemTest do
   
   # construct
   # construct next
+  # updated_at
 end

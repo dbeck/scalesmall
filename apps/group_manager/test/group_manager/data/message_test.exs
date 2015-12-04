@@ -32,4 +32,7 @@ defmodule GroupManager.Data.MessageTest do
     assert_raise FunctionClauseError, fn -> Message.empty?({}) end
     assert_raise FunctionClauseError, fn -> Message.empty?(nil) end
   end
+  
+  # add
+  # remove
 end

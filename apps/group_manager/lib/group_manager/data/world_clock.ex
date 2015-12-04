@@ -4,9 +4,10 @@ defmodule GroupManager.Data.WorldClock do
   selecting the latest clock from members.
   """
   
+  require Record
+  require GroupManager.Data.LocalClock
   alias GroupManager.Data.LocalClock
   
-  require Record
   Record.defrecord :world_clock, time: []
   @type t :: record( :world_clock, time: list(LocalClock.t) )
   
@@ -82,12 +83,35 @@ defmodule GroupManager.Data.WorldClock do
   when is_valid(data)
   do
     false
+  end  
+  
+  @spec add(t, LocalClock.t) :: t
+  def add(clock, local_clock)
+  when is_valid(clock) and LocalClock.is_valid(local_clock)
+  do
+    {:world_clock, time} = clock
+    {:world_clock, LocalClock.merge_into(time, local_clock)}
   end
   
-  # manipulators:
-  # - add_local_clock(WorldClock, LocalClock)
-  #     overwrites previous local clock
-  #     keeps world clock sorted, and unique entries
+  @spec size(t) :: integer
+  def size(clock)
+  when is_valid(clock)
+  do
+    length(world_clock(clock, :time))
+  end
+  
+  @spec get(t, term) :: LocalClock.t
+  def get(clock, id)
+  when is_valid(clock)
+  do
+    [result] = Enum.reduce(world_clock(clock, :time), [], fn(local, acc) ->
+      case LocalClock.member(local) do
+        id -> [local|acc]
+        _ -> acc
+      end
+    end) |> Enum.take(1)
+    result
+  end
   
   # accessors:
   # - delta_clock(WorldClock, WorldClock) ???

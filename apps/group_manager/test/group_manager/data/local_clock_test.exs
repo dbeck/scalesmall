@@ -53,4 +53,8 @@ defmodule GroupManager.Data.LocalClockTest do
     assert_raise FunctionClauseError, fn -> LocalClock.next([]) end
     assert_raise FunctionClauseError, fn -> LocalClock.next({}) end
   end
+  
+  # merge_into
+  # time_val
+  # member
 end

@@ -12,10 +12,9 @@ defmodule GroupManager.Data.Item do
   
   `Item` itself is a Record type that we manipulate and access with the methods provided in the module.  
   """
+
+  require Record  
   
-  alias GroupManager.Data.Item
-  
-  require Record
   Record.defrecord :item, member: nil, start_range: 0, end_range: 0xffffffff, priority: 0  
   @type t :: record( :item, member: term, start_range: integer, end_range: integer, priority: integer )
   
@@ -96,6 +95,4 @@ defmodule GroupManager.Data.Item do
   
   def valid?(_), do: false
   
-  # manipulators:
-  # accessors:
 end

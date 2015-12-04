@@ -9,8 +9,10 @@ defmodule GroupManager.Data.LocalClock do
   """
   
   require Record
+  
   Record.defrecord :local_clock, member: nil, time_val: 0
   @type t :: record( :local_clock, member: term, time_val: integer )
+  @type local_clock_list :: list(t)
   
   @spec new(term) :: t
   def new(id)
@@ -87,4 +89,33 @@ defmodule GroupManager.Data.LocalClock do
     {:local_clock, member, time} = clock
     {:local_clock, member, time+1}
   end
+  
+  @spec time_val(t) :: integer
+  def time_val(clock)
+  when is_valid(clock)
+  do
+    local_clock(clock, :time_val)
+  end
+  
+  @spec member(t) :: term
+  def member(clock)
+  when is_valid(clock)
+  do
+    local_clock(clock, :member)
+  end
+
+  @spec merge_into(local_clock_list, t) :: local_clock_list
+  def merge_into(lst, clock)
+  when is_valid(clock)
+  do
+    dict = Enum.map([clock|lst], fn(x) -> {member(x), time_val(x)} end)
+    |> Enum.reduce(%HashDict{}, fn({m, t} ,acc) ->
+      HashDict.update(acc, m, t, fn(prev_time) ->
+        max(t, prev_time)
+      end)
+    end)
+    keys = HashDict.keys(dict) |> Enum.sort
+    Enum.map(keys, fn(k) -> local_clock(member: k) |> local_clock(time_val: HashDict.get(dict, k)) end)
+  end
+
 end
