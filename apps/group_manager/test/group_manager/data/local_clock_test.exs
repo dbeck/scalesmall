@@ -53,6 +53,31 @@ defmodule GroupManager.Data.LocalClockTest do
     assert_raise FunctionClauseError, fn -> LocalClock.next([]) end
     assert_raise FunctionClauseError, fn -> LocalClock.next({}) end
   end
+    
+  test "time_val() returns the local clock time" do
+    clock = LocalClock.new(:hello)
+    clock2 = LocalClock.next(clock)
+    assert LocalClock.time_val(clock) + 1 == LocalClock.time_val(clock2)
+  end
+  
+  test "time_val() raises on bad parameter" do
+    assert_raise FunctionClauseError, fn -> LocalClock.time_val(:ok) end
+    assert_raise FunctionClauseError, fn -> LocalClock.time_val([]) end
+    assert_raise FunctionClauseError, fn -> LocalClock.time_val({}) end
+    assert_raise FunctionClauseError, fn -> LocalClock.time_val({:ok}) end
+  end 
+  
+  test "member() returns the local clock's member" do
+    clock = LocalClock.new(:hello)
+    assert LocalClock.member(clock) == :hello
+  end
+  
+  test "member() raises on bad parameter" do
+    assert_raise FunctionClauseError, fn -> LocalClock.member(:ok) end
+    assert_raise FunctionClauseError, fn -> LocalClock.member([]) end
+    assert_raise FunctionClauseError, fn -> LocalClock.member({}) end
+    assert_raise FunctionClauseError, fn -> LocalClock.member({:ok}) end
+  end
   
   test "merge_into() is idempotent" do
     lst = []
@@ -81,30 +106,7 @@ defmodule GroupManager.Data.LocalClockTest do
     assert_raise FunctionClauseError, fn -> LocalClock.merge_into([], :ok) end
     assert_raise FunctionClauseError, fn -> LocalClock.merge_into([:ok], LocalClock.new(:ok)) end
     assert_raise FunctionClauseError, fn -> LocalClock.merge_into([LocalClock.new(:ok), :ok], LocalClock.new(:ok)) end
-  end    
-  
-  test "time_val() returns the local clock time" do
-    clock = LocalClock.new(:hello)
-    clock2 = LocalClock.next(clock)
-    assert LocalClock.time_val(clock) + 1 == LocalClock.time_val(clock2)
   end
   
-  test "time_val() raises on bad parameter" do
-    assert_raise FunctionClauseError, fn -> LocalClock.time_val(:ok) end
-    assert_raise FunctionClauseError, fn -> LocalClock.time_val([]) end
-    assert_raise FunctionClauseError, fn -> LocalClock.time_val({}) end
-    assert_raise FunctionClauseError, fn -> LocalClock.time_val({:ok}) end
-  end 
-  
-  test "member() returns the local clock's member" do
-    clock = LocalClock.new(:hello)
-    assert LocalClock.member(clock) == :hello
-  end
-  
-  test "member() raises on bad parameter" do
-    assert_raise FunctionClauseError, fn -> LocalClock.member(:ok) end
-    assert_raise FunctionClauseError, fn -> LocalClock.member([]) end
-    assert_raise FunctionClauseError, fn -> LocalClock.member({}) end
-    assert_raise FunctionClauseError, fn -> LocalClock.member({:ok}) end
-  end 
+  # max_clock
 end

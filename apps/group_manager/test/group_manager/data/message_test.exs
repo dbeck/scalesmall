@@ -34,5 +34,4 @@ defmodule GroupManager.Data.MessageTest do
   end
   
   # add
-  # remove
 end

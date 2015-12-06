@@ -58,18 +58,18 @@ defmodule GroupManager.Data.MessageLog do
   end
   
   def valid?(_), do: false
+  
+  @spec entries(t) :: list(Message.t)
+  def entries(log)
+  when is_valid(log)
+  do
+    message_log(log, :entries)
+  end
 
   @spec add(t, Message.t) :: t
   def add(log, msg)
   when is_valid(log) and Message.is_valid(msg) and Message.is_empty(msg) == false
   do
-    {:message_log, entries} = log
-    {:message_log, [msg | entries]}
+    message_log(log, entries: [msg | entries(log)])
   end
-  
-  # manipulators:
-  # - compact
-  
-  # accessors:
-  # - state of world
 end

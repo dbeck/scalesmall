@@ -11,6 +11,7 @@ defmodule GroupManager.Data.TimedItem do
   
   Record.defrecord :timed_item, item: nil, updated_at: nil
   @type t :: record( :timed_item, item: Item.t, updated_at: LocalClock.t)
+  @type timed_item_list :: list(t)
   
   @spec new(term) :: t
   def new(id)
@@ -81,11 +82,33 @@ defmodule GroupManager.Data.TimedItem do
   do    
     timed_item(item: item) |> timed_item(updated_at: LocalClock.next(updated_at))
   end
-
-  @spec updated_at(Item.t) :: LocalClock.t
-  def updated_at(item)
-  when is_valid(item)
+  
+  @spec item(TimedItem.t) :: Item.t
+  def item(itm)
+  when is_valid(itm)
   do
-    timed_item(item, :updated_at)
+    timed_item(itm, :item)
+  end
+
+  @spec updated_at(TimedItem.t) :: LocalClock.t
+  def updated_at(itm)
+  when is_valid(itm)
+  do
+    timed_item(itm, :updated_at)
+  end
+  
+  @spec merge_into(timed_item_list, t) :: timed_item_list
+  def merge_into(lst, itm)
+  when is_list(lst) and is_valid(itm)
+  do
+    # optimize this ???
+    dict = Enum.map([itm|lst], fn(x) -> {item(x), updated_at(x)} end)
+    |> Enum.reduce(%HashDict{}, fn({i, t} ,acc) ->
+      HashDict.update(acc, i, t, fn(prev_clock) ->
+        LocalClock.max_clock(t, prev_clock)
+      end)
+    end)
+    keys = HashDict.keys(dict) |> Enum.sort
+    Enum.map(keys, fn(k) -> timed_item(item: k) |> timed_item(updated_at: HashDict.get(dict, k)) end)
   end
 end

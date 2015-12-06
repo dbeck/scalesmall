@@ -83,14 +83,20 @@ defmodule GroupManager.Data.WorldClock do
   when is_valid(data)
   do
     false
-  end  
+  end
+  
+  @spec time(t) :: list(LocalClock.t)
+  def time(clock)
+  when is_valid(clock)
+  do
+    world_clock(clock, :time)
+  end
   
   @spec add(t, LocalClock.t) :: t
   def add(clock, local_clock)
   when is_valid(clock) and LocalClock.is_valid(local_clock)
   do
-    {:world_clock, time} = clock
-    {:world_clock, LocalClock.merge_into(time, local_clock)}
+    world_clock(time: LocalClock.merge_into(time(clock), local_clock))
   end
   
   @spec size(t) :: integer
@@ -106,7 +112,7 @@ defmodule GroupManager.Data.WorldClock do
   do
     [result] = Enum.reduce(world_clock(clock, :time), [], fn(local, acc) ->
       case LocalClock.member(local) do
-        id -> [local|acc]
+        ^id -> [local|acc]
         _ -> acc
       end
     end) |> Enum.take(1)

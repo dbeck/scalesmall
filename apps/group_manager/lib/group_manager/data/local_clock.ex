@@ -106,8 +106,9 @@ defmodule GroupManager.Data.LocalClock do
 
   @spec merge_into(local_clock_list, t) :: local_clock_list
   def merge_into(lst, clock)
-  when is_valid(clock)
+  when is_list(lst) and is_valid(clock)
   do
+    # optimize this ???
     dict = Enum.map([clock|lst], fn(x) -> {member(x), time_val(x)} end)
     |> Enum.reduce(%HashDict{}, fn({m, t} ,acc) ->
       HashDict.update(acc, m, t, fn(prev_time) ->
@@ -117,5 +118,11 @@ defmodule GroupManager.Data.LocalClock do
     keys = HashDict.keys(dict) |> Enum.sort
     Enum.map(keys, fn(k) -> local_clock(member: k) |> local_clock(time_val: HashDict.get(dict, k)) end)
   end
-
+  
+  @spec max_clock(t, t) :: t
+  def max_clock(lhs, rhs)
+  when is_valid(lhs) and is_valid(rhs) and local_clock(lhs, :member) == local_clock(rhs, :member)
+  do
+    new(member(lhs)) |> local_clock(time_val: max(time_val(lhs), time_val(rhs)))
+  end
 end

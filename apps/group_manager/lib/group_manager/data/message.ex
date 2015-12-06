@@ -16,13 +16,13 @@ defmodule GroupManager.Data.Message do
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
   
-  Record.defrecord :message, time: nil, added: nil, removed: nil
-  @type t :: record( :message, time: WorldClock.t, added: TimedSet.t, removed: TimedSet.t )
+  Record.defrecord :message, time: nil, items: nil
+  @type t :: record( :message, time: WorldClock.t, items: TimedSet.t )
   
   @spec new() :: t
   def new()
   do
-    message(time: WorldClock.new()) |> message(added: TimedSet.new()) |> message(removed: TimedSet.new())
+    message(time: WorldClock.new()) |> message(items: TimedSet.new())
   end
       
   @doc """
@@ -32,8 +32,7 @@ defmodule GroupManager.Data.Message do
   
   - 1st is an `:message` atom
   - 2nd `time`: is non-nil
-  - 3rd `added`: is non-nil
-  - 4th `removed`: is non-nil
+  - 3rd `items`: is non-nil
   
   The purpose of this macro is to help checking input parameters in function guards.
   """
@@ -41,32 +40,26 @@ defmodule GroupManager.Data.Message do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
         quote do
-          is_tuple(unquote(data)) and tuple_size(unquote(data)) == 4 and
+          is_tuple(unquote(data)) and tuple_size(unquote(data)) == 3 and
           :erlang.element(1, unquote(data)) == :message and
           # time
           is_nil(:erlang.element(2, unquote(data))) == false and
           WorldClock.is_valid(:erlang.element(2, unquote(data))) and
-          # added
+          # items
           is_nil(:erlang.element(3, unquote(data))) == false and
-          TimedSet.is_valid(:erlang.element(3, unquote(data))) and
-          # removed
-          is_nil(:erlang.element(4, unquote(data))) == false and
-          TimedSet.is_valid(:erlang.element(4, unquote(data)))
+          TimedSet.is_valid(:erlang.element(3, unquote(data)))
         end
       false ->
         quote do
           result = unquote(data)
-          is_tuple(result) and tuple_size(result) == 4 and
-          :erlang.element(1, result) == :message
+          is_tuple(result) and tuple_size(result) == 3 and
+          :erlang.element(1, result) == :message and
           # time
           is_nil(:erlang.element(2, result)) == false and
           WorldClock.is_valid(:erlang.element(2, result)) and
-          # added
+          # items
           is_nil(:erlang.element(3, result)) == false and
-          TimedSet.is_valid(:erlang.element(3, result)) and
-          # removed
-          is_nil(:erlang.element(4, result)) == false and
-          TimedSet.is_valid(:erlang.element(4, result))
+          TimedSet.is_valid(:erlang.element(3, result))
         end
     end
   end
@@ -77,20 +70,16 @@ defmodule GroupManager.Data.Message do
         quote do
           # time
           WorldClock.is_empty(:erlang.element(2, unquote(data))) and
-          # added
-          TimedSet.is_empty(:erlang.element(3, unquote(data))) and
-          # removed
-          TimedSet.is_empty(:erlang.element(4, unquote(data)))
+          # items
+          TimedSet.is_empty(:erlang.element(3, unquote(data)))
         end
       false ->
         quote do
           result = unquote(data)
           # time
           WorldClock.is_empty(:erlang.element(2, result)) and
-          # added
-          TimedSet.is_empty(:erlang.element(3, result)) and
-          # removed
-          TimedSet.is_empty(:erlang.element(4, result))
+          # items
+          TimedSet.is_empty(:erlang.element(3, result))
         end
     end
   end
@@ -121,25 +110,7 @@ defmodule GroupManager.Data.Message do
   def add(msg, timed_item)
   when is_valid(msg) and TimedItem.is_valid(timed_item)
   do
-    { :message, time, added, removed } = msg
-    {
-      :message,
-      WorldClock.add(time, TimedItem.updated_at(timed_item)),
-      TimedSet.add_newer(added, removed, timed_item),
-      TimedSet.remove_older(removed, timed_item)
-    }
-  end
-  
-  @spec remove(t, TimedItem.t) :: t
-  def remove(msg, timed_item)
-  when is_valid(msg) and TimedItem.is_valid(timed_item)
-  do
-    { :message, time, added, removed } = msg
-    {
-      :message,
-      WorldClock.add(time, TimedItem.updated_at(timed_item)),
-      TimedSet.remove_older(added, timed_item),
-      TimedSet.add_newer(removed, added, timed_item)
-    }
+    message(time: WorldClock.add(message(msg, :time), TimedItem.updated_at(timed_item)))
+    |> message(items: TimedSet.add(message(msg, :items), timed_item))
   end
 end

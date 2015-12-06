@@ -12,7 +12,7 @@ defmodule GroupManager.Data.TimedSet do
   
   Record.defrecord :timed_set, items: []
   @type t :: record( :timed_set, items: list(TimedItem.t) )
-  
+    
   @spec new() :: t
   def new()
   do
@@ -58,9 +58,8 @@ defmodule GroupManager.Data.TimedSet do
         end
       false ->
         quote do
-          result = unquote(data)
           # items
-          :erlang.element(2, result) == []
+          :erlang.element(2, unquote(data)) == []
         end
     end
   end
@@ -86,19 +85,18 @@ defmodule GroupManager.Data.TimedSet do
   do
     false
   end
-
-  @spec add_newer(t, t, TimedItem.t) :: t
-  def add_newer(added, removed, item)
-  when is_valid(added) and is_valid(removed) and TimedItem.is_valid(item)
-  do
-    :ok
-  end
   
-  @spec remove_older(t, TimedItem.t) :: t
-  def remove_older(set, item)
+  @spec items(t) :: list(TimedItem.t)
+  def items(set)
+  when is_valid(set)
+  do
+    timed_set(set, :items)
+  end
+
+  @spec add(t, TimedItem.t) :: t
+  def add(set, item)
   when is_valid(set) and TimedItem.is_valid(item)
   do
-    :ok
+    timed_set(items: TimedItem.merge_into(items(set), item))
   end
-
 end

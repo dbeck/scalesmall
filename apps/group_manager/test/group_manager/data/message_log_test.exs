@@ -21,7 +21,6 @@ defmodule GroupManager.Data.MessageLogTest do
     assert MessageLog.valid?({:message_log, nil, nil, nil}) == false
   end
   
+  # entries
   # add
-  #test "add new message to the message log" do
-  #end
 end
