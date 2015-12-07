@@ -39,8 +39,7 @@ defmodule GroupManager.Data.TimedSet do
           is_list(:erlang.element(2, unquote(data)))
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: [result: data] do
           is_tuple(result) and tuple_size(result) == 2 and
           :erlang.element(1, result) == :timed_set and
           # items

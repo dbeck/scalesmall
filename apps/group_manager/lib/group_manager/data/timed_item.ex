@@ -44,8 +44,7 @@ defmodule GroupManager.Data.TimedItem do
           LocalClock.is_valid(:erlang.element(3, unquote(data)))
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: [result: data] do
           is_tuple(result) and tuple_size(result) == 3 and
           :erlang.element(1, result) == :timed_item and
           # item
@@ -103,12 +102,12 @@ defmodule GroupManager.Data.TimedItem do
   do
     # optimize this ???
     dict = Enum.map([itm|lst], fn(x) -> {item(x), updated_at(x)} end)
-    |> Enum.reduce(%HashDict{}, fn({i, t} ,acc) ->
-      HashDict.update(acc, i, t, fn(prev_clock) ->
-        LocalClock.max_clock(t, prev_clock)
+    |> Enum.reduce(%{}, fn({i, t} ,acc) ->
+      Map.update(acc, i, t, fn(prev_clock) ->
+        Map.max_clock(t, prev_clock)
       end)
     end)
-    keys = HashDict.keys(dict) |> Enum.sort
-    Enum.map(keys, fn(k) -> timed_item(item: k) |> timed_item(updated_at: HashDict.get(dict, k)) end)
+    keys = Map.keys(dict) |> Enum.sort
+    Enum.map(keys, fn(k) -> timed_item(item: k) |> timed_item(updated_at: Map.get(dict, k)) end)
   end
 end

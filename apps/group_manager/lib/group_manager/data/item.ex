@@ -19,7 +19,7 @@ defmodule GroupManager.Data.Item do
 
   require Record  
   
-  Record.defrecord :item, member: nil, op: :add, start_range: 0, end_range: 0xffffffff, priority: 0  
+  Record.defrecord :item, member: nil, op: :add, start_range: 0, end_range: 0xffffffff, priority: 0
   @type t :: record( :item, member: term, op: atom, start_range: integer, end_range: integer, priority: integer )
   
   @spec new(term) :: t
@@ -69,8 +69,7 @@ defmodule GroupManager.Data.Item do
           :erlang.element(4, unquote(data)) <= :erlang.element(5, unquote(data))
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: [result: data] do
           is_tuple(result) and tuple_size(result) == 6 and
           :erlang.element(1, result) == :item and
           # member
@@ -104,4 +103,32 @@ defmodule GroupManager.Data.Item do
   
   def valid?(_), do: false
   
+  @spec set_op(t, atom) :: t
+  def set_op(itm, v)
+  when is_valid(itm) and (v == :add or v == :rmv)
+  do
+    item(itm, op: v)
+  end
+  
+  @spec set_start_range(t, integer) :: t
+  def set_start_range(itm, v)
+  when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
+  do
+    item(itm, start_range: v)
+  end
+  
+  @spec set_end_range(t, integer) :: t
+  def set_end_range(itm, v)
+  when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
+  do
+    item(itm, end_range: v)
+  end
+
+  @spec set_priority(t, integer) :: t
+  def set_priority(itm, v)
+  when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
+  do
+    item(itm, priority: v)
+  end
+
 end

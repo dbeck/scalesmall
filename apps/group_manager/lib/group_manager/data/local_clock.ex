@@ -45,8 +45,7 @@ defmodule GroupManager.Data.LocalClock do
           :erlang.element(3, unquote(data)) <= 0xffffffff
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: [result: data] do
           is_tuple(result) and tuple_size(result) == 3 and
           :erlang.element(1, result) == :local_clock and
           # member
@@ -110,13 +109,13 @@ defmodule GroupManager.Data.LocalClock do
   do
     # optimize this ???
     dict = Enum.map([clock|lst], fn(x) -> {member(x), time_val(x)} end)
-    |> Enum.reduce(%HashDict{}, fn({m, t} ,acc) ->
-      HashDict.update(acc, m, t, fn(prev_time) ->
+    |> Enum.reduce(%{}, fn({m, t} ,acc) ->
+      Map.update(acc, m, t, fn(prev_time) ->
         max(t, prev_time)
       end)
     end)
-    keys = HashDict.keys(dict) |> Enum.sort
-    Enum.map(keys, fn(k) -> local_clock(member: k) |> local_clock(time_val: HashDict.get(dict, k)) end)
+    keys = Map.keys(dict) |> Enum.sort
+    Enum.map(keys, fn(k) -> local_clock(member: k) |> local_clock(time_val: Map.get(dict, k)) end)
   end
   
   @spec max_clock(t, t) :: t

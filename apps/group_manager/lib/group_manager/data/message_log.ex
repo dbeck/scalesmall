@@ -40,8 +40,7 @@ defmodule GroupManager.Data.MessageLog do
           is_list(:erlang.element(2, unquote(data)))
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: [result: data] do
           is_tuple(result) and tuple_size(result) == 2 and
           :erlang.element(1, result) == :message_log and
           # entries
@@ -64,6 +63,13 @@ defmodule GroupManager.Data.MessageLog do
   when is_valid(log)
   do
     message_log(log, :entries)
+  end
+  
+  @spec size(t) :: integer
+  def size(log)
+  when is_valid(log)
+  do
+    length(message_log(log, :entries))
   end
 
   @spec add(t, Message.t) :: t

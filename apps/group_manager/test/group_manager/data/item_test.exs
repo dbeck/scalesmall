@@ -23,4 +23,9 @@ defmodule GroupManager.Data.ItemTest do
     assert Item.valid?({:item, nil, nil, nil, nil, nil}) == false
     assert Item.valid?({:item, nil, nil, nil, nil, nil, nil}) == false
   end
+  
+  # set_op
+  # set_start_range
+  # set_end_range
+  # set_priority
 end

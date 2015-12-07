@@ -50,8 +50,7 @@ defmodule GroupManager.Data.Message do
           TimedSet.is_valid(:erlang.element(3, unquote(data)))
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: [result: data] do
           is_tuple(result) and tuple_size(result) == 3 and
           :erlang.element(1, result) == :message and
           # time

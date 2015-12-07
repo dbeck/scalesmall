@@ -37,8 +37,7 @@ defmodule GroupManager.Data.WorldClock do
           is_list(:erlang.element(2, unquote(data))) == true
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: [result: data] do
           is_tuple(result) and tuple_size(result) == 2 and
           :erlang.element(1, result) == :world_clock and
           # time

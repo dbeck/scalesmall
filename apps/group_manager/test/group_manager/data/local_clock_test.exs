@@ -108,5 +108,31 @@ defmodule GroupManager.Data.LocalClockTest do
     assert_raise FunctionClauseError, fn -> LocalClock.merge_into([LocalClock.new(:ok), :ok], LocalClock.new(:ok)) end
   end
   
-  # max_clock
+  test "max_clock() returns identity for the same values" do
+    clock = LocalClock.new(:hello)
+    assert clock == LocalClock.max_clock(clock, clock)
+  end
+  
+  test "max_clock() raises error for incompatible clocks" do
+    clock1 = LocalClock.new(:hello1)
+    clock2 = LocalClock.new(:hello2)
+    assert_raise FunctionClauseError, fn -> LocalClock.max_clock(clock1, clock2) end
+  end
+  
+  test "max_clock() picks up the maximum of two clocks" do
+    clock1 = LocalClock.new(:hello)
+    clock2 = LocalClock.next(clock1)
+    assert clock2 == LocalClock.max_clock(clock1, clock2)
+    assert clock2 == LocalClock.max_clock(clock2, clock1)
+  end
+  
+  test "max_clock() raises on invalid parameters" do
+    clock = LocalClock.new(:hello)
+    assert_raise FunctionClauseError, fn ->  LocalClock.max_clock(clock, nil) end
+    assert_raise FunctionClauseError, fn ->  LocalClock.max_clock(nil, clock) end
+    assert_raise FunctionClauseError, fn ->  LocalClock.max_clock(nil, nil) end
+    assert_raise FunctionClauseError, fn ->  LocalClock.max_clock([], []) end
+    assert_raise FunctionClauseError, fn ->  LocalClock.max_clock(clock, []) end
+    assert_raise FunctionClauseError, fn ->  LocalClock.max_clock([], clock) end
+  end
 end
