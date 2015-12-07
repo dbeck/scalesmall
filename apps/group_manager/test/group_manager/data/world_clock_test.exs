@@ -33,7 +33,7 @@ defmodule GroupManager.Data.WorldClockTest do
     assert_raise FunctionClauseError, fn -> WorldClock.empty?(nil) end
   end
   
-  test "adding a local clock to the world clock" do
+  test "add() a local clock to the world clock" do
     w = WorldClock.new()
     l = LocalClock.new(:a)
     new_clock = WorldClock.add(w, l)
@@ -41,8 +41,80 @@ defmodule GroupManager.Data.WorldClockTest do
     assert l == WorldClock.get(new_clock, :a)
   end
 
-  # time
-  # add
-  # size
-  # get
+  test "add() raises on invalid inputs" do
+    w = WorldClock.new()
+    l = LocalClock.new(:a)
+    
+    assert_raise FunctionClauseError, fn -> WorldClock.add(w, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.add(w, []) end
+    assert_raise FunctionClauseError, fn -> WorldClock.add(w, {}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.add(w, nil) end
+    
+    assert_raise FunctionClauseError, fn -> WorldClock.add(:ok, l) end
+    assert_raise FunctionClauseError, fn -> WorldClock.add([], l) end
+    assert_raise FunctionClauseError, fn -> WorldClock.add({}, l) end
+    assert_raise FunctionClauseError, fn -> WorldClock.add(nil, l) end
+  end
+  
+  test "add() the same clock twice doesn't change the world clock" do
+    w = WorldClock.new()
+    l = LocalClock.new(:a)
+    new_clock = WorldClock.add(w, l)
+    assert 1 == WorldClock.size(new_clock)
+    assert l == WorldClock.get(new_clock, :a)
+    # second time
+    clock2 = WorldClock.add(new_clock, l)
+    assert 1 == WorldClock.size(clock2)
+    assert l == WorldClock.get(clock2, :a)
+    assert clock2 == new_clock
+  end
+  
+  test "add() updates the clock if newer one arrives, but doesn't change if older arrives" do
+    w = WorldClock.new()
+    l = LocalClock.new(:a)
+    new_clock = WorldClock.add(w, l)
+    assert 1 == WorldClock.size(new_clock)
+    assert l == WorldClock.get(new_clock, :a)
+    
+    # second time
+    l2 = LocalClock.next(l)
+    clock2 = WorldClock.add(new_clock, l2)
+    assert 1 == WorldClock.size(clock2)
+    assert l2 == WorldClock.get(clock2, :a)
+    assert clock2 != new_clock
+    
+    # trying the old one again
+    clock3 = WorldClock.add(clock2, l)
+    assert 1 == WorldClock.size(clock3)
+    assert l2 == WorldClock.get(clock3, :a)
+    assert clock2 == clock3
+  end
+
+  test "time() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> WorldClock.time(:ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.time([]) end
+    assert_raise FunctionClauseError, fn -> WorldClock.time({}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.time(nil) end
+  end
+
+  test "size() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> WorldClock.size(:ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.size([]) end
+    assert_raise FunctionClauseError, fn -> WorldClock.size({}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.size(nil) end
+  end
+  
+  test "get() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> WorldClock.get(:ok, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.get([], :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.get({}, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.get(nil, :ok) end
+  end
+  
+  test "get() returns X on missing clock" do
+    w = WorldClock.new()
+    l = LocalClock.new(:a)
+    new_clock = WorldClock.add(w, l)
+    assert_raise MatchError, fn -> WorldClock.get(new_clock, :missing) end
+  end  
 end

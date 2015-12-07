@@ -117,7 +117,4 @@ defmodule GroupManager.Data.WorldClock do
     end) |> Enum.take(1)
     result
   end
-  
-  # accessors:
-  # - delta_clock(WorldClock, WorldClock) ???
 end

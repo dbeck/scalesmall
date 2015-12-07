@@ -1,6 +1,7 @@
 defmodule GroupManager.Data.TimedSetTest do
   use ExUnit.Case
   alias GroupManager.Data.TimedSet
+  alias GroupManager.Data.TimedItem
 
   # TODO
   # doctest GroupManager.Data.TimedSet
@@ -32,6 +33,29 @@ defmodule GroupManager.Data.TimedSetTest do
     assert_raise FunctionClauseError, fn -> TimedSet.empty?(nil) end
   end
   
-  # items
-  # add
+  test "items() returns what had been added" do
+    ti = TimedItem.new(:me)
+    ts = TimedSet.new() |> TimedSet.add(ti)
+    assert [ti] == TimedSet.items(ts)
+  end
+  
+  test "items() raises on invalid parameter" do
+    assert_raise FunctionClauseError, fn -> TimedSet.items(:ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.items([]) end
+    assert_raise FunctionClauseError, fn -> TimedSet.items({}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.items(nil) end
+  end
+  
+  test "add() two items" do
+    ts = TimedSet.new() |> TimedSet.add(TimedItem.new(:a1)) |> TimedSet.add(TimedItem.new(:a2))
+    assert length(TimedSet.items(ts)) == 2
+  end
+  
+  test "add() raises on invalid items" do
+    ts = TimedSet.new()
+    assert_raise FunctionClauseError, fn -> TimedSet.add(ts, :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.add(ts, []) end
+    assert_raise FunctionClauseError, fn -> TimedSet.add(ts, {}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.add(ts, nil) end
+  end
 end

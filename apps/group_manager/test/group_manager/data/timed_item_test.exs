@@ -152,32 +152,42 @@ defmodule GroupManager.Data.TimedItemTest do
     
     # all permutations
     assert [it3, it4] == TimedItem.merge_into([], it1) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it4)
-    assert [it3, it4] == TimedItem.merge_into([], it1) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it3)    
+    assert [it3, it4] == TimedItem.merge_into([], it1) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it3)
     assert [it3, it4] == TimedItem.merge_into([], it1) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it4)
     assert [it3, it4] == TimedItem.merge_into([], it1) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it2)
     assert [it3, it4] == TimedItem.merge_into([], it1) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it3)
     assert [it3, it4] == TimedItem.merge_into([], it1) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it2)
 
     assert [it3, it4] == TimedItem.merge_into([], it2) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it4)
-    assert [it3, it4] == TimedItem.merge_into([], it2) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it3)    
+    assert [it3, it4] == TimedItem.merge_into([], it2) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it3)
     assert [it3, it4] == TimedItem.merge_into([], it2) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it4)
     assert [it3, it4] == TimedItem.merge_into([], it2) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it1)
     assert [it3, it4] == TimedItem.merge_into([], it2) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it3)
     assert [it3, it4] == TimedItem.merge_into([], it2) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it1)
 
     assert [it3, it4] == TimedItem.merge_into([], it3) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it4)
-    assert [it3, it4] == TimedItem.merge_into([], it3) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it1)    
+    assert [it3, it4] == TimedItem.merge_into([], it3) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it1)
     assert [it3, it4] == TimedItem.merge_into([], it3) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it4)
     assert [it3, it4] == TimedItem.merge_into([], it3) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it2)
     assert [it3, it4] == TimedItem.merge_into([], it3) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it1)
     assert [it3, it4] == TimedItem.merge_into([], it3) |> TimedItem.merge_into(it4) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it2)
     
     assert [it3, it4] == TimedItem.merge_into([], it4) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it1)
-    assert [it3, it4] == TimedItem.merge_into([], it4) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it3)    
+    assert [it3, it4] == TimedItem.merge_into([], it4) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it3)
     assert [it3, it4] == TimedItem.merge_into([], it4) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it1)
     assert [it3, it4] == TimedItem.merge_into([], it4) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it2)
     assert [it3, it4] == TimedItem.merge_into([], it4) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it2) |> TimedItem.merge_into(it3)
     assert [it3, it4] == TimedItem.merge_into([], it4) |> TimedItem.merge_into(it1) |> TimedItem.merge_into(it3) |> TimedItem.merge_into(it2)
   end
+  
+  test "merge_into() raises on invalid item" do
+    assert_raise FunctionClauseError, fn -> TimedItem.merge_into([], nil) end
+    assert_raise FunctionClauseError, fn -> TimedItem.merge_into([], []) end
+    assert_raise FunctionClauseError, fn -> TimedItem.merge_into([], {}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.merge_into([], :ok) end
+    assert_raise FunctionClauseError, fn -> TimedItem.merge_into([], :timed_item) end
+    assert_raise FunctionClauseError, fn -> TimedItem.merge_into([], {:timed_item}) end
+  end
+  
   
 end
