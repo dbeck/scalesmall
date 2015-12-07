@@ -9,7 +9,7 @@ defmodule GroupManager.Log do
     initial_state(MessageLog.new())
   end
   
-  defcall get, state: state, do: reply(state)  
+  defcall get, state: state, do: reply(state)
   defcast stop, do: stop_server(:normal)
   
   def locate(group_name, prefix \\ nil) do
