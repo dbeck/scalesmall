@@ -105,11 +105,25 @@ defmodule GroupManager.Data.Message do
     false
   end
   
+  @spec time(t) :: WorldClock.t
+  def time(msg)
+  when is_valid(msg)
+  do
+    message(msg, :time)
+  end
+  
+  @spec items(t) :: TimedSet.t
+  def items(msg)
+  when is_valid(msg)
+  do
+    message(msg, :items)
+  end
+  
   @spec add(t, TimedItem.t) :: t
   def add(msg, timed_item)
   when is_valid(msg) and TimedItem.is_valid(timed_item)
   do
-    message(time: WorldClock.add(message(msg, :time), TimedItem.updated_at(timed_item)))
-    |> message(items: TimedSet.add(message(msg, :items), timed_item))
+    message(time: WorldClock.add(time(msg), TimedItem.updated_at(timed_item)))
+    |> message(items: TimedSet.add(items(msg), timed_item))
   end
 end

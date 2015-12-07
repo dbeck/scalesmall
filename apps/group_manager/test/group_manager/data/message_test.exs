@@ -1,6 +1,11 @@
 defmodule GroupManager.Data.MessageTest do
   use ExUnit.Case
   alias GroupManager.Data.Message
+  alias GroupManager.Data.LocalClock
+  alias GroupManager.Data.WorldClock
+  alias GroupManager.Data.TimedSet
+  alias GroupManager.Data.TimedItem
+  alias GroupManager.Data.Item
   
   # TODO
   # doctest GroupManager.Data.Message
@@ -22,8 +27,8 @@ defmodule GroupManager.Data.MessageTest do
   end
   
   test "check if a newly created object is empty" do
-    cl = Message.new()
-    assert Message.empty?(cl)
+    m = Message.new()
+    assert Message.empty?(m)
   end
   
   test "checking for emptiness on an invalid object leads to exception" do
@@ -33,5 +38,54 @@ defmodule GroupManager.Data.MessageTest do
     assert_raise FunctionClauseError, fn -> Message.empty?(nil) end
   end
   
-  # add
+  test "time() returns an empty and valid WorldClock for new objects" do
+    t = Message.new() |> Message.time
+    assert WorldClock.valid?(t)
+    assert WorldClock.empty?(t)
+  end
+  
+  test "time() raises on invalid objects" do
+    assert_raise FunctionClauseError, fn -> Message.time(:ok) end
+    assert_raise FunctionClauseError, fn -> Message.time([]) end
+    assert_raise FunctionClauseError, fn -> Message.time({}) end
+    assert_raise FunctionClauseError, fn -> Message.time(nil) end
+  end
+
+  test "items() returns an empty and valid TimedSet for new objects" do
+    t = Message.new() |> Message.items
+    assert TimedSet.valid?(t)
+    assert TimedSet.empty?(t)
+  end
+  
+  test "items() raises on invalid objects" do
+    assert_raise FunctionClauseError, fn -> Message.items(:ok) end
+    assert_raise FunctionClauseError, fn -> Message.items([]) end
+    assert_raise FunctionClauseError, fn -> Message.items({}) end
+    assert_raise FunctionClauseError, fn -> Message.items(nil) end
+  end
+  
+  test "can add() a valid TimedItem" do
+    local = LocalClock.new(:me) |> LocalClock.next
+    timed_item = Item.new(:me) |> TimedItem.construct(local)
+    m = Message.new() |> Message.add(timed_item)
+    assert Message.empty?(m) == false  
+    assert [timed_item] == Message.items(m) |> TimedSet.items
+    assert [local] == Message.time(m) |> WorldClock.time
+  end
+  
+  test "add() raises for invalid item or invalid message" do
+    m = Message.new()
+    assert_raise FunctionClauseError, fn -> Message.add(m, :ok) end
+    assert_raise FunctionClauseError, fn -> Message.add(m, []) end
+    assert_raise FunctionClauseError, fn -> Message.add(m, {}) end
+    assert_raise FunctionClauseError, fn -> Message.add(m, nil) end
+    
+    local = LocalClock.new(:me) |> LocalClock.next
+    timed_item = Item.new(:me) |> TimedItem.construct(local)
+    
+    assert_raise FunctionClauseError, fn -> Message.add(:ok, timed_item) end
+    assert_raise FunctionClauseError, fn -> Message.add([], timed_item) end
+    assert_raise FunctionClauseError, fn -> Message.add({}, timed_item) end
+    assert_raise FunctionClauseError, fn -> Message.add(nil, timed_item) end
+  end
 end
