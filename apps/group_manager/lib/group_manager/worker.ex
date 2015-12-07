@@ -14,25 +14,17 @@ defmodule GroupManager.Worker do
 
   def init([group_name: group_name, prefix: prefix]) do
     
-    chatter_name   = GroupManager.Chatter.id_atom(group_name, prefix)
-    log_name       = GroupManager.Log.id_atom(group_name, prefix)
-    monitor_name   = GroupManager.Monitor.id_atom(group_name, prefix)
-    engine_name    = GroupManager.Engine.id_atom(group_name, prefix)
+    engine_name = GroupManager.Engine.id_atom(group_name, prefix)
     
     component_names = [
       group_name:    group_name,
-      chatter_name:  chatter_name,
-      log_name:      log_name,
-      monitor_name:  monitor_name,
       engine_name:   engine_name
     ]
     
     children = [
-      worker(GroupManager.Chatter, [component_names, [name: chatter_name]]),
-      worker(GroupManager.Log,     [component_names, [name: log_name]]),
-      worker(GroupManager.Monitor, [component_names, [name: monitor_name]]),
       worker(GroupManager.Engine,  [component_names, [name: engine_name]])
     ]
+    
     {:ok, pid} = supervise(children, strategy: :one_for_all)
   end
   
