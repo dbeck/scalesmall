@@ -103,6 +103,13 @@ defmodule GroupManager.Data.Item do
   
   def valid?(_), do: false
 
+  @spec member(t) :: term
+  def member(itm)
+  when is_valid(itm)
+  do
+    item(itm, :member)
+  end
+
   @spec op(t) :: :add | :rmv
   def op(itm)
   when is_valid(itm)
@@ -158,5 +165,4 @@ defmodule GroupManager.Data.Item do
   do
     item(itm, priority: v)
   end
-
 end

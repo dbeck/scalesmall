@@ -66,6 +66,20 @@ defmodule GroupManager.Data.TimedItem do
   
   def valid?(_), do: false
   
+  @spec item(TimedItem.t) :: Item.t
+  def item(itm)
+  when is_valid(itm)
+  do
+    timed_item(itm, :item)
+  end
+
+  @spec updated_at(TimedItem.t) :: LocalClock.t
+  def updated_at(itm)
+  when is_valid(itm)
+  do
+    timed_item(itm, :updated_at)
+  end
+  
   @spec construct(Item.t, LocalClock.t) :: t
   def construct(item, updated_at)
   when Item.is_valid(item) and LocalClock.is_valid(updated_at) and
@@ -82,32 +96,32 @@ defmodule GroupManager.Data.TimedItem do
     timed_item(item: item) |> timed_item(updated_at: LocalClock.next(updated_at))
   end
   
-  @spec item(TimedItem.t) :: Item.t
-  def item(itm)
-  when is_valid(itm)
+  @spec max_item(t, t) :: t
+  def max_item(lhs, rhs)
+  when is_valid(lhs) and is_valid(rhs)
   do
-    timed_item(itm, :item)
+    if LocalClock.max_clock(updated_at(lhs), updated_at(rhs)) == updated_at(lhs)
+    do
+      lhs
+    else
+      rhs
+    end
   end
-
-  @spec updated_at(TimedItem.t) :: LocalClock.t
-  def updated_at(itm)
-  when is_valid(itm)
-  do
-    timed_item(itm, :updated_at)
-  end
-  
+      
   @spec merge_into(timed_item_list, t) :: timed_item_list
   def merge_into(lst, itm)
   when is_list(lst) and is_valid(itm)
   do
     # optimize this ???
-    dict = Enum.map([itm|lst], fn(x) -> {item(x), updated_at(x)} end)
-    |> Enum.reduce(%{}, fn({i, t} ,acc) ->
-      Map.update(acc, i, t, fn(prev_clock) ->
-        Map.max_clock(t, prev_clock)
+    dict = Enum.map([itm|lst], fn(x) -> {
+      # keep items based on the {member, start_range, end_range} triple
+      { item(x) |> Item.member, item(x) |> Item.start_range, item(x) |> Item.end_range }, x } end)
+    |> Enum.reduce(%{}, fn({k, itm} ,acc) ->
+      Map.update(acc, k, itm, fn(other_value) ->
+        max_item(itm, other_value)
       end)
     end)
     keys = Map.keys(dict) |> Enum.sort
-    Enum.map(keys, fn(k) -> timed_item(item: k) |> timed_item(updated_at: Map.get(dict, k)) end)
+    Enum.map(keys, fn(k) -> Map.get(dict, k) end)
   end
 end

@@ -23,6 +23,23 @@ defmodule GroupManager.Data.ItemTest do
     assert Item.valid?({:item, nil, nil, nil, nil, nil}) == false
     assert Item.valid?({:item, nil, nil, nil, nil, nil, nil}) == false
   end
+  
+  test "member property can be retrieved" do
+    assert :me == Item.new(:me) |> Item.member
+  end
+  
+  test "cannot get member from an invalid Item" do
+    assert_raise FunctionClauseError, fn -> Item.member(:ok) end
+    assert_raise FunctionClauseError, fn -> Item.member([]) end
+    assert_raise FunctionClauseError, fn -> Item.member({}) end
+    assert_raise FunctionClauseError, fn -> Item.member({:ok}) end
+    assert_raise FunctionClauseError, fn -> Item.member({:item}) end
+    assert_raise FunctionClauseError, fn -> Item.member({:item, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.member({:item, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.member({:item, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.member({:item, nil, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.member({:item, nil, nil, nil, nil, nil}) end
+  end  
 
   test "op property can be set and retrieved" do
     assert :rmv == Item.new(:hello) |> Item.set_op(:rmv) |> Item.op

@@ -66,21 +66,7 @@ defmodule GroupManager.Data.LocalClock do
   end
   
   def valid?(_), do: false
-  
-  @spec compare(t, t) :: :before | :after | :same | :different
-  def compare(lhs, rhs)
-  when is_valid(lhs) and is_valid(rhs)
-  do
-    {:local_clock, l_member, l_time} = lhs
-    {:local_clock, r_member, r_time} = rhs
-    cond do
-      l_member != r_member -> :different
-      l_time == r_time -> :same
-      l_time < r_time -> :before
-      l_time > r_time -> :after
-    end
-  end
-  
+    
   @spec next(t) :: t
   def next(clock)
   when is_valid(clock)
