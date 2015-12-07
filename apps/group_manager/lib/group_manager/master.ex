@@ -15,6 +15,8 @@ defmodule GroupManager.Master do
   """
   
   use Supervisor
+  alias GroupManager.Engine
+  alias GroupManager.Worker
 
   @doc """
   Starts the Master process:
@@ -36,7 +38,7 @@ defmodule GroupManager.Master do
   
   @doc false
   def init(:no_args) do
-    children = [ supervisor(GroupManager.Worker, [], restart: :temporary) ]
+    children = [ supervisor(Worker, [], restart: :temporary) ]
     supervise(children, strategy: :simple_one_for_one)
   end
 
@@ -44,12 +46,12 @@ defmodule GroupManager.Master do
   when is_pid(master_pid)
   do
     # create the atom to register the
-    case GroupManager.Worker.locate(group_name, prefix) do
+    case Worker.locate(group_name, prefix) do
       worker_pid when is_pid(worker_pid) ->
         Logger.warn "group: '#{group_name}' already started"
         {:error, {:already_started, worker_pid}}
       nil ->
-        worker_id = GroupManager.Worker.id_atom(group_name, prefix)
+        worker_id = Worker.id_atom(group_name, prefix)
         Supervisor.start_child(master_pid,
                               [
                                 [group_name: group_name, prefix: prefix],
@@ -61,10 +63,10 @@ defmodule GroupManager.Master do
   def leave_group(master_pid, group_name, prefix \\ nil)
   when is_pid(master_pid)
   do
-    case GroupManager.Chatter.locate(group_name, prefix) do      
-      chatter_pid when is_pid(chatter_pid) ->
-        GroupManager.Chatter.stop(chatter_pid)
-        case GroupManager.Worker.locate(group_name, prefix) do
+    case Engine.locate(group_name, prefix) do      
+      engine_pid when is_pid(engine_pid) ->
+        Engine.stop(engine_pid)
+        case Worker.locate(group_name, prefix) do
           worker_pid when is_pid(worker_pid) ->
             Supervisor.terminate_child(master_pid, worker_pid)
           nil ->
