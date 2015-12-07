@@ -73,7 +73,7 @@ defmodule GroupManager.Master do
             {:error, :no_worker}
         end
       nil ->
-        Logger.warn "Not found Chatter for local group: #{group_name}"
+        Logger.warn "Not found Engine for local group: #{group_name}"
         {:error, :no_chatter}
     end
   end
