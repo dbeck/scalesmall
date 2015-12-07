@@ -42,51 +42,51 @@ defmodule GroupManager.Data.ItemTest do
   end  
 
   test "op property can be set and retrieved" do
-    assert :rmv == Item.new(:hello) |> Item.set_op(:rmv) |> Item.op
-    assert :add == Item.new(:hello) |> Item.set_op(:add) |> Item.op
+    assert :rmv == Item.new(:hello) |> Item.op(:rmv) |> Item.op
+    assert :add == Item.new(:hello) |> Item.op(:add) |> Item.op
   end
   
   test "cannot set invalid atom to op" do
-    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.set_op(:invalid) end
+    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.op(:invalid) end
   end
 
   test "cannot set op on invalid Item" do
-    assert_raise FunctionClauseError, fn -> Item.set_op(nil, :add) end
+    assert_raise FunctionClauseError, fn -> Item.op(nil, :add) end
   end
 
   test "start_range property can be set and retrieved" do
-    assert 11 == Item.new(:hello) |> Item.set_start_range(11) |> Item.start_range
+    assert 11 == Item.new(:hello) |> Item.start_range(11) |> Item.start_range
   end
   
   test "cannot set invalid start_range" do
-    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.set_start_range(-1) end
+    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.start_range(-1) end
   end
 
   test "cannot set start_range on invalid Item" do
-    assert_raise FunctionClauseError, fn -> Item.set_start_range(nil, 1) end
+    assert_raise FunctionClauseError, fn -> Item.start_range(nil, 1) end
   end
   
   test "end_range property can be set and retrieved" do
-    assert 99 == Item.new(:hello) |> Item.set_end_range(99) |> Item.end_range
+    assert 99 == Item.new(:hello) |> Item.end_range(99) |> Item.end_range
   end
 
   test "cannot set invalid end_range" do
-    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.set_end_range(-1) end
+    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.end_range(-1) end
   end
 
   test "cannot set end_range on invalid Item" do
-    assert_raise FunctionClauseError, fn -> Item.set_end_range(nil, 1) end
+    assert_raise FunctionClauseError, fn -> Item.end_range(nil, 1) end
   end
 
   test "priority property can be set and retrieved" do
-    assert 1199 == Item.new(:hello) |> Item.set_priority(1199) |> Item.priority
+    assert 1199 == Item.new(:hello) |> Item.priority(1199) |> Item.priority
   end
   
   test "cannot set invalid priority" do
-    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.set_priority(-1) end
+    assert_raise FunctionClauseError, fn -> Item.new(:hello) |> Item.priority(-1) end
   end
 
   test "cannot set priority on invalid Item" do
-    assert_raise FunctionClauseError, fn -> Item.set_priority(nil, 1) end
+    assert_raise FunctionClauseError, fn -> Item.priority(nil, 1) end
   end
 end
