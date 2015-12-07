@@ -66,5 +66,10 @@ defmodule GroupManager.Data.MessageLogTest do
     log = MessageLog.new() |> MessageLog.add(m)
     assert 1 == MessageLog.size(log)
     assert [m] == MessageLog.entries(log)
+    timed_item = Item.new(:me) |> TimedItem.construct_next(local)
+    m2 = Message.new() |> Message.add(timed_item)
+    log = MessageLog.add(log, m2)
+    assert 2 == MessageLog.size(log)
+    assert [m2, m] == MessageLog.entries(log)
   end
 end

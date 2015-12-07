@@ -102,12 +102,26 @@ defmodule GroupManager.Data.Item do
   end
   
   def valid?(_), do: false
+
+  @spec op(t) :: :add | :rmv
+  def op(itm)
+  when is_valid(itm)
+  do
+    item(itm, :op)
+  end
   
   @spec set_op(t, atom) :: t
   def set_op(itm, v)
   when is_valid(itm) and (v == :add or v == :rmv)
   do
     item(itm, op: v)
+  end
+
+  @spec start_range(t) :: integer
+  def start_range(itm)
+  when is_valid(itm)
+  do
+    item(itm, :start_range)
   end
   
   @spec set_start_range(t, integer) :: t
@@ -116,12 +130,26 @@ defmodule GroupManager.Data.Item do
   do
     item(itm, start_range: v)
   end
+
+  @spec end_range(t) :: integer
+  def end_range(itm)
+  when is_valid(itm)
+  do
+    item(itm, :end_range)
+  end
   
   @spec set_end_range(t, integer) :: t
   def set_end_range(itm, v)
   when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
   do
     item(itm, end_range: v)
+  end
+  
+  @spec priority(t) :: integer
+  def priority(itm)
+  when is_valid(itm)
+  do
+    item(itm, :priority)
   end
 
   @spec set_priority(t, integer) :: t
