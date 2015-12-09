@@ -1,32 +1,10 @@
 require Logger
 
 defmodule GroupManager.Master do
-  @moduledoc """
-  Starts, stops and manages GroupManager.Worker instances. Each Worker represents a group.
-  
-  The master by default is registered locally under the `GroupManager.Master` id.
-  If the user decides to give a different name then it needs to be passed to the `start_link/1` function.
-  
-  Note that the `:group_manager` application starts a default Master on start which is the Supervisor of the
-  application too.
-  
-  The Master process is a container of `GroupManager.Worker` instances. Each Worker represents a group and the
-  Master process supervises these groups.
-  """
-  
   use Supervisor
   alias GroupManager.Engine
   alias GroupManager.Worker
 
-  @doc """
-  Starts the Master process:
-  
-      GroupManager.Master.start_link([])
-      
-  The caller can start other masters with a name like this:
-  
-      GroupManager.Master.start_link([name: :master_name])
-  """
   def start_link(opts \\ []) do
     case opts do
       [name: name] ->
@@ -36,7 +14,6 @@ defmodule GroupManager.Master do
     end
   end
   
-  @doc false
   def init(:no_args) do
     children = [ supervisor(Worker, [], restart: :temporary) ]
     supervise(children, strategy: :simple_one_for_one)
