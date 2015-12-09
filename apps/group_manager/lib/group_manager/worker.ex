@@ -3,18 +3,12 @@ defmodule GroupManager.Worker do
   use Supervisor
   
   def start_link(args, opts) do
-    case args do
-      [group_name: _, prefix: _] ->
-        Supervisor.start_link(__MODULE__, args, opts)
-      [group_name: _] ->
-        prefixed_args = args ++ [prefix: nil]
-        Supervisor.start_link(__MODULE__, prefixed_args, opts)
-      end
+    Supervisor.start_link(__MODULE__, args, opts)
   end
 
-  def init([group_name: group_name, prefix: prefix]) do
+  def init([group_name: group_name]) do
     
-    engine_name = GroupManager.Engine.id_atom(group_name, prefix)
+    engine_name = GroupManager.Engine.id_atom(group_name)
     
     component_names = [
       group_name:    group_name,
@@ -28,14 +22,11 @@ defmodule GroupManager.Worker do
     {:ok, pid} = supervise(children, strategy: :one_for_all)
   end
   
-  def locate(group_name, prefix \\ nil) do
-    Process.whereis(id_atom(group_name, prefix))
+  def locate(group_name) do
+    Process.whereis(id_atom(group_name))
   end
   
-  def id_atom(group_name, prefix \\ nil) do
-    case prefix do
-      nil -> String.to_atom("GroupManager.Worker." <> group_name)
-      _ -> String.to_atom(prefix <> ".GroupManager.Worker." <> group_name)
-    end
+  def id_atom(group_name) do
+    String.to_atom("GroupManager.Worker." <> group_name)
   end
 end

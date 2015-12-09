@@ -1,7 +1,5 @@
 defmodule GroupManager.Data.Item do
-  @moduledoc """
-  TODO check doc here
-  
+  @moduledoc """  
   Item represents a range associated to a member. Each member has a priority for each range. If multiple ranges exist for
   a give point in the range, their resulting priority is the maximum of all priority values. The Item inside is represented by
   a record (tuple with these members): 
@@ -13,8 +11,9 @@ defmodule GroupManager.Data.Item do
   - end_range integer
   - priority integer
   
+  The op member is either :add or :rmv. :add signifies the items membership in a group range and :rmv act as a tombstone.
+  
   `Item` itself is a Record type that we manipulate and access with the methods provided in the module.  
-  TODO check doc here
   """
 
   require Record  

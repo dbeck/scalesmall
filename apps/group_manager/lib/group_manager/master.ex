@@ -5,7 +5,7 @@ defmodule GroupManager.Master do
   Starts, stops and manages GroupManager.Worker instances. Each Worker represents a group.
   
   The master by default is registered locally under the `GroupManager.Master` id.
-  If the user decides to give a different name than it needs to be passed to the `start_link/1` function.
+  If the user decides to give a different name then it needs to be passed to the `start_link/1` function.
   
   Note that the `:group_manager` application starts a default Master on start which is the Supervisor of the
   application too.
@@ -42,31 +42,31 @@ defmodule GroupManager.Master do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def start_group(master_pid, _peer, group_name, prefix \\ nil)
+  def start_group(master_pid, _peer, group_name)
   when is_pid(master_pid)
   do
     # create the atom to register the
-    case Worker.locate(group_name, prefix) do
+    case Worker.locate(group_name) do
       worker_pid when is_pid(worker_pid) ->
         Logger.warn "group: '#{group_name}' already started"
         {:error, {:already_started, worker_pid}}
       nil ->
-        worker_id = Worker.id_atom(group_name, prefix)
+        worker_id = Worker.id_atom(group_name)
         Supervisor.start_child(master_pid,
                               [
-                                [group_name: group_name, prefix: prefix],
+                                [group_name: group_name],
                                 [name: worker_id]
                               ])
     end
   end
   
-  def leave_group(master_pid, group_name, prefix \\ nil)
+  def leave_group(master_pid, group_name)
   when is_pid(master_pid)
   do
-    case Engine.locate(group_name, prefix) do      
+    case Engine.locate(group_name) do      
       engine_pid when is_pid(engine_pid) ->
         Engine.stop(engine_pid)
-        case Worker.locate(group_name, prefix) do
+        case Worker.locate(group_name) do
           worker_pid when is_pid(worker_pid) ->
             Supervisor.terminate_child(master_pid, worker_pid)
           nil ->

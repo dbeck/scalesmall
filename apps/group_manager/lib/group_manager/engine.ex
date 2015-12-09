@@ -22,14 +22,11 @@ defmodule GroupManager.Engine do
   
   defcast stop, do: stop_server(:normal)
   
-  def locate(group_name, prefix \\ nil) do
-    Process.whereis(id_atom(group_name, prefix))
+  def locate(group_name) do
+    Process.whereis(id_atom(group_name))
   end
   
-  def id_atom(group_name, prefix \\ nil) do
-    case prefix do
-      nil -> String.to_atom("GroupManager.Engine." <> group_name)
-      _ -> String.to_atom(prefix <> ".GroupManager.Engine." <> group_name)
-    end
+  def id_atom(group_name) do
+    String.to_atom("GroupManager.Engine." <> group_name)
   end
 end
