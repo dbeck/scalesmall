@@ -1,4 +1,4 @@
-defmodule GroupManager.Chatter do
+defmodule GroupManager.ClientSup do
 
   use ExActor.GenServer
 

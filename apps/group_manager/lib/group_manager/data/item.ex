@@ -51,7 +51,7 @@ defmodule GroupManager.Data.Item do
           # member
           is_nil(:erlang.element(2, unquote(data))) == false and
           # op
-          (:erlang.element(3, unquote(data)) == :add or :erlang.element(3, unquote(data)) == :rmv) and
+          :erlang.element(3, unquote(data)) in [:add, :rmv] and
           # start_range
           is_integer(:erlang.element(4, unquote(data))) and
           :erlang.element(4, unquote(data)) >= 0 and
@@ -74,7 +74,7 @@ defmodule GroupManager.Data.Item do
           # member
           is_nil(:erlang.element(2, result)) == false and
           # op
-          (:erlang.element(3, result) == :add or :erlang.element(3, result) == :rmv) and
+          :erlang.element(3, result) in [:add, :rmv] and
            # start_range
           is_integer(:erlang.element(4, result)) and
           :erlang.element(4,result) >= 0 and

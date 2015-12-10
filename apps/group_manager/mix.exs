@@ -27,9 +27,7 @@ defmodule GroupManager.Mixfile do
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
       {:fsm, "~> 0.2.0"},
       {:exactor, "~> 2.2"},
-      {:ranch, "~> 1.2"},
-      {:excheck, "~> 0.3.1", only: :test},
-      {:triq, github: "krestenkrab/triq", only: :test}
+      {:ranch, "~> 1.2"}
     ]
   end
 end
