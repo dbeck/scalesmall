@@ -13,7 +13,7 @@ defmodule GroupManager.Sup do
   
   def init(:no_args) do
     opts = [port: 8001]
-    listener_spec = :ranch.child_spec(:"GroupManager.NetHandler", 100, :ranch_tcp, opts, GroupManager.NetHandler, [])
+    listener_spec = :ranch.child_spec(:"GroupManager.InHandler", 100, :ranch_tcp, opts, GroupManager.InHandler, [])
     children = [
       listener_spec,
       worker(GroupManager.ClientSup, [[], [name: :"GroupManager.ClientSup"]]),
