@@ -22,4 +22,10 @@ defmodule GroupManager.Sup do
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end
   
+  def locate do
+    case Process.whereis(__MODULE__) do
+      pid when is_pid(pid) ->
+        pid
+    end
+  end
 end

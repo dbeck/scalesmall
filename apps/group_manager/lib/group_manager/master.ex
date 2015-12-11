@@ -57,8 +57,8 @@ defmodule GroupManager.Master do
   
   def locate do
     case Process.whereis(__MODULE__) do
-      master_pid when is_pid(master_pid) ->
-        master_pid
+      pid when is_pid(pid) ->
+        pid
     end
   end
 end
