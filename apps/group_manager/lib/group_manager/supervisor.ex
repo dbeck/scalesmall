@@ -1,6 +1,7 @@
-defmodule GroupManager.Sup do
+defmodule GroupManager.Supervisor do
   
   use Supervisor
+  alias GroupManager.ClientSupervisor
   
   def start_link(opts \\ []) do
     case opts do
@@ -16,7 +17,7 @@ defmodule GroupManager.Sup do
     listener_spec = :ranch.child_spec(:"GroupManager.InHandler", 100, :ranch_tcp, opts, GroupManager.InHandler, [])
     children = [
       listener_spec,
-      worker(GroupManager.ClientSup, [[], [name: :"GroupManager.ClientSup"]]),
+      worker(ClientSupervisor, [[], []]),
       supervisor(GroupManager.Master, [])
     ]
     {:ok, pid} = supervise(children, strategy: :one_for_one)

@@ -1,8 +1,8 @@
-defmodule GroupManager.ClientSup do
+defmodule GroupManager.ClientSupervisor do
 
   use Supervisor
   alias GroupManager.OutHandler
-  alias GroupManager.ClientSup
+  alias GroupManager.ClientSupervisor
   
   def start_link(opts \\ []) do
     case opts do
