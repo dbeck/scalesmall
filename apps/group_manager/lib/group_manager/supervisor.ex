@@ -1,8 +1,9 @@
 defmodule GroupManager.Supervisor do
   
   use Supervisor
-  alias GroupManager.OutgoingSupervisor
-  alias GroupManager.IncomingHandler
+  
+  alias GroupManager.Chatter
+  alias GroupManager.Master
   
   def start_link(opts \\ []) do
     IO.inspect ["opts", opts]
@@ -10,33 +11,24 @@ defmodule GroupManager.Supervisor do
       [name: name] ->
         Supervisor.start_link(__MODULE__, :no_args, opts)
       _ ->
-        Supervisor.start_link(__MODULE__, :no_args, [name: __MODULE__] ++ opts)
+        Supervisor.start_link(__MODULE__, :no_args, [name: id_atom()] ++ opts)
     end
   end
   
   def init(:no_args) do
-    # TODO collect config parameters here ...
-    opts = [port: 8001]
-    listener_spec = :ranch.child_spec(
-      :"GroupManager.IncomingHandler",
-      100,
-      :ranch_tcp,
-      opts,
-      GroupManager.IncomingHandler,
-      []
-    )
     children = [
-      listener_spec,
-      supervisor(OutgoingSupervisor, [[], []]),
-      supervisor(GroupManager.Master, [])
+      supervisor(Chatter, [[name: Chatter.id_atom()]] ),
+      supervisor(Master,  [[name: Master.id_atom()]])
     ]
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end
   
   def locate do
-    case Process.whereis(__MODULE__) do
+    case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid
     end
   end
+  
+  def id_atom, do: __MODULE__
 end

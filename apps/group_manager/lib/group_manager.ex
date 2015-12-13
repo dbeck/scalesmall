@@ -6,12 +6,12 @@ defmodule GroupManager do
   end
   
   def join(remote_name, group_name) do
-    master_pid = Master.locate()
+    master_pid = GroupManager.Master.locate()
     GroupManager.Master.start_group(master_pid, remote_name, group_name) 
   end
   
   def leave(group_name) do
-    master_pid = Master.locate()
+    master_pid = GroupManager.Master.locate()
     GroupManager.Master.leave_group(master_pid, group_name)
   end
   

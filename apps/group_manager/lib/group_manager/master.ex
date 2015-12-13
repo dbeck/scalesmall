@@ -1,16 +1,17 @@
 require Logger
 
 defmodule GroupManager.Master do
+  
   use Supervisor
-  alias GroupManager.Engine
-  alias GroupManager.Worker
+  alias GroupManager.Group.Engine
+  alias GroupManager.Group.Worker
 
   def start_link(opts \\ []) do
     case opts do
       [name: name] ->
         Supervisor.start_link(__MODULE__, :no_args, opts)
       _ ->
-        Supervisor.start_link(__MODULE__, :no_args, [name: __MODULE__] ++ opts)
+        Supervisor.start_link(__MODULE__, :no_args, [name: id_atom()] ++ opts)
     end
   end
   
@@ -56,9 +57,11 @@ defmodule GroupManager.Master do
   end
   
   def locate do
-    case Process.whereis(__MODULE__) do
+    case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid
     end
   end
+  
+  def id_atom, do: __MODULE__
 end

@@ -1,4 +1,4 @@
-defmodule GroupManager.Engine do
+defmodule GroupManager.Group.Engine do
 
   use ExActor.GenServer
   alias GroupManager.Data.LocalClock
@@ -27,6 +27,6 @@ defmodule GroupManager.Engine do
   end
   
   def id_atom(group_name) do
-    String.to_atom("GroupManager.Engine." <> group_name)
+    String.to_atom("GroupManager.Group.Engine." <> group_name)
   end
 end

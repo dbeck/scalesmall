@@ -1,4 +1,4 @@
-defmodule GroupManager.OutgoingHandler do
+defmodule GroupManager.Chatter.OutgoingHandler do
 
   use ExActor.GenServer
 
@@ -29,6 +29,6 @@ defmodule GroupManager.OutgoingHandler do
   when is_nil(host) == false and
        is_integer(port) and port > 0 and port < 65536
   do
-    String.to_atom("GroupManager.OutgoingHandler.#{host}:#{port}")
+    String.to_atom("GroupManager.Chatter.OutgoingHandler.#{host}:#{port}")
   end
 end

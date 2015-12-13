@@ -1,6 +1,7 @@
-defmodule GroupManager.Worker do
+defmodule GroupManager.Group.Worker do
   
   use Supervisor
+  alias GroupManager.Group.Engine
   
   def start_link(args, opts) do
     Supervisor.start_link(__MODULE__, args, opts)
@@ -8,7 +9,7 @@ defmodule GroupManager.Worker do
 
   def init([group_name: group_name]) do
     
-    engine_name = GroupManager.Engine.id_atom(group_name)
+    engine_name = Engine.id_atom(group_name)
     
     component_names = [
       group_name:    group_name,
@@ -16,7 +17,7 @@ defmodule GroupManager.Worker do
     ]
     
     children = [
-      worker(GroupManager.Engine,  [component_names, [name: engine_name]])
+      worker(Engine, [component_names, [name: engine_name]])
     ]
     
     {:ok, pid} = supervise(children, strategy: :one_for_all)
@@ -27,6 +28,6 @@ defmodule GroupManager.Worker do
   end
   
   def id_atom(group_name) do
-    String.to_atom("GroupManager.Worker." <> group_name)
+    String.to_atom("GroupManager.Group.Worker." <> group_name)
   end
 end

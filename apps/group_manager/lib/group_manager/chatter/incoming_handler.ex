@@ -1,4 +1,4 @@
-defmodule GroupManager.IncomingHandler do
+defmodule GroupManager.Chatter.IncomingHandler do
 
   def start_link(ref, socket, transport, opts) do
     pid = spawn_link(__MODULE__, :init, [ref, socket, transport, opts])

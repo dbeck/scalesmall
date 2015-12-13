@@ -1,7 +1,7 @@
-defmodule GroupManager.OutgoingSupervisor do
+defmodule GroupManager.Chatter.OutgoingSupervisor do
 
   use Supervisor
-  alias GroupManager.OutgoingHandler
+  alias GroupManager.Chatter.OutgoingHandler
   
   def start_link(args, opts \\ []) do
     case opts do
@@ -34,9 +34,11 @@ defmodule GroupManager.OutgoingSupervisor do
   end
 
   def locate do
-    case Process.whereis(__MODULE__) do
+    case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid
     end
   end
+  
+  def id_atom, do: __MODULE__
 end
