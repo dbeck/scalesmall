@@ -21,4 +21,8 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
+
+#config :group_manager, :multicast_ip, '224.0.0.1', :multicast_port 49888
+#config :group_manager, :broadcast_ip, '224.0.0.1', :broadcast_port 49888
+
 import_config "#{Mix.env}.exs"

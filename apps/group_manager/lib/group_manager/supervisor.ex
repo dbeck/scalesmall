@@ -1,9 +1,11 @@
 defmodule GroupManager.Supervisor do
   
   use Supervisor
-  alias GroupManager.ClientSupervisor
+  alias GroupManager.OutgoingSupervisor
+  alias GroupManager.IncomingHandler
   
   def start_link(opts \\ []) do
+    IO.inspect ["opts", opts]
     case opts do
       [name: name] ->
         Supervisor.start_link(__MODULE__, :no_args, opts)
@@ -13,11 +15,19 @@ defmodule GroupManager.Supervisor do
   end
   
   def init(:no_args) do
+    # TODO collect config parameters here ...
     opts = [port: 8001]
-    listener_spec = :ranch.child_spec(:"GroupManager.InHandler", 100, :ranch_tcp, opts, GroupManager.InHandler, [])
+    listener_spec = :ranch.child_spec(
+      :"GroupManager.IncomingHandler",
+      100,
+      :ranch_tcp,
+      opts,
+      GroupManager.IncomingHandler,
+      []
+    )
     children = [
       listener_spec,
-      worker(ClientSupervisor, [[], []]),
+      supervisor(OutgoingSupervisor, [[], []]),
       supervisor(GroupManager.Master, [])
     ]
     {:ok, pid} = supervise(children, strategy: :one_for_one)

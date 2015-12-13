@@ -1,21 +1,18 @@
 defmodule GroupManager do
   use Application
   
-  alias GroupManager.Sup
-  alias GroupManager.Master
-
-  def start(_type, _args) do
-    Sup.start_link([])
+  def start(_type, args) do
+    GroupManager.Supervisor.start_link(args)
   end
   
   def join(remote_name, group_name) do
     master_pid = Master.locate()
-    Master.start_group(master_pid, remote_name, group_name) 
+    GroupManager.Master.start_group(master_pid, remote_name, group_name) 
   end
   
   def leave(group_name) do
     master_pid = Master.locate()
-    Master.leave_group(master_pid, group_name)
+    GroupManager.Master.leave_group(master_pid, group_name)
   end
   
   # get topology
