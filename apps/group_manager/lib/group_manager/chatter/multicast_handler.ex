@@ -2,27 +2,42 @@ defmodule GroupManager.Chatter.MulticastHandler do
 
   use ExActor.GenServer
   
-  #  res = :gen_udp.open(9982, [:binary, active: :false, add_membership: {{224,0,0,1}, {0,0,0,0}}, multicast_if: {224,0,0,1}, multicast_loop: false, multicast_ttl: 4, reuseaddr: true])
-
-  defstart start_link([my_addr: my_addr, port: port, multicast_addr: multicast_addr, ttl: ttl], opts),
+  defstart start_link([ my_addr: my_addr,
+                        my_port: my_port,
+                        multicast_addr: multicast_addr,
+                        multicast_port: multicast_port,
+                        multicast_ttl: ttl ],
+                      opts),
     gen_server_opts: opts
   do
-    {:ok, socket} = :gen_udp.open(
-      port,
-      [
-        :binary, 
-        active:          :false,
-        add_membership:  { multicast_addr, my_addr},
-        multicast_if:    multicast_addr,
-        multicast_loop:  false,
-        multicast_ttl:   ttl,
-        reuseaddr:       true
-      ]
-    )
+    udp_options = [
+      :binary, 
+      active:          10,
+      add_membership:  { multicast_addr, my_addr },
+      multicast_if:    my_addr,
+      multicast_loop:  false,
+      multicast_ttl:   ttl,
+      reuseaddr:       true
+    ]
+    
+    {:ok, socket} = :gen_udp.open( multicast_port, udp_options )
     initial_state(socket)
   end
 
   defcast stop, do: stop_server(:normal)
+  
+  def handle_info({:udp, socket, ip, port, data}, state)
+  do
+    # when we popped one message we allow one more to be buffered
+    :inet.setopts(socket, [active: 1])
+    IO.inspect data
+    {:noreply, state}
+  end
+  
+  def handle_info(msg, state)
+  do
+    {:noreply, state}
+  end
 
   def locate do
     case Process.whereis(id_atom()) do

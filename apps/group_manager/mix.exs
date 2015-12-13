@@ -28,8 +28,7 @@ defmodule GroupManager.Mixfile do
       {:lz4, "~> 0.2.2"},
       {:fsm, "~> 0.2.0"},
       {:exactor, "~> 2.2"},
-      {:ranch, "~> 1.2"},
-      {:socket, "~> 0.3.1"}
+      {:ranch, "~> 1.2"}
     ]
   end
 end
