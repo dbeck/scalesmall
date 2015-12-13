@@ -27,12 +27,12 @@ defmodule GroupManager.Chatter do
       GroupManager.Chatter.IncomingHandler,
       []
     )
-    multicast_args = [host: 'localhost', port: 29999, multicast_host: '224.0.0.1']
+    multicast_args = [my_addr: {0,0,0,0}, port: 29999, multicast_addr: {224,0,1,1}, ttl: 4]
     children = [
+      worker(PeerDB, [[], [name: PeerDB.id_atom()]]),
       listener_spec,
       supervisor(OutgoingSupervisor, [[], [name: OutgoingSupervisor.id_atom()]]),
-      worker(MulticastHandler, [multicast_args, [name: MulticastHandler.id_atom()]]),
-      worker(PeerDB, [[], [name: PeerDB.id_atom()]])
+      worker(MulticastHandler, [multicast_args, [name: MulticastHandler.id_atom()]])
     ]
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end
