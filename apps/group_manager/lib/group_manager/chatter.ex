@@ -67,6 +67,10 @@ defmodule GroupManager.Chatter do
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end
   
+  def broadcast(destination_list, payload) do
+    :ok
+  end
+  
   def locate do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
