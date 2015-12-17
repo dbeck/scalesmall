@@ -7,6 +7,9 @@ defmodule GroupManager.Chatter.NetID do
   
   @spec new(tuple, integer) :: t
   def new(ip, port)
+  # TODO : IPV6
+  when is_tuple(ip) and tuple_size(ip) == 4 and
+       is_integer(port) and port >= 0
   do
     net_id(ip: ip) |> net_id(port: port)
   end
@@ -18,6 +21,7 @@ defmodule GroupManager.Chatter.NetID do
           is_tuple(unquote(data)) and tuple_size(unquote(data)) == 3 and
           :erlang.element(1, unquote(data)) == :net_id and
           # ip
+          # TODO : IPV6
           is_tuple(:erlang.element(2, unquote(data))) and
           tuple_size(:erlang.element(2, unquote(data))) == 4 and
           # port
@@ -30,6 +34,7 @@ defmodule GroupManager.Chatter.NetID do
           is_tuple(result) and tuple_size(result) == 3 and
           :erlang.element(1, result) == :net_id and
           # ip
+          # TODO : IPV6
           is_tuple(:erlang.element(2, data)) and
           tuple_size(:erlang.element(2, data)) == 4 and
           # port
