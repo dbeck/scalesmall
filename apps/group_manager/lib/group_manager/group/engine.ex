@@ -21,9 +21,14 @@ defmodule GroupManager.Group.Engine do
   end
   
   defcast stop, do: stop_server(:normal)
+
+  def locate(group_name), do: Process.whereis(id_atom(group_name))
   
-  def locate(group_name) do
-    Process.whereis(id_atom(group_name))
+  def locate!(group_name) do
+    case Process.whereis(id_atom(group_name)) do
+      pid when is_pid(pid) ->
+        pid
+    end
   end
   
   def id_atom(group_name) do

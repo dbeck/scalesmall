@@ -26,6 +26,9 @@ defmodule GroupManager.Chatter.MulticastHandler do
 
   defcast stop, do: stop_server(:normal)
   
+  #defcall foo, do: set_and_reply(new_state, response)
+  
+  # incoming handler
   def handle_info({:udp, socket, ip, port, data}, state)
   do
     # when we popped one message we allow one more to be buffered
@@ -39,7 +42,9 @@ defmodule GroupManager.Chatter.MulticastHandler do
     {:noreply, state}
   end
 
-  def locate do
+  def locate, do: Process.whereis(id_atom())
+
+  def locate! do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid

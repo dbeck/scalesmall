@@ -1,10 +1,14 @@
 defmodule GroupManager.Chatter do
   
   use Supervisor
+  require GroupManager.Data.Message
+  require GroupManager.Data.WorldClock
+  require GroupManager.Data.TimedSet
   alias GroupManager.Chatter.OutgoingSupervisor
   alias GroupManager.Chatter.IncomingHandler
   alias GroupManager.Chatter.MulticastHandler
   alias GroupManager.Chatter.PeerDB
+  alias GroupManager.Data.Message
   
   def start_link(opts \\ []) do
     case opts do
@@ -67,11 +71,16 @@ defmodule GroupManager.Chatter do
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end
   
-  def broadcast(destination_list, payload) do
-    :ok
+  @spec broadcast(list(NetID.t), Message.t) :: :ok
+  def broadcast(destination_list, msg)
+  when is_list(destination_list) and Message.is_valid(msg)
+  do
+    :ok = NetID.validate(destination_list)
   end
   
-  def locate do
+  def locate, do: Process.whereis(id_atom())
+    
+  def locate! do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid

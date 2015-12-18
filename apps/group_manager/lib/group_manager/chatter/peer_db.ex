@@ -5,12 +5,18 @@ defmodule GroupManager.Chatter.PeerDB do
   defstart start_link([], opts),
     gen_server_opts: opts
   do
+    name = Keyword.get(opts, :name, id_atom())
+    :ets.new(name, [:named_table, :set, :protected])
     initial_state([])
   end
 
-  defcast stop, do: stop_server(:normal)
+  #defcall foo, do: set_and_reply(new_state, response)
 
-  def locate do
+  defcast stop, do: stop_server(:normal)  
+
+  def locate, do: Process.whereis(id_atom())
+  
+  def locate! do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid

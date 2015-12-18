@@ -56,7 +56,9 @@ defmodule GroupManager.Master do
     end
   end
   
-  def locate do
+  def locate, do: Process.whereis(id_atom())
+  
+  def locate! do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid

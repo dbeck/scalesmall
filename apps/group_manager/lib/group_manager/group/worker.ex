@@ -23,8 +23,13 @@ defmodule GroupManager.Group.Worker do
     {:ok, pid} = supervise(children, strategy: :one_for_all)
   end
   
-  def locate(group_name) do
-    Process.whereis(id_atom(group_name))
+  def locate(group_name), do: Process.whereis(id_atom(group_name))
+  
+  def locate!(group_name) do
+    case Process.whereis(id_atom(group_name)) do
+      pid when is_pid(pid) ->
+        pid
+    end
   end
   
   def id_atom(group_name) do

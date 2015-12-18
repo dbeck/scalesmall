@@ -32,8 +32,10 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
         Supervisor.start_child(sup_pid, [[host: host, port: port, own_host: own_host, own_port: own_port], [name: id]])
     end
   end
+  
+  def locate, do: Process.whereis(id_atom())
 
-  def locate do
+  def locate! do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid

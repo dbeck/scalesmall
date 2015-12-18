@@ -25,6 +25,16 @@ defmodule GroupManager.Chatter.OutgoingHandler do
     Process.whereis(id_atom([host: host, port: port]))
   end
 
+  def locate!([host: host, port: port])
+  when is_nil(host) == false and
+       is_integer(port) and port > 0 and port < 65536
+  do
+    case Process.whereis(id_atom([host: host, port: port])) do
+      pid when is_pid(pid) ->
+        pid
+    end
+  end
+
   def id_atom([host: host, port: port])
   when is_nil(host) == false and
        is_integer(port) and port > 0 and port < 65536

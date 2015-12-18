@@ -53,4 +53,15 @@ defmodule GroupManager.Chatter.NetID do
   end
   
   def valid?(_), do: false
+
+  @spec validate(list(t)) :: :ok | :error
+  def validate([]), do: :ok
+  
+  def validate([head|rest])
+  do
+    case valid?(head) do
+      true -> validate(rest)
+      false -> :error
+    end
+  end
 end
