@@ -39,6 +39,41 @@ defmodule GroupManager.Chatter.BroadcastID do
     end
   end
   
+  @spec origin(t) :: NetID.t
+  def origin(id)
+  when is_valid(id)
+  do
+    broadcast_id(id, :origin)
+  end
+
+  @spec origin(t,  NetID.t) :: t
+  def origin(id, nid)
+  when is_valid(id) and NetID.is_valid(nid)
+  do
+    broadcast_id(id, origin: nid)
+  end
+
+  @spec seqno(t) :: NetID.t
+  def seqno(id)
+  when is_valid(id)
+  do
+    broadcast_id(id, :seqno)
+  end
+
+  @spec seqno(t, integer) :: t
+  def seqno(id, v)
+  when is_valid(id) and is_integer(v) and v >= 0
+  do
+    broadcast_id(id, seqno: v)
+  end
+  
+  @spec inc_seqno(t) :: t
+  def inc_seqno(id)
+  when is_valid(id)
+  do
+    broadcast_id(id, seqno: broadcast_id(id, :seqno)+1)
+  end
+
   @spec valid?(t) :: boolean
   def valid?(data)
   when is_valid(data)
@@ -47,4 +82,31 @@ defmodule GroupManager.Chatter.BroadcastID do
   end
   
   def valid?(_), do: false
+  
+  @spec validate_list(list(t)) :: :ok
+  def validate_list([]), do: :ok
+
+  def validate_list([head|rest])
+  when is_valid(head)
+  do
+    validate_list(rest)
+  end
+  
+  @spec merge_lists(list(BroadcastID.t), list(BroadcastID.t)) :: list(BroadcastID.t)
+  def merge_lists([], []), do: []
+  def merge_lists(lhs, []) when is_list(lhs), do: lhs
+  def merge_lists([], rhs) when is_list(rhs), do: rhs
+
+  def merge_lists(lhs, rhs)
+  when is_list(lhs) and is_list(rhs)
+  do
+    # optimize this ???
+    dict = Enum.map(lhs ++ rhs, fn(x) -> {origin(x), seqno(x)} end)
+    |> Enum.reduce(%{}, fn({m, t} ,acc) ->
+      Map.update(acc, m, t, fn(prev_seqno) ->
+        max(t, prev_seqno)
+      end)
+    end)
+    new_list = Enum.map(Map.keys(dict), fn(k) -> broadcast_id(origin: k) |> broadcast_id(seqno: Map.get(dict, k)) end)
+  end
 end

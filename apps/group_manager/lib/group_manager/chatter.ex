@@ -75,7 +75,7 @@ defmodule GroupManager.Chatter do
   def broadcast(destination_list, msg)
   when is_list(destination_list) and Message.is_valid(msg)
   do
-    :ok = NetID.validate(destination_list)
+    :ok = NetID.validate_list(destination_list)
   end
   
   def locate, do: Process.whereis(id_atom())
@@ -94,5 +94,5 @@ defmodule GroupManager.Chatter do
     {:ok, list} = :inet.getif
     [{ip, broadcast, netmask}] = list |> Enum.filter( fn({ip, bcast, nm}) -> bcast != :undefined end) |> Enum.take(1)
     ip
-  end    
+  end
 end

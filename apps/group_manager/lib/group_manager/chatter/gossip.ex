@@ -6,8 +6,17 @@ defmodule GroupManager.Chatter.Gossip do
   alias GroupManager.Chatter.BroadcastID
   alias GroupManager.Chatter.NetID
   
-  Record.defrecord :gossip, current_id: nil, seen_ids: [], distribution_list: [], payload: nil
-  @type t :: record( :gossip, current_id: BroadcastID.t, seen_ids: list(BroadcastID.t), distribution_list: list(NetID.t), payload: term )
+  Record.defrecord :gossip,
+                   current_id: nil,
+                   seen_ids: [],
+                   distribution_list: [],
+                   payload: nil
+                   
+  @type t :: record( :gossip,
+                     current_id: BroadcastID.t,
+                     seen_ids: list(BroadcastID.t),
+                     distribution_list: list(NetID.t),
+                     payload: term )
   
   @spec new(NetID.t, term) :: t
   def new(my_id, data)

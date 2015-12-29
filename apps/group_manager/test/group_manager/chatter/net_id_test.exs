@@ -18,5 +18,5 @@ defmodule GroupManager.Chatter.NetIDTest do
     assert NetID.valid?({:net_id, nil, nil, nil}) == false
   end
   
-  # validate
+  # validate_list
 end

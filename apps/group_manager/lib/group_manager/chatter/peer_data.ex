@@ -75,7 +75,50 @@ defmodule GroupManager.Chatter.PeerData do
     true
   end
   
-  def valid?(_), do: false  
+  def valid?(_), do: false
+
+  @spec id(t) :: NetID.t
+  def id(d)
+  when is_valid(d)
+  do
+    peer_data(d, :id)
+  end
+  
+  @spec broadcast_seqno(t) :: integer
+  def broadcast_seqno(d)
+  when is_valid(d)
+  do
+    peer_data(d, :broadcast_seqno)
+  end
+  
+  @spec broadcast_seqno(t, integer) :: t
+  def broadcast_seqno(d, v)
+  when is_valid(d) and is_integer(v) and v >= 0
+  do
+    peer_data(d, broadcast_seqno: v)
+  end
+  
+  @spec max_broadcast_seqno(t, integer) :: t
+  def max_broadcast_seqno(d, v)
+  when is_valid(d) and is_integer(v) and v >= 0
+  do
+    peer_data(d, broadcast_seqno: max(v, peer_data(d, :broadcast_seqno)))
+  end
+  
+  @spec seen_ids(t) :: list(BroadcastID.t)
+  def seen_ids(d)
+  when is_valid(d)
+  do
+    peer_data(d, :seen_ids)
+  end
+  
+  @spec merge_seen_ids(t, list(BroadcastID.t)) :: t
+  def merge_seen_ids(d, []), do: d
+  
+  def merge_seen_ids(d, ids)
+  when is_valid(d) and is_list(ids)
+  do
+    old_ids = peer_data(d, :seen_ids)
+    peer_data(d, seen_ids: BroadcastID.merge_lists(old_ids, ids))
+  end
 end
-  
-  
