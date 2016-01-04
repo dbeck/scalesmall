@@ -76,8 +76,14 @@ defmodule GroupManager.Chatter do
   when is_list(destination_list) and Message.is_valid(msg)
   do
     :ok = NetID.validate_list(destination_list)
+    # broadcast first
+    # 0) GroupManager.Chatter.MulticastHandler
+    
+    # may be send a TCP message too ???
+    # 1) use reverse channels ??? : GroupManager.Chatter.IncomingHandler
+    # 2) send through direct channels if needed ??? : GroupManager.Chatter.OutgoingHandler
   end
-  
+
   def locate, do: Process.whereis(id_atom())
     
   def locate! do
