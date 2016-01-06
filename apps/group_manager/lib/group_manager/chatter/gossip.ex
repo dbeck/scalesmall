@@ -25,6 +25,14 @@ defmodule GroupManager.Chatter.Gossip do
     gossip(current_id: BroadcastID.new(my_id)) |> gossip(payload: data)
   end
 
+  @spec new(NetID.t, integer, term) :: t
+  def new(my_id, seqno, data)
+  when NetID.is_valid(my_id) and is_integer(seqno) and seqno >= 0
+  do
+    gossip(current_id: BroadcastID.new(my_id) |> BroadcastID.seqno(seqno))
+    |> gossip(payload: data)
+  end
+
   defmacro is_valid(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->

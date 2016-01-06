@@ -67,18 +67,24 @@ defmodule GroupManager.Chatter do
   do
     :ok = NetID.validate_list(destination_list)
     my_id = local_netid()
+    seqno = PeerDB.inc_broadcast_seqno(my_id)
 
     # collect ids seen on multicast and update distribution list too
-    gossip = Gossip.new(my_id, msg)
+    gossip = Gossip.new(my_id, seqno, msg)
     |> Gossip.seen_ids(PeerDB.get_seen_ids_(my_id))
     |> Gossip.distribution_list(destination_list)
 
-    # broadcast first
-    # 0) GroupManager.Chatter.MulticastHandler
+    # broadcast first and let MulticastHandler decide what to send directly
+    direct_gossip = MulticastHandler.send(MulticastHandler.locate!, gossip)
 
-    # may be send a TCP message too ???
-    # 1) use reverse channels ??? : GroupManager.Chatter.IncomingHandler
-    # 2) send through direct channels if needed ??? : GroupManager.Chatter.OutgoingHandler
+    # outgoing handler uses its alrady open channels and returns the gossip
+    # what couldn't be delivered
+    # remaining = OutgoingHandler.send(OutgoingHandler.locate!, gossip)
+
+    # TODO: handle what remains
+
+    # TODO: (later) may be send a TCP message too ???
+    # use reverse channels ??? : GroupManager.Chatter.IncomingHandler
   end
 
   def locate, do: Process.whereis(id_atom())

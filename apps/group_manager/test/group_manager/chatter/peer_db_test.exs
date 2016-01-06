@@ -1,4 +1,5 @@
 defmodule GroupManager.Chatter.PeerDBTest do
+
   use ExUnit.Case
   alias GroupManager.Chatter.PeerDB
   alias GroupManager.Chatter.NetID
@@ -82,4 +83,6 @@ defmodule GroupManager.Chatter.PeerDBTest do
 
   # get_
   # get_seen_id_list_
+  # get_broadcast_seqno_
+  # inc_broadcast_seqno
 end

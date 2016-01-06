@@ -1,4 +1,5 @@
 defmodule GroupManager.Chatter.NetIDTest do
+
   use ExUnit.Case
   alias GroupManager.Chatter.NetID
 

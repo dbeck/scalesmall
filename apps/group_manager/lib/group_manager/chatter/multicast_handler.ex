@@ -30,15 +30,23 @@ defmodule GroupManager.Chatter.MulticastHandler do
     initial_state(socket)
   end
 
+  @spec send(pid, Gossip.t) :: Gossip.t
   def send(pid, gossip)
-  when Gossip.is_valid(gossip)
+  when is_pid(pid) and Gossip.is_valid(gossip)
   do
-
+    GenServer.call(pid, {:send, gossip})
   end
 
   # GenServer
 
   defcast stop, do: stop_server(:normal)
+
+  def handle_call({:send, gossip}, _from, state)
+  when Gossip.is_valid(gossip)
+  do
+    # send(Socket, Address, Port, Packet) -> ok | {error, Reason}
+    {:reply, {:ok, gossip}, state}
+  end
 
   # incoming handler
   def handle_info({:udp, socket, ip, port, data}, state)

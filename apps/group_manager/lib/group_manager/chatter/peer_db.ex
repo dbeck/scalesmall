@@ -43,6 +43,12 @@ defmodule GroupManager.Chatter.PeerDB do
     GenServer.cast(pid, {:add_seen_id_list, current_id, seen_id_list})
   end
 
+  def inc_broadcast_seqno(pid, id)
+  when is_pid(pid) and NetID.is_valid(id)
+  do
+    GenServer.call(pid, {:inc_broadcast_seqno, id})
+  end
+
   # Direct, read-only ETS access
 
   def get_(id)
@@ -67,7 +73,19 @@ defmodule GroupManager.Chatter.PeerDB do
     end
   end
 
+  def get_broadcast_seqno_(id)
+  when NetID.is_valid(id)
+  do
+    name = id_atom()
+    case :ets.lookup(name, id)
+    do
+      []      -> {:error, :not_found}
+      [value] -> {:ok, PeerData.seen_ids(value)}
+    end
+  end
+
   # GenServer
+
   defcast stop, do: stop_server(:normal)
 
   def handle_cast({:add, id}, table)
@@ -94,6 +112,19 @@ defmodule GroupManager.Chatter.PeerDB do
     do
       []      -> {:reply, :error, table}
       [value] -> {:reply, {:ok, value}, table}
+    end
+  end
+
+  def handle_call({:inc_broadcast_seqno, id}, _from, table)
+    when NetID.is_valid(id)
+  do
+    case :ets.lookup(table, id)
+    do
+      []      -> {:reply, :error, table}
+      [value] ->
+        updated_value = PeerData.inc_broadcast_seqno(value)
+        :ets.insert(table, updated_value)
+        {:reply, {:ok, PeerData.broadcast_seqno(updated_value)}, table}
     end
   end
 

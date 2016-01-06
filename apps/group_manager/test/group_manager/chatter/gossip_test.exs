@@ -1,4 +1,5 @@
 defmodule GroupManager.Chatter.GossipTest do
+
   use ExUnit.Case
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.Gossip
@@ -21,4 +22,5 @@ defmodule GroupManager.Chatter.GossipTest do
 
   # seen_ids
   # distribution_list
+  # new(netid, seqno)
 end
