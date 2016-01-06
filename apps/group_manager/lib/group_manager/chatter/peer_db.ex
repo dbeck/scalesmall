@@ -15,9 +15,9 @@ defmodule GroupManager.Chatter.PeerDB do
     table = :ets.new(name, [:named_table, :set, :protected, {:keypos, 2}])
     initial_state(table)
   end
-  
+
   # Convenience API
-  
+
   def add(pid, id)
   when is_pid(pid) and NetID.is_valid(id)
   do
@@ -29,7 +29,7 @@ defmodule GroupManager.Chatter.PeerDB do
   do
     GenServer.call(pid, {:get, id})
   end
-  
+
   def add_seen_id(pid, current_id, seen_id)
   when is_pid(pid) and BroadcastID.is_valid(current_id) and BroadcastID.is_valid(seen_id)
   do
@@ -42,10 +42,33 @@ defmodule GroupManager.Chatter.PeerDB do
     :ok = BroadcastID.validate_list(seen_id_list)
     GenServer.cast(pid, {:add_seen_id_list, current_id, seen_id_list})
   end
-  
-  defcast stop, do: stop_server(:normal)
-  
+
+  # Direct, read-only ETS access
+
+  def get_(id)
+  when NetID.is_valid(id)
+  do
+    name = id_atom()
+    case :ets.lookup(name, id)
+    do
+      []      -> {:error, :not_found}
+      [value] -> {:ok, value}
+    end
+  end
+
+  def get_seen_id_list_(id)
+  when NetID.is_valid(id)
+  do
+    name = id_atom()
+    case :ets.lookup(name, id)
+    do
+      []      -> {:error, :not_found}
+      [value] -> {:ok, PeerData.seen_ids(value)}
+    end
+  end
+
   # GenServer
+  defcast stop, do: stop_server(:normal)
 
   def handle_cast({:add, id}, table)
   when NetID.is_valid(id)
@@ -53,7 +76,7 @@ defmodule GroupManager.Chatter.PeerDB do
     :ets.insert_new(table, PeerData.new(id))
     {:noreply, table}
   end
-  
+
   def handle_cast({:add_seen_id_list, current_id, seen_ids}, table)
   when BroadcastID.is_valid(current_id) and is_list(seen_ids)
   do
@@ -63,7 +86,7 @@ defmodule GroupManager.Chatter.PeerDB do
     :ok = update_seen_ids(current_id, seen_ids, table)
     { :noreply, table }
   end
-  
+
   def handle_call({:get, id}, _from, table)
   when NetID.is_valid(id)
   do
@@ -71,11 +94,11 @@ defmodule GroupManager.Chatter.PeerDB do
     do
       []      -> {:reply, :error, table}
       [value] -> {:reply, {:ok, value}, table}
-    end    
+    end
   end
-  
+
   defp add_ids([], table), do: :ok
-  
+
   defp add_ids([head|rest], table)
   do
     head_netid = BroadcastID.origin(head)
@@ -84,62 +107,49 @@ defmodule GroupManager.Chatter.PeerDB do
   end
 
   defp update_seqnos([], table), do: :ok
-  
+
   defp update_seqnos([head|rest], table)
   do
     head_netid = BroadcastID.origin(head)
     head_seqno = BroadcastID.seqno(head)
-    
+
     case :ets.lookup(table, head_netid)
     do
       [] -> :error
-      
+
       [value] ->
         updated_value = PeerData.max_broadcast_seqno(value, head_seqno)
-        :ets.insert(table, updated_value)        
+        :ets.insert(table, updated_value)
         update_seqnos(rest, table)
     end
   end
-  
+
   defp update_seen_ids(current_id, [], table), do: :ok
-  
+
   defp update_seen_ids(current_id, id_list, table)
   do
     netid = BroadcastID.origin(current_id)
     seqno = BroadcastID.seqno(current_id)
-    
+
     case :ets.lookup(table, netid)
     do
       [] -> :error
-      
+
       [value] ->
         updated_value = PeerData.merge_seen_ids(value, id_list)
         true = :ets.insert(table, updated_value)
         :ok
-    end    
+    end
   end
-  
-  #@type t :: record( :gossip,
-  #                   current_id: BroadcastID.t,
-  #                   seen_ids: list(BroadcastID.t),
-  #                   distribution_list: list(NetID.t),
-  #                   payload: term )
-  
-  #@type t :: record( :peer_data,
-  #                   id: NetID.t,
-  #                   broadcast_seqno: integer,
-  #                   seen_ids: list(BroadcastID.t),
-  #                   inbound_pid: pid | nil,
-  #                   outbound_pid: pid | nil )
 
   def locate, do: Process.whereis(id_atom())
-  
+
   def locate! do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid
     end
   end
-  
+
   def id_atom, do: __MODULE__
 end

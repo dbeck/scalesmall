@@ -1,17 +1,23 @@
 defmodule GroupManager.Chatter.MulticastHandler do
 
   use ExActor.GenServer
-  
-  defstart start_link([ my_addr: my_addr,
-                        my_port: my_port,
+  require GroupManager.Chatter.Gossip
+  require GroupManager.Chatter.BroadcastID
+  require GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.Gossip
+
+  defstart start_link([ my_id: my_id,
                         multicast_addr: multicast_addr,
                         multicast_port: multicast_port,
                         multicast_ttl: ttl ],
                       opts),
     gen_server_opts: opts
   do
+    my_addr = NetID.ip(my_id)
+
     udp_options = [
-      :binary, 
+      :binary,
       active:          10,
       add_membership:  { multicast_addr, my_addr },
       multicast_if:    my_addr,
@@ -19,15 +25,21 @@ defmodule GroupManager.Chatter.MulticastHandler do
       multicast_ttl:   ttl,
       reuseaddr:       true
     ]
-    
+
     {:ok, socket} = :gen_udp.open( multicast_port, udp_options )
     initial_state(socket)
   end
 
+  def send(pid, gossip)
+  when Gossip.is_valid(gossip)
+  do
+
+  end
+
+  # GenServer
+
   defcast stop, do: stop_server(:normal)
-  
-  #defcall foo, do: set_and_reply(new_state, response)
-  
+
   # incoming handler
   def handle_info({:udp, socket, ip, port, data}, state)
   do
@@ -36,7 +48,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
     IO.inspect data
     {:noreply, state}
   end
-  
+
   def handle_info(msg, state)
   do
     {:noreply, state}
@@ -50,6 +62,6 @@ defmodule GroupManager.Chatter.MulticastHandler do
         pid
     end
   end
-  
+
   def id_atom, do: __MODULE__
 end

@@ -1,19 +1,19 @@
 defmodule GroupManager.Chatter.BroadcastID do
-  
+
   require Record
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
-  
+
   Record.defrecord :broadcast_id, origin: nil, seqno: 0
   @type t :: record( :broadcast_id, origin: NetID.t, seqno: integer )
-    
+
   @spec new(NetID.t) :: t
   def new(id)
   when NetID.is_valid(id)
   do
     broadcast_id(origin: id)
   end
-  
+
   defmacro is_valid(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -38,7 +38,7 @@ defmodule GroupManager.Chatter.BroadcastID do
         end
     end
   end
-  
+
   @spec origin(t) :: NetID.t
   def origin(id)
   when is_valid(id)
@@ -66,7 +66,7 @@ defmodule GroupManager.Chatter.BroadcastID do
   do
     broadcast_id(id, seqno: v)
   end
-  
+
   @spec inc_seqno(t) :: t
   def inc_seqno(id)
   when is_valid(id)
@@ -80,18 +80,31 @@ defmodule GroupManager.Chatter.BroadcastID do
   do
     true
   end
-  
+
   def valid?(_), do: false
-  
-  @spec validate_list(list(t)) :: :ok
+
+  @spec validate_list(list(t)) :: :ok | :error
   def validate_list([]), do: :ok
 
   def validate_list([head|rest])
+  do
+    case valid?(head) do
+      true -> validate_list(rest)
+      false -> :error
+    end
+  end
+
+  def validate_list(_), do: :error
+
+  @spec validate_list!(list(t)) :: :ok
+  def validate_list!([]), do: :ok
+
+  def validate_list!([head|rest])
   when is_valid(head)
   do
-    validate_list(rest)
+    validate_list!(rest)
   end
-  
+
   @spec merge_lists(list(BroadcastID.t), list(BroadcastID.t)) :: list(BroadcastID.t)
   def merge_lists([], []), do: []
   def merge_lists(lhs, []) when is_list(lhs), do: lhs
@@ -107,6 +120,6 @@ defmodule GroupManager.Chatter.BroadcastID do
         max(t, prev_seqno)
       end)
     end)
-    new_list = Enum.map(Map.keys(dict), fn(k) -> broadcast_id(origin: k) |> broadcast_id(seqno: Map.get(dict, k)) end)
+    Enum.map(Map.keys(dict), fn(k) -> broadcast_id(origin: k) |> broadcast_id(seqno: Map.get(dict, k)) end)
   end
 end

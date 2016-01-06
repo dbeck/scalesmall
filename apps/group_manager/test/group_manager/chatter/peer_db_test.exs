@@ -4,12 +4,12 @@ defmodule GroupManager.Chatter.PeerDBTest do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.BroadcastID
   alias GroupManager.Chatter.PeerData
-  
+
   test "locate PeerDB" do
     pid = PeerDB.locate
     assert is_pid(pid)
   end
-  
+
   test "cannot add() invalid " do
     pid = PeerDB.locate
     assert_raise FunctionClauseError, fn -> PeerDB.add(pid, nil) end
@@ -20,7 +20,7 @@ defmodule GroupManager.Chatter.PeerDBTest do
     id = NetID.new({127,0,0,1}, 29999)
     assert :ok == PeerDB.add(pid, id)
   end
-  
+
   test "can add() and get() valid NetID" do
     pid = PeerDB.locate
     id = NetID.new({127,0,0,1}, 29999)
@@ -28,28 +28,28 @@ defmodule GroupManager.Chatter.PeerDBTest do
     # {:ok, {:peer_data, {:net_id, {127, 0, 0, 1}, 29999}, 0, [], nil, nil}}
     assert {:ok, _} = PeerDB.get(pid, id)
   end
-  
+
   test "get() raises on invalid id" do
     pid = PeerDB.locate
     assert_raise FunctionClauseError, fn -> PeerDB.get(pid, nil) end
     assert_raise FunctionClauseError, fn -> PeerDB.get(pid, []) end
     assert_raise FunctionClauseError, fn -> PeerDB.get(pid, {}) end
   end
-  
+
   # add_seen_id
   test "add_seen_id() raises on invalid id" do
     pid = PeerDB.locate
     assert_raise FunctionClauseError, fn -> PeerDB.add_seen_id(pid, nil, nil) end
     assert_raise FunctionClauseError, fn -> PeerDB.add_seen_id(pid, :ok, {}) end
   end
-  
+
   # add_seen_id_list
   test "add_seen_id_list() raises on invalid id" do
     pid = PeerDB.locate
     assert_raise FunctionClauseError, fn -> PeerDB.add_seen_id_list(pid, nil, nil) end
     assert_raise FunctionClauseError, fn -> PeerDB.add_seen_id_list(pid, :ok, []) end
   end
-  
+
   test "add_seen_id_list() adds ids" do
     pid  = PeerDB.locate
     id1  = BroadcastID.new(NetID.new({127,0,0,1}, 29991))
@@ -72,11 +72,14 @@ defmodule GroupManager.Chatter.PeerDBTest do
         end
       end)
     end
-    
+
     assert id2 == check_id.(PeerData.seen_ids(new_peer_data), id2)
     assert id3 == check_id.(PeerData.seen_ids(new_peer_data), id3)
     assert id4 == check_id.(PeerData.seen_ids(new_peer_data), id4)
     assert PeerData.id(new_peer_data) == BroadcastID.origin(id1)
     assert PeerData.broadcast_seqno(new_peer_data) == BroadcastID.seqno(id1)
   end
+
+  # get_
+  # get_seen_id_list_
 end
