@@ -1,5 +1,5 @@
 %{"exactor": {:hex, :exactor, "2.2.0"},
   "fsm": {:hex, :fsm, "0.2.0"},
-  "lz4": {:hex, :lz4, "0.2.2"},
   "ranch": {:hex, :ranch, "1.2.0"},
+  "snappy": {:hex, :snappy, "1.1.1"},
   "xxhash": {:git, "https://github.com/pierresforge/erlang-xxhash", "a4de034201dfd8691d031a5b4128327484861aec", []}}

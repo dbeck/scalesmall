@@ -25,7 +25,7 @@ defmodule GroupManager.Mixfile do
   defp deps do
     [
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
-      # {:lz4, "~> 0.2.2"},
+      {:snappy, "~> 1.1"},
       {:fsm, "~> 0.2.0"},
       {:exactor, "~> 2.2"},
       {:ranch, "~> 1.2"}
