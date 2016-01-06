@@ -1,8 +1,10 @@
 defmodule GroupManager.Chatter.OutgoingSupervisor do
 
   use Supervisor
+  require GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.OutgoingHandler
-  
+
   def start_link(args, opts \\ []) do
     case opts do
       [name: name] ->
@@ -11,28 +13,26 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
         Supervisor.start_link(__MODULE__, args, [name: __MODULE__] ++ opts)
     end
   end
-  
+
   def init(_args) do
     children = [ supervisor(OutgoingHandler, [], restart: :temporary) ]
     supervise(children, strategy: :simple_one_for_one)
   end
-  
-  def start_handler(sup_pid, [host: host, port: port, own_host: own_host, own_port: own_port])
+
+  def start_handler(sup_pid, [peer_id: peer, own_id: me])
   when is_pid(sup_pid) and
-       is_nil(host) == false and
-       is_integer(port) and port > 0 and port < 65536 and
-       is_nil(own_host) == false and
-       is_integer(own_port) and own_port > 0 and own_port < 65536
+       NetID.is_valid(peer) and
+       NetID.is_valid(me)
   do
-    case OutgoingHandler.locate([host: host, port: port]) do
+    case OutgoingHandler.locate(peer) do
       handler_pid when is_pid(handler_pid) ->
         {:ok, handler_pid}
       _ ->
-        id = OutgoingHandler.id_atom([host: host, port: port])
-        Supervisor.start_child(sup_pid, [[host: host, port: port, own_host: own_host, own_port: own_port], [name: id]])
+        id = OutgoingHandler.id_atom(peer)
+        Supervisor.start_child(sup_pid, [[peer_id: peer, own_id: me], [name: id]])
     end
   end
-  
+
   def locate, do: Process.whereis(id_atom())
 
   def locate! do
@@ -41,6 +41,6 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
         pid
     end
   end
-  
+
   def id_atom, do: __MODULE__
 end

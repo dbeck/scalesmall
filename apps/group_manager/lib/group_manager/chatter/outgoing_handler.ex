@@ -1,14 +1,18 @@
 defmodule GroupManager.Chatter.OutgoingHandler do
 
   use ExActor.GenServer
+  require GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.NetID
 
-  defstart start_link([host: host, port: port, own_host: own_host, own_port: own_port], opts),
+  defstart start_link([peer_id: peer, own_id: me], opts),
     gen_server_opts: opts
   do
     # kept 'active' so we can stop on anything from the other side
     opts = [:binary, active: true]
-    {:ok, socket} = :gen_tcp.connect(host, port, opts)
-    initial_state([host: host, port: port, own_host: own_host, own_port: own_port, socket: socket])
+    true = NetID.valid?(peer)
+    true = NetID.valid?(me)
+    {:ok, socket} = :gen_tcp.connect(NetID.ip(peer), NetID.port(peer), opts)
+    initial_state([peer_id: peer, own_id: me, socket: socket])
   end
 
   defcast stop, do: stop_server(:normal)
@@ -18,27 +22,25 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   def handle_info({:tcp_error, _port, reason}, state), do: {:stop, reason, state}
   def handle_info(msg, state), do: {:stop, "unknown message received", state}
 
-  def locate([host: host, port: port])
-  when is_nil(host) == false and
-       is_integer(port) and port > 0 and port < 65536
+  def locate(id)
+  when NetID.is_valid(id)
   do
-    Process.whereis(id_atom([host: host, port: port]))
+    Process.whereis(id_atom(id))
   end
 
-  def locate!([host: host, port: port])
-  when is_nil(host) == false and
-       is_integer(port) and port > 0 and port < 65536
+  def locate!(id)
+  when NetID.is_valid(id)
   do
-    case Process.whereis(id_atom([host: host, port: port])) do
+    case Process.whereis(id_atom(id)) do
       pid when is_pid(pid) ->
         pid
     end
   end
 
-  def id_atom([host: host, port: port])
-  when is_nil(host) == false and
-       is_integer(port) and port > 0 and port < 65536
+  def id_atom(id)
+  when NetID.is_valid(id)
   do
-    String.to_atom("GroupManager.Chatter.OutgoingHandler.#{host}:#{port}")
+    host = NetID.ip(id) |> :inet_parse.ntoa |> String.Chars.to_string
+    String.to_atom("GroupManager.Chatter.OutgoingHandler.#{host}:#{NetID.port(id)}")
   end
 end
