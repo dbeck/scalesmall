@@ -63,15 +63,14 @@ defmodule GroupManager.Chatter.MulticastHandler do
   # incoming handler
   def handle_info({:udp, socket, ip, port, data}, state)
   do
-    # get my_id
-    [socket: _socket, my_id: my_id, multicast_id: _multi_id] = state
-
     # process data
     case Serializer.decode(data)
     do
       {:ok, gossip} ->
         peer_db = PeerDB.locate!
-        PeerDB.add_seen_id_list(peer_db, my_id, Gossip.seen_ids(gossip))
+        PeerDB.add_seen_id_list(peer_db,
+                                Gossip.current_id(gossip),
+                                Gossip.seen_ids(gossip))
 
       {:error, :invalid_data, _}
         -> :error

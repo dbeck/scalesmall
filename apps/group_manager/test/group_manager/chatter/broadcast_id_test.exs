@@ -202,4 +202,6 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
   test "validate_list([]) is :ok" do
     assert :ok == BroadcastID.validate_list([])
   end
+
+  # current_id
 end

@@ -73,6 +73,13 @@ defmodule GroupManager.Chatter.Gossip do
 
   def valid?(_), do: false
 
+  @spec current_id(t) :: BroadcastID.t
+  def current_id(g)
+  when is_valid(g)
+  do
+    gossip(g, :current_id)
+  end
+
   @spec seen_ids(t, list(BroadcastID.t)) :: t
   def seen_ids(g, ids)
   when is_valid(g) and is_list(ids)
