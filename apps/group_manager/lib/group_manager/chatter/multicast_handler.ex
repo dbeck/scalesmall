@@ -71,7 +71,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
     do
       {:ok, gossip} ->
         peer_db = PeerDB.locate!
-        PeerDB.add_seen_id_list(my_id, Gossip.seen_ids(gossip))
+        PeerDB.add_seen_id_list(peer_db, my_id, Gossip.seen_ids(gossip))
 
       {:error, :invalid_data, _}
         -> :error
