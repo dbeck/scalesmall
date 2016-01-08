@@ -12,11 +12,15 @@ defmodule GroupManager.Chatter.Serializer do
     :erlang.term_to_binary(gossip)
   end
 
-  @spec decode(binary) :: Gossip.t
+  @spec decode(binary) :: {:ok, Gossip.t} | {:error, :invalid_data, integer}
   def decode(msg)
   do
     gossip = :erlang.binary_to_term(msg)
-    true = Gossip.valid?(gossip)
-    gossip
+    if Gossip.valid?(gossip)
+    do
+      {:ok, gossip}
+    else
+      {:error, :invalid_data, byte_size(gossip)}
+    end
   end
 end

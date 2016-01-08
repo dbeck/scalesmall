@@ -7,6 +7,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.Gossip
   alias GroupManager.Chatter.Serializer
+  alias GroupManager.Chatter.PeerDB
 
   defstart start_link([my_id: my_id,
                        multicast_id: multi_id,
@@ -62,9 +63,23 @@ defmodule GroupManager.Chatter.MulticastHandler do
   # incoming handler
   def handle_info({:udp, socket, ip, port, data}, state)
   do
+    # get my_id
+    [socket: _socket, my_id: my_id, multicast_id: _multi_id] = state
+
+    # process data
+    case Serializer.decode(data)
+    do
+      {:ok, gossip} ->
+        peer_db = PeerDB.locate!
+        PeerDB.add_seen_id_list(my_id, Gossip.seen_ids(gossip))
+
+      {:error, :invalid_data, _}
+        -> :error
+    end
+
     # when we popped one message we allow one more to be buffered
     :inet.setopts(socket, [active: 1])
-    IO.inspect data
+    IO.inspect ["new data", data]
     {:noreply, state}
   end
 
