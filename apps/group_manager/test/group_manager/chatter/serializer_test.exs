@@ -7,5 +7,4 @@ defmodule GroupManager.Chatter.SerializerTest do
 
   # encode
   # decode
-
 end

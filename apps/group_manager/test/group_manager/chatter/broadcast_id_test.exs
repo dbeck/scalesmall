@@ -204,4 +204,5 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
   end
 
   # current_id
+  # new(netid, seqno)
 end

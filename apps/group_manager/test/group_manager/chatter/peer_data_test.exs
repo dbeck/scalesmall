@@ -158,4 +158,5 @@ defmodule GroupManager.Chatter.PeerDataTest do
   end
 
   # inc_broadcast_seqno
+  # merge_seen_ids (re-test!!!)
 end

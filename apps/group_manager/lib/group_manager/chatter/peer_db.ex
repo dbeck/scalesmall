@@ -80,7 +80,7 @@ defmodule GroupManager.Chatter.PeerDB do
     case :ets.lookup(name, id)
     do
       []      -> {:error, :not_found}
-      [value] -> {:ok, PeerData.seen_ids(value)}
+      [value] -> {:ok, PeerData.broadcast_seqno(value)}
     end
   end
 

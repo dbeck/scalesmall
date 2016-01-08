@@ -14,6 +14,13 @@ defmodule GroupManager.Chatter.BroadcastID do
     broadcast_id(origin: id)
   end
 
+  @spec new(NetID.t, integer) :: t
+  def new(id, seqno)
+  when NetID.is_valid(id) and is_integer(seqno) and seqno >= 0
+  do
+    broadcast_id(origin: id) |> broadcast_id(seqno: seqno)
+  end
+
   defmacro is_valid(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->

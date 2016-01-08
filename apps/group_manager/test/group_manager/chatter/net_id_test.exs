@@ -47,5 +47,4 @@ defmodule GroupManager.Chatter.NetIDTest do
   # ip
   # port
   # validate_list!
-
 end

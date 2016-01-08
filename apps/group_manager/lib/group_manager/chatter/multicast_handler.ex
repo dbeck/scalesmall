@@ -8,6 +8,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
   alias GroupManager.Chatter.Gossip
   alias GroupManager.Chatter.Serializer
   alias GroupManager.Chatter.PeerDB
+  alias GroupManager.Chatter.BroadcastID
 
   defstart start_link([my_id: my_id,
                        multicast_id: multi_id,
@@ -63,11 +64,21 @@ defmodule GroupManager.Chatter.MulticastHandler do
   # incoming handler
   def handle_info({:udp, socket, ip, port, data}, state)
   do
+    [socket: _socket, my_id: my_id, multicast_id: _multi_id] = state
     # process data
     case Serializer.decode(data)
     do
       {:ok, gossip} ->
         peer_db = PeerDB.locate!
+        my_seqno = case PeerDB.get_broadcast_seqno_(my_id) do
+          {:ok, tmp_seqno} -> tmp_seqno
+          {:error, _} -> 0
+        end
+        # register that we have seen the peer
+        PeerDB.add_seen_id(peer_db,
+                           BroadcastID.new(my_id, my_seqno),
+                           Gossip.current_id(gossip))
+        # register whom the peer have seen
         PeerDB.add_seen_id_list(peer_db,
                                 Gossip.current_id(gossip),
                                 Gossip.seen_ids(gossip))

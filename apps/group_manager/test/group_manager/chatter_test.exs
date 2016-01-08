@@ -9,5 +9,4 @@ defmodule GroupManager.ChatterTest do
   # broadcast
   # local_netid
   # multicast_netid
-
 end
