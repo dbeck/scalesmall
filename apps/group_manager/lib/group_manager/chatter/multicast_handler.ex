@@ -6,15 +6,17 @@ defmodule GroupManager.Chatter.MulticastHandler do
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.Gossip
+  alias GroupManager.Chatter.Serializer
 
-  defstart start_link([ my_id: my_id,
-                        multicast_addr: multicast_addr,
-                        multicast_port: multicast_port,
-                        multicast_ttl: ttl ],
+  defstart start_link([my_id: my_id,
+                       multicast_id: multi_id,
+                       multicast_ttl: ttl],
                       opts),
     gen_server_opts: opts
   do
-    my_addr = NetID.ip(my_id)
+    my_addr         = NetID.ip(my_id)
+    multicast_addr  = NetID.ip(multi_id)
+    multicast_port  = NetID.port(multi_id)
 
     udp_options = [
       :binary,
@@ -27,7 +29,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
     ]
 
     {:ok, socket} = :gen_udp.open( multicast_port, udp_options )
-    initial_state(socket)
+    initial_state([socket: socket, my_id: my_id, multicast_id: multi_id])
   end
 
   @spec send(pid, Gossip.t) :: Gossip.t
@@ -44,8 +46,17 @@ defmodule GroupManager.Chatter.MulticastHandler do
   def handle_call({:send, gossip}, _from, state)
   when Gossip.is_valid(gossip)
   do
-    # send(Socket, Address, Port, Packet) -> ok | {error, Reason}
-    {:reply, {:ok, gossip}, state}
+    [socket: socket, my_id: _, multicast_id: multi_id] = state
+    packet = Serializer.encode(gossip)
+    case :gen_udp.send(socket, NetID.ip(multi_id), NetID.port(multi_id), packet)
+    do
+      :ok ->
+        {:reply, {:ok, gossip}, state}
+
+      {:error, reason} ->
+        :gen_udp.close(socket)
+        {:stop, reason, :error, state}
+    end
   end
 
   # incoming handler

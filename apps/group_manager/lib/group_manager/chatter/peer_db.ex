@@ -118,6 +118,10 @@ defmodule GroupManager.Chatter.PeerDB do
   def handle_call({:inc_broadcast_seqno, id}, _from, table)
     when NetID.is_valid(id)
   do
+    # make sure we have a placeholder ID in ETS
+    :ets.insert_new(table, PeerData.new(id))
+
+    # lookup and update
     case :ets.lookup(table, id)
     do
       []      -> {:reply, :error, table}

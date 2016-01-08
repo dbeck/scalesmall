@@ -5,4 +5,7 @@ defmodule GroupManager.Chatter.SerializerTest do
     assert 1 + 1 == 2
   end
 
+  # encode
+  # decode
+
 end

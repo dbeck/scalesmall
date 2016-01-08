@@ -12,7 +12,8 @@ defmodule GroupManager.Chatter do
   alias GroupManager.Chatter.Gossip
   alias GroupManager.Data.Message
 
-  def start_link(opts \\ []) do
+  def start_link(opts \\ [])
+  do
     case opts do
       [name: name] ->
         Supervisor.start_link(__MODULE__, :no_args, opts)
@@ -21,17 +22,13 @@ defmodule GroupManager.Chatter do
     end
   end
 
-  def init(:no_args) do
-
-    {:ok, mcast_addr_str}  = Application.fetch_env(:group_manager, :multicast_addr)
-    {:ok, mcast_port_str}  = Application.fetch_env(:group_manager, :multicast_port)
-    {:ok, mcast_ttl_str}   = Application.fetch_env(:group_manager, :multicast_ttl)
-
-    {:ok, multicast_addr} = mcast_addr_str |> String.to_char_list |> :inet_parse.address
-    {multicast_port, ""}  = mcast_port_str |> Integer.parse
+  def init(:no_args)
+  do
+    {:ok, mcast_ttl_str}  = Application.fetch_env(:group_manager, :multicast_ttl)
     {multicast_ttl, ""}   = mcast_ttl_str  |> Integer.parse
 
-    my_id = local_netid()
+    my_id     = local_netid()
+    multi_id  = multicast_netid()
 
     opts = [port: NetID.port(my_id)]
 
@@ -46,8 +43,7 @@ defmodule GroupManager.Chatter do
 
     multicast_args = [
       my_id:           my_id,
-      multicast_addr:  multicast_addr,
-      multicast_port:  multicast_port,
+      multicast_id:    multi_id,
       multicast_ttl:   multicast_ttl
     ]
 
@@ -62,17 +58,18 @@ defmodule GroupManager.Chatter do
   end
 
   @spec broadcast(list(NetID.t), Message.t) :: :ok
-  def broadcast(destination_list, msg)
-  when is_list(destination_list) and Message.is_valid(msg)
+  def broadcast(distribution_list, msg)
+  when is_list(distribution_list) and Message.is_valid(msg)
   do
-    :ok = NetID.validate_list(destination_list)
+    :ok = NetID.validate_list(distribution_list)
     my_id = local_netid()
-    seqno = PeerDB.inc_broadcast_seqno(my_id)
+    {:ok, seqno} = PeerDB.inc_broadcast_seqno(PeerDB.locate!, my_id)
 
     # collect ids seen on multicast and update distribution list too
+    {:ok, seen_ids} = PeerDB.get_seen_id_list_(my_id)
     gossip = Gossip.new(my_id, seqno, msg)
-    |> Gossip.seen_ids(PeerDB.get_seen_ids_(my_id))
-    |> Gossip.distribution_list(destination_list)
+    |> Gossip.distribution_list(distribution_list)
+    |> Gossip.seen_ids(seen_ids)
 
     # broadcast first and let MulticastHandler decide what to send directly
     direct_gossip = MulticastHandler.send(MulticastHandler.locate!, gossip)
@@ -121,5 +118,16 @@ defmodule GroupManager.Chatter do
     {my_port, ""}      = my_port_str |> Integer.parse
 
     NetID.new(my_addr, my_port)
+  end
+
+  def multicast_netid
+  do
+    {:ok, mcast_addr_str}  = Application.fetch_env(:group_manager, :multicast_addr)
+    {:ok, mcast_port_str}  = Application.fetch_env(:group_manager, :multicast_port)
+
+    {:ok, multicast_addr} = mcast_addr_str |> String.to_char_list |> :inet_parse.address
+    {multicast_port, ""}  = mcast_port_str |> Integer.parse
+
+    NetID.new(multicast_addr, multicast_port)
   end
 end

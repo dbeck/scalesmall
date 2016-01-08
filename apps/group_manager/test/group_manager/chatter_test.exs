@@ -4,8 +4,10 @@ defmodule GroupManager.ChatterTest do
   test "the truth" do
     assert 1 + 1 == 2
   end
-  
+
   # locate
   # broadcast
+  # local_netid
+  # multicast_netid
 
 end
