@@ -5,11 +5,66 @@ defmodule GroupManager.Chatter.NetID do
   Record.defrecord :net_id, ip: nil, port: 0
   @type t :: record( :net_id, ip: tuple, port: integer )
 
+  defmacro is_valid_port(data) do
+    case Macro.Env.in_guard?(__CALLER__) do
+      true ->
+        quote do
+          is_integer(unquote(data)) and
+          unquote(data) >= 0 and
+          unquote(data) <= 0xffff
+        end
+      false ->
+        quote bind_quoted: [result: data] do
+          is_integer(data) and
+          data >= 0 and
+          data <= 0xffff
+        end
+    end
+  end
+
+  defmacro is_valid_ip(ip) do
+    case Macro.Env.in_guard?(__CALLER__) do
+      true ->
+        quote do
+          is_tuple(unquote(ip)) and
+          tuple_size(unquote(ip)) == 4 and
+          is_integer(:erlang.element(1,unquote(ip))) and
+          is_integer(:erlang.element(2,unquote(ip))) and
+          is_integer(:erlang.element(3,unquote(ip))) and
+          is_integer(:erlang.element(4,unquote(ip))) and
+          :erlang.element(1,unquote(ip)) >= 0 and
+          :erlang.element(2,unquote(ip)) >= 0 and
+          :erlang.element(3,unquote(ip)) >= 0 and
+          :erlang.element(4,unquote(ip)) >= 0 and
+          :erlang.element(1,unquote(ip)) < 256 and
+          :erlang.element(2,unquote(ip)) < 256 and
+          :erlang.element(3,unquote(ip)) < 256 and
+          :erlang.element(4,unquote(ip)) < 256
+        end
+      false ->
+        quote bind_quoted: [result: ip] do
+          is_tuple(ip) and
+          tuple_size(ip) == 4 and
+          is_integer(:erlang.element(1,ip)) and
+          is_integer(:erlang.element(2,ip)) and
+          is_integer(:erlang.element(3,ip)) and
+          is_integer(:erlang.element(4,ip)) and
+          :erlang.element(1,ip) >= 0 and
+          :erlang.element(2,ip) >= 0 and
+          :erlang.element(3,ip) >= 0 and
+          :erlang.element(4,ip) >= 0 and
+          :erlang.element(1,ip) < 256 and
+          :erlang.element(2,ip) < 256 and
+          :erlang.element(3,ip) < 256 and
+          :erlang.element(4,ip) < 256
+        end
+    end
+  end
+
   @spec new(tuple, integer) :: t
   def new(ip, port)
   # TODO : IPV6
-  when is_tuple(ip) and tuple_size(ip) == 4 and
-       is_integer(port) and port >= 0
+  when is_valid_ip(ip) and is_valid_port(port)
   do
     net_id(ip: ip) |> net_id(port: port)
   end
