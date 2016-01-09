@@ -23,4 +23,5 @@ defmodule GroupManager.Chatter.GossipTest do
   # seen_ids
   # distribution_list
   # new(netid, seqno)
+  # current_id
 end

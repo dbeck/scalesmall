@@ -203,6 +203,23 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
     assert :ok == BroadcastID.validate_list([])
   end
 
-  # current_id
+  test "basic test for new(netid,seqno)" do
+    assert BroadcastID.valid?(BroadcastID.new(NetID.new({127,0,0,1}, 29999), 111))
+  end
+
   # new(netid, seqno)
+  test "new(netid, seqno) throws on invalid input" do
+    d = NetID.new({127,0,0,1}, 29999)
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(nil, nil) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, nil) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, -1) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, []) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:ok}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:peer_data, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:peer_data, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:peer_data, nil, nil, nil}) end
+  end
 end

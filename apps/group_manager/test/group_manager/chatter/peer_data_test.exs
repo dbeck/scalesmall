@@ -9,6 +9,19 @@ defmodule GroupManager.Chatter.PeerDataTest do
     assert PeerData.valid?(PeerData.new(NetID.new({127,0,0,1}, 29999)))
   end
 
+  # new(netid)
+  test "new(netid) throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> PeerData.new(nil) end
+    assert_raise FunctionClauseError, fn -> PeerData.new([]) end
+    assert_raise FunctionClauseError, fn -> PeerData.new({}) end
+    assert_raise FunctionClauseError, fn -> PeerData.new({:ok}) end
+    assert_raise FunctionClauseError, fn -> PeerData.new({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.new({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.new({:net_id, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.new({:net_id, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.new({:net_id, nil, nil, nil}) end
+  end
+
   test "basic test for invalid input" do
     assert PeerData.valid?(nil) == false
     assert PeerData.valid?([]) == false
@@ -145,6 +158,18 @@ defmodule GroupManager.Chatter.PeerDataTest do
     assert [id] == PeerData.merge_seen_ids(d, [id]) |> PeerData.seen_ids
   end
 
+  test "merge two element list" do
+    d = PeerData.new(NetID.new({127,0,0,1}, 29999))
+    id1 = BroadcastID.new(NetID.new({127,0,0,1}, 29))
+    id2 = BroadcastID.new(NetID.new({127,0,0,1}, 299))
+    assert [] == PeerData.seen_ids(d)
+    merged = PeerData.merge_seen_ids(d, [id1, id2]) |> PeerData.seen_ids
+    assert 2 == merged |> length
+    assert id1 == Enum.find(merged, fn(x) -> x == id1 end)
+    assert id2 == Enum.find(merged, fn(x) -> x == id2 end)
+    assert nil == Enum.find(merged, fn(x) -> x == d end)
+  end
+
   test "merge picks the larger seqno" do
     d   = PeerData.new(NetID.new({127,0,0,1}, 29999))
     id  = BroadcastID.new(NetID.new({127,0,0,1}, 29999))
@@ -158,5 +183,21 @@ defmodule GroupManager.Chatter.PeerDataTest do
   end
 
   # inc_broadcast_seqno
-  # merge_seen_ids (re-test!!!)
+  test "inc_broadcast_seqno() throws on invalud input" do
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno(nil) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno([]) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno({}) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno({:ok}) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno({:peer_data, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno({:peer_data, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.inc_broadcast_seqno({:peer_data, nil, nil, nil}) end
+  end
+
+  test "inc_broadcast_seqno() increases seqno" do
+    pd = PeerData.new(NetID.new({127,0,0,1}, 29999))
+    seqno = PeerData.broadcast_seqno(pd)
+    assert (seqno+1) == pd |> PeerData.inc_broadcast_seqno |> PeerData.broadcast_seqno
+  end
 end
