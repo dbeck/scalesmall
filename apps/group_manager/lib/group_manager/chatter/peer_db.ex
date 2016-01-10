@@ -50,6 +50,9 @@ defmodule GroupManager.Chatter.PeerDB do
   end
 
   # Direct, read-only ETS access
+  # note: since the writer process may be slower than the readers
+  #       the direct readers may not see the immediate result of the
+  #       writes
 
   def get_(id)
   when NetID.is_valid(id)

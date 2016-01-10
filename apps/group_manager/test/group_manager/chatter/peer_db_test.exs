@@ -11,7 +11,7 @@ defmodule GroupManager.Chatter.PeerDBTest do
     assert is_pid(pid)
   end
 
-  test "cannot add() invalid " do
+  test "cannot add() invalid" do
     pid = PeerDB.locate
     assert_raise FunctionClauseError, fn -> PeerDB.add(pid, nil) end
   end
@@ -22,19 +22,24 @@ defmodule GroupManager.Chatter.PeerDBTest do
     assert :ok == PeerDB.add(pid, id)
   end
 
-  test "can add() and get() valid NetID" do
+  test "can add() and get()/get_() valid NetID" do
     pid = PeerDB.locate
-    id = NetID.new({127,0,0,1}, 29999)
+    id = NetID.new({127,0,0,1}, 29919)
     assert :ok == PeerDB.add(pid, id)
     # {:ok, {:peer_data, {:net_id, {127, 0, 0, 1}, 29999}, 0, [], nil, nil}}
     assert {:ok, _} = PeerDB.get(pid, id)
+    assert {:ok, _} = PeerDB.get_(id)
   end
 
-  test "get() raises on invalid id" do
+  test "get() and get_ raises on invalid id" do
     pid = PeerDB.locate
     assert_raise FunctionClauseError, fn -> PeerDB.get(pid, nil) end
     assert_raise FunctionClauseError, fn -> PeerDB.get(pid, []) end
     assert_raise FunctionClauseError, fn -> PeerDB.get(pid, {}) end
+
+    assert_raise FunctionClauseError, fn -> PeerDB.get_(nil) end
+    assert_raise FunctionClauseError, fn -> PeerDB.get_([]) end
+    assert_raise FunctionClauseError, fn -> PeerDB.get_({}) end
   end
 
   # add_seen_id
@@ -81,8 +86,35 @@ defmodule GroupManager.Chatter.PeerDBTest do
     assert PeerData.broadcast_seqno(new_peer_data) == BroadcastID.seqno(id1)
   end
 
-  # get_
   # get_seen_id_list_
+  test "get_seen_id_list_() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> PeerDB.get_seen_id_list_(nil) end
+    assert_raise FunctionClauseError, fn -> PeerDB.get_seen_id_list_([]) end
+    assert_raise FunctionClauseError, fn -> PeerDB.get_seen_id_list_({}) end
+  end
+
+  test "get_seen_id_list_() returns the seen ids" do
+    pid  = PeerDB.locate
+    id1  = BroadcastID.new(NetID.new({127,0,0,1}, 29971))
+    id2  = BroadcastID.new(NetID.new({127,0,0,1}, 29972))
+    id3  = BroadcastID.new(NetID.new({127,0,0,1}, 29973))
+    id4  = BroadcastID.new(NetID.new({127,0,0,1}, 29974))
+    assert :ok == PeerDB.add_seen_id_list(pid, id1, [id2, id3, id4])
+    assert {:ok, _} = PeerDB.get(pid, BroadcastID.origin(id1))
+    assert {:ok, _} = PeerDB.get_(BroadcastID.origin(id1))
+    {:ok, ids} = PeerDB.get_seen_id_list_(id1 |> BroadcastID.origin)
+    assert id2 == Enum.find(ids, fn(x) -> x == id2 end)
+    assert id3 == Enum.find(ids, fn(x) -> x == id3 end)
+    assert id4 == Enum.find(ids, fn(x) -> x == id4 end)
+  end
+
+  # get_broadcast_seqno_
+  test "get_broadcast_seqno_() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> PeerDB.get_broadcast_seqno_(nil) end
+    assert_raise FunctionClauseError, fn -> PeerDB.get_broadcast_seqno_([]) end
+    assert_raise FunctionClauseError, fn -> PeerDB.get_broadcast_seqno_({}) end
+  end
+
   # get_broadcast_seqno_
   # inc_broadcast_seqno
 end
