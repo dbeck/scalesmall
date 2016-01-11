@@ -115,6 +115,40 @@ defmodule GroupManager.Chatter.PeerDBTest do
     assert_raise FunctionClauseError, fn -> PeerDB.get_broadcast_seqno_({}) end
   end
 
-  # get_broadcast_seqno_
+  test "get_broadcast_seqno_() returns the valid seqno" do
+    pid  = PeerDB.locate
+    id1  = BroadcastID.new(NetID.new({127,0,0,1}, 29961))
+    id2  = BroadcastID.new(NetID.new({127,0,0,1}, 29962))
+    assert :ok == PeerDB.add_seen_id(pid, id1, id2)
+    assert {:ok, peer_data1} = PeerDB.get(pid, BroadcastID.origin(id1))
+    assert {:ok, peer_data2} = PeerDB.get(pid, BroadcastID.origin(id2))
+    assert PeerData.id(peer_data1) == BroadcastID.origin(id1)
+    assert PeerData.id(peer_data2) == BroadcastID.origin(id2)
+    assert {:ok, PeerData.broadcast_seqno(peer_data1)} ==
+      PeerDB.get_broadcast_seqno_(BroadcastID.origin(id1))
+    assert {:ok, PeerData.broadcast_seqno(peer_data2)} ==
+      PeerDB.get_broadcast_seqno_(BroadcastID.origin(id2))
+  end
+
   # inc_broadcast_seqno
+  test "inc_broadcast_seqno() throws on invalid input" do
+    pid = PeerDB.locate
+    assert_raise FunctionClauseError, fn -> PeerDB.inc_broadcast_seqno(pid, nil) end
+    assert_raise FunctionClauseError, fn -> PeerDB.inc_broadcast_seqno(pid, []) end
+    assert_raise FunctionClauseError, fn -> PeerDB.inc_broadcast_seqno(pid, {}) end
+    id = NetID.new({127,0,0,1}, 29951)
+
+    assert_raise FunctionClauseError, fn -> PeerDB.inc_broadcast_seqno(nil, id) end
+    assert_raise FunctionClauseError, fn -> PeerDB.inc_broadcast_seqno([], id) end
+    assert_raise FunctionClauseError, fn -> PeerDB.inc_broadcast_seqno({}, id) end
+  end
+
+  test "inc_broadcast_seqno() increases broadcast sequence number" do
+    pid = PeerDB.locate
+    id = NetID.new({127,0,0,1}, 29941)
+    {:ok, seqno1} = PeerDB.inc_broadcast_seqno(pid, id)
+    {:ok, seqno2} = PeerDB.inc_broadcast_seqno(pid, id)
+    assert seqno2 == (seqno1+1)
+    assert {:ok, seqno2} == PeerDB.get_broadcast_seqno_(id)
+  end
 end

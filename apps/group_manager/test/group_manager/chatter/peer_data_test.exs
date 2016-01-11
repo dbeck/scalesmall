@@ -200,4 +200,23 @@ defmodule GroupManager.Chatter.PeerDataTest do
     seqno = PeerData.broadcast_seqno(pd)
     assert (seqno+1) == pd |> PeerData.inc_broadcast_seqno |> PeerData.broadcast_seqno
   end
+
+  # id
+  test "id() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> PeerData.id(nil) end
+    assert_raise FunctionClauseError, fn -> PeerData.id([]) end
+    assert_raise FunctionClauseError, fn -> PeerData.id({}) end
+    assert_raise FunctionClauseError, fn -> PeerData.id({:ok}) end
+    assert_raise FunctionClauseError, fn -> PeerData.id({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.id({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.id({:peer_data, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.id({:peer_data, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> PeerData.id({:peer_data, nil, nil, nil}) end
+  end
+
+  test "id() get" do
+    d = PeerData.new(NetID.new({127,0,0,1}, 29999))
+    v = d |> PeerData.id
+    assert v == NetID.new({127,0,0,1}, 29999)
+  end
 end
