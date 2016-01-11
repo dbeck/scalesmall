@@ -106,4 +106,5 @@ defmodule GroupManager.Chatter.GossipTest do
     assert [id1, id2] == g2 |> Gossip.distribution_list
   end
 
+  # remove_from_distribution_list
 end

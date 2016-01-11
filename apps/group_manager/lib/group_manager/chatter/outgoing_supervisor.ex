@@ -2,8 +2,12 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
 
   use Supervisor
   require GroupManager.Chatter.NetID
+  require GroupManager.Chatter.Gossip
+  require GroupManager.Chatter.BroadcastID
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.BroadcastID
   alias GroupManager.Chatter.OutgoingHandler
+  alias GroupManager.Chatter.Gossip
 
   def start_link(args, opts \\ []) do
     case opts do
@@ -19,17 +23,38 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def start_handler(sup_pid, [peer_id: peer, own_id: me])
-  when is_pid(sup_pid) and
-       NetID.is_valid(peer) and
-       NetID.is_valid(me)
+  def broadcast(gossip)
+  when Gossip.is_valid(gossip)
   do
-    case OutgoingHandler.locate(peer) do
+    broadcast_to(Gossip.distribution_list(gossip), gossip)
+  end
+
+  defp broadcast_to([], gossip), do: :ok
+
+  defp broadcast_to(distribution_list, gossip)
+  do
+    len = length(distribution_list)
+    take_n = div(len, 2)
+    {[head|rest], next} = distribution_list |> Enum.shuffle |> Enum.split(take_n)
+    own_id = Gossip.current_id(gossip) |> BroadcastID.origin
+    handler_pid = start_handler(locate!, [own_id: own_id, peer_id: head])
+    OutgoingHandler.send(handler_pid, gossip |> Gossip.distribution_list(rest))
+    broadcast_to(next, Gossip.distribution_list(gossip, next))
+  end
+
+  def start_handler(sup_pid, [own_id: own_id, peer_id: peer_id])
+  when is_pid(sup_pid) and
+       NetID.is_valid(peer_id) and
+       NetID.is_valid(own_id)
+  do
+    case OutgoingHandler.locate(peer_id) do
       handler_pid when is_pid(handler_pid) ->
         {:ok, handler_pid}
       _ ->
-        id = OutgoingHandler.id_atom(peer)
-        Supervisor.start_child(sup_pid, [[peer_id: peer, own_id: me], [name: id]])
+        id = OutgoingHandler.id_atom(peer_id)
+        Supervisor.start_child(sup_pid, [
+          [peer_id: peer_id, own_id: own_id],
+          [name: id]])
     end
   end
 

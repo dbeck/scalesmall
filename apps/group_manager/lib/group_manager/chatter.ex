@@ -27,10 +27,10 @@ defmodule GroupManager.Chatter do
     {:ok, mcast_ttl_str}  = Application.fetch_env(:group_manager, :multicast_ttl)
     {multicast_ttl, ""}   = mcast_ttl_str  |> Integer.parse
 
-    my_id     = local_netid()
+    own_id    = local_netid()
     multi_id  = multicast_netid()
 
-    opts = [port: NetID.port(my_id)]
+    opts = [port: NetID.port(own_id)]
 
     listener_spec = :ranch.child_spec(
       :"GroupManager.Chatter.IncomingHandler",
@@ -38,11 +38,11 @@ defmodule GroupManager.Chatter do
       :ranch_tcp,
       opts,
       GroupManager.Chatter.IncomingHandler,
-      []
+      [own_id: own_id]
     )
 
     multicast_args = [
-      my_id:           my_id,
+      own_id:          own_id,
       multicast_id:    multi_id,
       multicast_ttl:   multicast_ttl
     ]
@@ -62,23 +62,35 @@ defmodule GroupManager.Chatter do
   when is_list(distribution_list) and Message.is_valid(msg)
   do
     :ok = NetID.validate_list(distribution_list)
-    my_id = local_netid()
-    {:ok, seqno} = PeerDB.inc_broadcast_seqno(PeerDB.locate!, my_id)
+    own_id = local_netid()
+    {:ok, seqno} = PeerDB.inc_broadcast_seqno(PeerDB.locate!, own_id)
 
-    # collect ids seen on multicast and update distribution list too
-    {:ok, seen_ids} = PeerDB.get_seen_id_list_(my_id)
-    gossip = Gossip.new(my_id, seqno, msg)
+    # collect ids seen on multicast and add distribution list to the Gossip
+    {:ok, seen_ids} = PeerDB.get_seen_id_list_(own_id)
+
+    gossip = Gossip.new(own_id, seqno, msg)
     |> Gossip.distribution_list(distribution_list)
     |> Gossip.seen_ids(seen_ids)
 
+    IO.inspect ["multicast_to", gossip]
+
     # broadcast first and let MulticastHandler decide what to send directly
-    direct_gossip = MulticastHandler.send(MulticastHandler.locate!, gossip)
+    :ok = MulticastHandler.send(MulticastHandler.locate!, gossip)
 
-    # outgoing handler uses its alrady open channels and returns the gossip
+    # convert broadcast IDs to Net IDs (chopping broadcast seqno)
+    seen_netids = Enum.reduce(seen_ids,[], fn(x, acc) ->
+      [GroupManager.Chatter.BroadcastID.origin(x)|acc]
+    end)
+
+    # the remaining list must be contacted directly
+    remaining_non_mcast =
+      Gossip.remove_from_distribution_list(gossip, seen_netids)
+
+    IO.inspect ["remaining", remaining_non_mcast]
+
+    # outgoing handler uses its already open channels and returns the gossip
     # what couldn't be delivered
-    # remaining = OutgoingHandler.send(OutgoingHandler.locate!, gossip)
-
-    # TODO: handle what remains
+    :ok = OutgoingHandler.send(OutgoingHandler.locate!, gossip)
 
     # TODO: (later) may be send a TCP message too ???
     # use reverse channels ??? : GroupManager.Chatter.IncomingHandler

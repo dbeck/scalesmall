@@ -109,4 +109,22 @@ defmodule GroupManager.Chatter.Gossip do
   do
     gossip(g, :distribution_list)
   end
+
+  @spec remove_from_distribution_list(t, list(NetID.t)) :: t
+  def remove_from_distribution_list(g, [])
+  when is_valid(g)
+  do
+    g
+  end
+
+  def remove_from_distribution_list(g, to_remove)
+  when is_valid(g)
+  do
+    :ok = NetID.validate_list!(to_remove)
+    old_list = gossip(g, :distribution_list)
+    old_set = Enum.into(old_list, HashSet.new)
+    remove_set = Enum.into(to_remove, HashSet.new)
+    new_set = HashSet.difference(old_set, remove_set)
+    gossip(g, distribution_list: HashSet.to_list(new_set))
+  end
 end

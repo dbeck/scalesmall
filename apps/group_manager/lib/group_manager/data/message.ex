@@ -2,10 +2,10 @@ defmodule GroupManager.Data.Message do
   @moduledoc """
   Message is what we pass between members in order to reach an agreement about the state of the world.
   Message keeps track of added and removed items in two corresponding `TimedSet` items.
-  
+
   `Message` itself is a Record type that we manipulate and access with the methods provided in the module.
   """
-  
+
   require Record
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
@@ -15,25 +15,25 @@ defmodule GroupManager.Data.Message do
   alias GroupManager.Data.WorldClock
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
-  
+
   Record.defrecord :message, time: nil, items: nil
   @type t :: record( :message, time: WorldClock.t, items: TimedSet.t )
-  
+
   @spec new() :: t
   def new()
   do
     message(time: WorldClock.new()) |> message(items: TimedSet.new())
   end
-      
+
   @doc """
   Validate as much as we can about the `data` parameter which should be a Message record.
-   
+
   Validation rules are:
-  
+
   - 1st is an `:message` atom
   - 2nd `time`: is non-nil
   - 3rd `items`: is non-nil
-  
+
   The purpose of this macro is to help checking input parameters in function guards.
   """
   defmacro is_valid(data) do
@@ -62,7 +62,7 @@ defmodule GroupManager.Data.Message do
         end
     end
   end
-  
+
   defmacro is_empty(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -82,43 +82,43 @@ defmodule GroupManager.Data.Message do
         end
     end
   end
-  
+
   @spec valid?(t) :: boolean
   def valid?(data)
   when is_valid(data)
   do
     true
   end
-  
+
   def valid?(_), do: false
-  
+
   @spec empty?(t) :: boolean
   def empty?(data)
   when is_valid(data) and is_empty(data)
   do
     true
   end
-  
+
   def empty?(data)
   when is_valid(data)
   do
     false
   end
-  
+
   @spec time(t) :: WorldClock.t
   def time(msg)
   when is_valid(msg)
   do
     message(msg, :time)
   end
-  
+
   @spec items(t) :: TimedSet.t
   def items(msg)
   when is_valid(msg)
   do
     message(msg, :items)
   end
-  
+
   @spec add(t, TimedItem.t) :: t
   def add(msg, timed_item)
   when is_valid(msg) and TimedItem.is_valid(timed_item)
