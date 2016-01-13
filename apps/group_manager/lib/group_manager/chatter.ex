@@ -82,7 +82,7 @@ defmodule GroupManager.Chatter do
 
     IO.inspect ["multicast_to", gossip]
 
-    # broadcast first and let MulticastHandler decide what to send directly
+    # multicast first
     :ok = MulticastHandler.send(MulticastHandler.locate!, gossip)
 
     # the remaining list must be contacted directly

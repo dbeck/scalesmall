@@ -48,7 +48,7 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   end
 
   # stop on any message or event from the other side
-  def handle_info({:tcp_closed, _port}, state), do: {:stop, "socket closed", state}
+  def handle_info({:tcp_closed, _port}, state), do: {:stop, :normal, state}
   def handle_info({:tcp_error, _port, reason}, state), do: {:stop, reason, state}
   def handle_info(msg, state), do: {:stop, "unknown message received", state}
 
