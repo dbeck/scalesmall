@@ -35,7 +35,8 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   def handle_call({:send, gossip}, _from, state)
   when Gossip.is_valid(gossip)
   do
-    [socket: socket, own_id: _own_id, peer_id: _peer_id] = state
+    [socket: socket, own_id: _own_id, peer_id: peer_id] = state
+    IO.inspect ["TCP OUT", peer_id, gossip]
     packet = Serializer.encode(gossip)
     case :gen_tcp.send(socket, packet)
     do
