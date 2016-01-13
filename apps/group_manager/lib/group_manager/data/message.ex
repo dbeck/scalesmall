@@ -12,12 +12,13 @@ defmodule GroupManager.Data.Message do
   require GroupManager.Data.TimedItem
   require GroupManager.Data.Item
   require GroupManager.Data.LocalClock
+  require GroupManager.Chatter.NetID
   alias GroupManager.Data.WorldClock
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
 
-  Record.defrecord :message, time: nil, items: nil
-  @type t :: record( :message, time: WorldClock.t, items: TimedSet.t )
+  Record.defrecord :message, time: nil, items: nil, group_name: nil
+  @type t :: record( :message, time: WorldClock.t, items: TimedSet.t, group_name: binary )
 
   @spec new() :: t
   def new()
@@ -40,25 +41,29 @@ defmodule GroupManager.Data.Message do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
         quote do
-          is_tuple(unquote(data)) and tuple_size(unquote(data)) == 3 and
+          is_tuple(unquote(data)) and tuple_size(unquote(data)) == 4 and
           :erlang.element(1, unquote(data)) == :message and
           # time
           is_nil(:erlang.element(2, unquote(data))) == false and
           WorldClock.is_valid(:erlang.element(2, unquote(data))) and
           # items
           is_nil(:erlang.element(3, unquote(data))) == false and
-          TimedSet.is_valid(:erlang.element(3, unquote(data)))
+          TimedSet.is_valid(:erlang.element(3, unquote(data))) and
+          # group_name
+          is_binary(:erlang.element(4, unquote(data)))
         end
       false ->
         quote bind_quoted: [result: data] do
-          is_tuple(result) and tuple_size(result) == 3 and
-          :erlang.element(1, result) == :message and
+          is_tuple(data) and tuple_size(data) == 4 and
+          :erlang.element(1, data) == :message and
           # time
-          is_nil(:erlang.element(2, result)) == false and
-          WorldClock.is_valid(:erlang.element(2, result)) and
+          is_nil(:erlang.element(2, data)) == false and
+          WorldClock.is_valid(:erlang.element(2, data)) and
           # items
-          is_nil(:erlang.element(3, result)) == false and
-          TimedSet.is_valid(:erlang.element(3, result))
+          is_nil(:erlang.element(3, data)) == false and
+          TimedSet.is_valid(:erlang.element(3, data)) and
+          # group_name
+          is_binary(:erlang.element(4, data))
         end
     end
   end

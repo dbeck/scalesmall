@@ -3,14 +3,15 @@ defmodule GroupManager.Data.WorldClock do
   WorldClock is a collection of LocalClocks gathered from members. WorldClocks can be merged by
   selecting the latest clock from members.
   """
-  
+
   require Record
   require GroupManager.Data.LocalClock
+  require GroupManager.Chatter.NetID
   alias GroupManager.Data.LocalClock
-  
+
   Record.defrecord :world_clock, time: []
   @type t :: record( :world_clock, time: list(LocalClock.t) )
-  
+
   @spec new() :: t
   def new()
   do
@@ -19,12 +20,12 @@ defmodule GroupManager.Data.WorldClock do
 
   @doc """
   Validate as much as we can about the `data` parameter which should be a WorldClock record.
-   
+
   Validation rules are:
-  
+
   - 1st is an `:world_clock` atom
   - 2nd `time`: is a list
-  
+
   The purpose of this macro is to help checking input parameters in function guards.
   """
   defmacro is_valid(data) do
@@ -32,7 +33,7 @@ defmodule GroupManager.Data.WorldClock do
       true ->
         quote do
           is_tuple(unquote(data)) and tuple_size(unquote(data)) == 2 and
-          :erlang.element(1, unquote(data)) == :world_clock and   
+          :erlang.element(1, unquote(data)) == :world_clock and
           # time
           is_list(:erlang.element(2, unquote(data))) == true
         end
@@ -45,7 +46,7 @@ defmodule GroupManager.Data.WorldClock do
         end
     end
   end
-  
+
   defmacro is_empty(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -61,50 +62,50 @@ defmodule GroupManager.Data.WorldClock do
         end
     end
   end
-  
+
   @spec valid?(t) :: boolean
   def valid?(data)
   when is_valid(data)
   do
     true
   end
-  
+
   def valid?(_), do: false
-  
+
   @spec empty?(t) :: boolean
   def empty?(data)
   when is_valid(data) and is_empty(data)
   do
     true
   end
-  
+
   def empty?(data)
   when is_valid(data)
   do
     false
   end
-  
+
   @spec time(t) :: list(LocalClock.t)
   def time(clock)
   when is_valid(clock)
   do
     world_clock(clock, :time)
   end
-  
+
   @spec add(t, LocalClock.t) :: t
   def add(clock, local_clock)
   when is_valid(clock) and LocalClock.is_valid(local_clock)
   do
     world_clock(time: LocalClock.merge_into(time(clock), local_clock))
   end
-  
+
   @spec size(t) :: integer
   def size(clock)
   when is_valid(clock)
   do
     length(world_clock(clock, :time))
   end
-  
+
   @spec get(t, term) :: LocalClock.t
   def get(clock, id)
   when is_valid(clock)

@@ -1,37 +1,40 @@
 defmodule GroupManager.Data.Item do
-  @moduledoc """  
+  @moduledoc """
   Item represents a range associated to a member. Each member has a priority for each range. If multiple ranges exist for
-  a give point in the range, their resulting priority is the maximum of all priority values. The Item inside is represented by
-  a record (tuple with these members): 
-  
+  a given point in the range, their resulting priority is the maximum of all priority values. The Item inside is represented by
+  a record (tuple with these members):
+
   - :item atom
   - member term
   - op atom
   - start_range integer
   - end_range integer
   - priority integer
-  
+
   The op member is either :add or :rmv. :add signifies the items membership in a group range and :rmv act as a tombstone.
-  
-  `Item` itself is a Record type that we manipulate and access with the methods provided in the module.  
+
+  `Item` itself is a Record type that we manipulate and access with the methods provided in the module.
   """
 
-  require Record  
-  
+  require Record
+  require GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.NetID
+
   Record.defrecord :item, member: nil, op: :add, start_range: 0, end_range: 0xffffffff, priority: 0
-  @type t :: record( :item, member: term, op: atom, start_range: integer, end_range: integer, priority: integer )
-  
-  @spec new(term) :: t
+  @type t :: record( :item, member: NetID.t, op: atom, start_range: integer, end_range: integer, priority: integer )
+
+  @spec new(NetID.t) :: t
   def new(id)
+  when NetID.is_valid(id)
   do
     item(member: id)
   end
-  
+
   @doc """
   Validate as much as we can about the `data` parameter which should be an Item record.
-   
+
   Validation rules are:
-  
+
   - 1st is an `:item` atom
   - 2nd `member`: is a non nil term
   - 3rd `op`: is :add or :rmv
@@ -39,7 +42,7 @@ defmodule GroupManager.Data.Item do
   - 5th `end_range`: is non-negative integer [0x0..0xffffffff]
   - 6th `priority`: is non-negative integer [0x0..0xffffffff]
   - start_range <= end_range
-  
+
   The purpose of this macro is to help checking input parameters in function guards.
   """
   defmacro is_valid(data) do
@@ -49,7 +52,7 @@ defmodule GroupManager.Data.Item do
           is_tuple(unquote(data)) and tuple_size(unquote(data)) == 6 and
           :erlang.element(1, unquote(data)) == :item and
           # member
-          is_nil(:erlang.element(2, unquote(data))) == false and
+          NetID.is_valid(:erlang.element(2, unquote(data))) and
           # op
           :erlang.element(3, unquote(data)) in [:add, :rmv] and
           # start_range
@@ -69,37 +72,37 @@ defmodule GroupManager.Data.Item do
         end
       false ->
         quote bind_quoted: [result: data] do
-          is_tuple(result) and tuple_size(result) == 6 and
-          :erlang.element(1, result) == :item and
+          is_tuple(data) and tuple_size(data) == 6 and
+          :erlang.element(1, data) == :item and
           # member
-          is_nil(:erlang.element(2, result)) == false and
+          NetID.is_valid(:erlang.element(2, data)) and
           # op
-          :erlang.element(3, result) in [:add, :rmv] and
+          :erlang.element(3, data) in [:add, :rmv] and
            # start_range
-          is_integer(:erlang.element(4, result)) and
-          :erlang.element(4,result) >= 0 and
-          :erlang.element(4, result) <= 0xffffffff and
+          is_integer(:erlang.element(4, data)) and
+          :erlang.element(4,data) >= 0 and
+          :erlang.element(4, data) <= 0xffffffff and
           # end_range
-          is_integer(:erlang.element(5, result)) and
-          :erlang.element(5, result) >= 0 and
-          :erlang.element(5, result) <= 0xffffffff and
+          is_integer(:erlang.element(5, data)) and
+          :erlang.element(5, data) >= 0 and
+          :erlang.element(5, data) <= 0xffffffff and
           # priority
-          is_integer(:erlang.element(6, result)) and
-          :erlang.element(6, result) >= 0 and
-          :erlang.element(6, result) <= 0xffffffff and
+          is_integer(:erlang.element(6, data)) and
+          :erlang.element(6, data) >= 0 and
+          :erlang.element(6, data) <= 0xffffffff and
           # start_range <= end_range
-          :erlang.element(4, result) <= :erlang.element(5,result)
+          :erlang.element(4, data) <= :erlang.element(5, data)
         end
     end
   end
-    
+
   @spec valid?(t) :: boolean
   def valid?(data)
   when is_valid(data)
   do
     true
   end
-  
+
   def valid?(_), do: false
 
   @spec member(t) :: term
@@ -115,7 +118,7 @@ defmodule GroupManager.Data.Item do
   do
     item(itm, :op)
   end
-  
+
   @spec op(t, atom) :: t
   def op(itm, v)
   when is_valid(itm) and (v == :add or v == :rmv)
@@ -129,7 +132,7 @@ defmodule GroupManager.Data.Item do
   do
     item(itm, :start_range)
   end
-  
+
   @spec start_range(t, integer) :: t
   def start_range(itm, v)
   when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
@@ -143,14 +146,14 @@ defmodule GroupManager.Data.Item do
   do
     item(itm, :end_range)
   end
-  
+
   @spec end_range(t, integer) :: t
   def end_range(itm, v)
   when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
   do
     item(itm, end_range: v)
   end
-  
+
   @spec priority(t) :: integer
   def priority(itm)
   when is_valid(itm)

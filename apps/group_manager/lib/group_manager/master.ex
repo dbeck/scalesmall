@@ -1,7 +1,7 @@
 require Logger
 
 defmodule GroupManager.Master do
-  
+
   use Supervisor
   alias GroupManager.Group.Engine
   alias GroupManager.Group.Worker
@@ -14,7 +14,7 @@ defmodule GroupManager.Master do
         Supervisor.start_link(__MODULE__, :no_args, [name: id_atom()] ++ opts)
     end
   end
-  
+
   def init(:no_args) do
     children = [ supervisor(Worker, [], restart: :temporary) ]
     supervise(children, strategy: :simple_one_for_one)
@@ -37,11 +37,11 @@ defmodule GroupManager.Master do
                               ])
     end
   end
-  
+
   def leave_group(master_pid, group_name)
   when is_pid(master_pid)
   do
-    case Engine.locate(group_name) do      
+    case Engine.locate(group_name) do
       engine_pid when is_pid(engine_pid) ->
         Engine.stop(engine_pid)
         case Worker.locate(group_name) do
@@ -52,18 +52,18 @@ defmodule GroupManager.Master do
         end
       nil ->
         Logger.warn "Not found Engine for local group: #{group_name}"
-        {:error, :no_chatter}
+        {:error, :no_engine}
     end
   end
-  
+
   def locate, do: Process.whereis(id_atom())
-  
+
   def locate! do
     case Process.whereis(id_atom()) do
       pid when is_pid(pid) ->
         pid
     end
   end
-  
+
   def id_atom, do: __MODULE__
 end

@@ -6,7 +6,9 @@ defmodule GroupManager.ChatterTest do
   end
 
   # locate
-  # broadcast
+  # broadcast(gossip)
+  # broadcast([nodes], message)
+  # get_local_ip
   # local_netid
   # multicast_netid
 end

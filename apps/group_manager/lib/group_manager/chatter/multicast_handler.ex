@@ -61,7 +61,6 @@ defmodule GroupManager.Chatter.MulticastHandler do
     end
   end
 
-
   # incoming handler
   def handle_info({:udp, socket, ip, port, data}, state)
   do
