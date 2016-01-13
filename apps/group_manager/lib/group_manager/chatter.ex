@@ -89,13 +89,11 @@ defmodule GroupManager.Chatter do
     gossip =
       Gossip.remove_from_distribution_list(gossip, Gossip.seen_netids(gossip))
 
-    IO.inspect ["remaining", gossip]
-
-    # add 3 random elements to the distribution list from the original
+    # add 1 random elements to the distribution list from the original
     # distribution list
     gossip =
       Gossip.add_to_distribution_list(gossip,
-                                      Enum.take_random(distribution_list, 3))
+                                      Enum.take_random(distribution_list, 1))
 
     # outgoing handler uses its already open channels and returns the gossip
     # what couldn't be delivered
