@@ -84,13 +84,14 @@ defmodule GroupManager.Chatter.MulticastHandler do
                                 Gossip.current_id(gossip),
                                 Gossip.seen_ids(gossip))
 
+        IO.inspect ["new data", gossip]
+
       {:error, :invalid_data, _}
         -> :error
     end
 
     # when we popped one message we allow one more to be buffered
     :inet.setopts(socket, [active: 1])
-    IO.inspect ["new data", data]
     {:noreply, state}
   end
 

@@ -86,17 +86,20 @@ defmodule GroupManager.Chatter do
     :ok = MulticastHandler.send(MulticastHandler.locate!, gossip)
 
     # the remaining list must be contacted directly
-    remaining_non_mcast =
+    gossip =
       Gossip.remove_from_distribution_list(gossip, Gossip.seen_netids(gossip))
 
-    IO.inspect ["remaining", remaining_non_mcast]
+    IO.inspect ["remaining", gossip]
+
+    # add 3 random elements to the distribution list from the original
+    # distribution list
+    gossip =
+      Gossip.add_to_distribution_list(gossip,
+                                      Enum.take_random(distribution_list, 3))
 
     # outgoing handler uses its already open channels and returns the gossip
     # what couldn't be delivered
-    :ok = OutgoingSupervisor.broadcast(remaining_non_mcast)
-
-    # TODO: (later) may be send a TCP message too ???
-    # use reverse channels ??? : GroupManager.Chatter.IncomingHandler
+    :ok = OutgoingSupervisor.broadcast(gossip)
   end
 
   def locate, do: Process.whereis(id_atom())

@@ -150,4 +150,22 @@ defmodule GroupManager.Chatter.Gossip do
     new_set = HashSet.difference(old_set, remove_set)
     gossip(g, distribution_list: HashSet.to_list(new_set))
   end
+
+  @spec add_to_distribution_list(t, list(NetID.t)) :: t
+  def add_to_distribution_list(g, [])
+  when is_valid(g)
+  do
+    g
+  end
+
+  def add_to_distribution_list(g, to_add)
+  when is_valid(g)
+  do
+    :ok = NetID.validate_list!(to_add)
+    old_list = gossip(g, :distribution_list)
+    old_set = Enum.into(old_list, HashSet.new)
+    add_set = Enum.into(to_add, HashSet.new)
+    new_set = HashSet.union(old_set, add_set)
+    gossip(g, distribution_list: HashSet.to_list(new_set))
+  end
 end
