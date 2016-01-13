@@ -4,6 +4,9 @@ defmodule GroupManager.Chatter do
   require GroupManager.Data.Message
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
+  require GroupManager.Chatter.Gossip
+  require GroupManager.Chatter.BroadcastID
+  require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.OutgoingSupervisor
   alias GroupManager.Chatter.IncomingHandler
   alias GroupManager.Chatter.MulticastHandler
@@ -57,6 +60,13 @@ defmodule GroupManager.Chatter do
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end
 
+  @spec broadcast(Gossip.t) :: :ok
+  def broadcast(gossip)
+  when Gossip.is_valid(gossip)
+  do
+    broadcast(Gossip.distribution_list(gossip), Gossip.payload(gossip))
+  end
+
   @spec broadcast(list(NetID.t), Message.t) :: :ok
   def broadcast(distribution_list, msg)
   when is_list(distribution_list) and Message.is_valid(msg)
@@ -64,8 +74,6 @@ defmodule GroupManager.Chatter do
     :ok = NetID.validate_list(distribution_list)
     own_id = local_netid()
     {:ok, seqno} = PeerDB.inc_broadcast_seqno(PeerDB.locate!, own_id)
-
-    # collect ids seen on multicast and add distribution list to the Gossip
     {:ok, seen_ids} = PeerDB.get_seen_id_list_(own_id)
 
     gossip = Gossip.new(own_id, seqno, msg)
@@ -77,14 +85,9 @@ defmodule GroupManager.Chatter do
     # broadcast first and let MulticastHandler decide what to send directly
     :ok = MulticastHandler.send(MulticastHandler.locate!, gossip)
 
-    # convert broadcast IDs to Net IDs (chopping broadcast seqno)
-    seen_netids = Enum.reduce(seen_ids,[], fn(x, acc) ->
-      [GroupManager.Chatter.BroadcastID.origin(x)|acc]
-    end)
-
     # the remaining list must be contacted directly
     remaining_non_mcast =
-      Gossip.remove_from_distribution_list(gossip, seen_netids)
+      Gossip.remove_from_distribution_list(gossip, Gossip.seen_netids(gossip))
 
     IO.inspect ["remaining", remaining_non_mcast]
 

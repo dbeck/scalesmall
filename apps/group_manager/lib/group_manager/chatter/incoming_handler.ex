@@ -7,6 +7,7 @@ defmodule GroupManager.Chatter.IncomingHandler do
   alias GroupManager.Chatter.Gossip
   alias GroupManager.Chatter.Serializer
   alias GroupManager.Chatter.PeerDB
+  alias GroupManager.Chatter
 
   def start_link(ref, socket, transport, opts) do
     pid = spawn_link(__MODULE__, :init, [ref, socket, transport, opts])
@@ -21,12 +22,17 @@ defmodule GroupManager.Chatter.IncomingHandler do
   end
 
   def loop(socket, transport, own_id, timeout_seconds, act_wait)
+  when act_wait >= timeout_seconds
+  do
+    :ok = transport.close(socket)
+  end
+
+  def loop(socket, transport, own_id, timeout_seconds, act_wait)
   when NetID.is_valid(own_id) and
        is_integer(timeout_seconds) and
        is_integer(act_wait) and
        act_wait < timeout_seconds
   do
-    IO.puts "loop"
     case transport.recv(socket, 0, 5000) do
       {:ok, data} ->
         # process data
@@ -45,15 +51,20 @@ defmodule GroupManager.Chatter.IncomingHandler do
                                     Gossip.seen_ids(gossip))
 
             IO.inspect ["received TCP", gossip]
+
+            # make sure we pass the message forward
+            :ok = Chatter.broadcast(gossip)
+
             loop(socket, transport, own_id, timeout_seconds, 0)
 
           {:error, :invalid_data, _} ->
-            IO.puts "invalid data"
             :ok = transport.close(socket)
         end
 
-      whatever ->
-        IO.inspect ["whatever", whatever]
+      {:error, :timeout} ->
+        loop(socket, transport, own_id, timeout_seconds, act_wait+5)
+
+      _ ->
         :ok = transport.close(socket)
     end
   end

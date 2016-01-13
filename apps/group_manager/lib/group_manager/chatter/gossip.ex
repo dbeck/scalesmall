@@ -95,6 +95,29 @@ defmodule GroupManager.Chatter.Gossip do
     gossip(g, :seen_ids)
   end
 
+  @spec payload(t) :: term
+  def payload(g)
+  when is_valid(g)
+  do
+    gossip(g, :payload)
+  end
+
+  @spec seen_ids(t) :: list(BroadcastID.t)
+  def seen_ids(g)
+  when is_valid(g)
+  do
+    gossip(g, :seen_ids)
+  end
+
+  @spec seen_netids(t) :: list(NetID.t)
+  def seen_netids(g)
+  when is_valid(g)
+  do
+    Enum.reduce(gossip(g, :seen_ids), [], fn(x, acc) ->
+      [GroupManager.Chatter.BroadcastID.origin(x)|acc]
+    end)
+  end
+
   @spec distribution_list(t, list(NetID.t)) :: t
   def distribution_list(g, ids)
   when is_valid(g) and is_list(ids)

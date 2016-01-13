@@ -107,4 +107,5 @@ defmodule GroupManager.Chatter.GossipTest do
   end
 
   # remove_from_distribution_list
+  # seen_netids
 end
