@@ -93,7 +93,9 @@ defmodule GroupManager.Chatter do
 
     # outgoing handler uses its already open channels and returns the gossip
     # what couldn't be delivered
-    :ok = OutgoingSupervisor.broadcast(gossip)
+    :ok = OutgoingSupervisor.broadcast(
+      Gossip.distribution_list(gossip,
+                               remaining_non_mcast))
 
     # TODO: (later) may be send a TCP message too ???
     # use reverse channels ??? : GroupManager.Chatter.IncomingHandler
