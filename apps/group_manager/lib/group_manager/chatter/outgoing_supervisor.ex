@@ -37,7 +37,7 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
     take_n = div(len, 2)
     {next, [head|rest]} = distribution_list |> Enum.shuffle |> Enum.split(take_n)
     own_id = Gossip.current_id(gossip) |> BroadcastID.origin
-    handler_pid = start_handler(locate!, [own_id: own_id, peer_id: head])
+    {:ok, handler_pid} = start_handler(locate!, [own_id: own_id, peer_id: head])
     OutgoingHandler.send(handler_pid, gossip |> Gossip.distribution_list(rest))
     broadcast_to(next, Gossip.distribution_list(gossip, next))
   end
@@ -53,7 +53,7 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
       _ ->
         id = OutgoingHandler.id_atom(peer_id)
         Supervisor.start_child(sup_pid, [
-          [peer_id: peer_id, own_id: own_id],
+          [own_id: own_id, peer_id: peer_id],
           [name: id]])
     end
   end

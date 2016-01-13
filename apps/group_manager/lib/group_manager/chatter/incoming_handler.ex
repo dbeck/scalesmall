@@ -13,12 +13,19 @@ defmodule GroupManager.Chatter.IncomingHandler do
     {:ok, pid}
   end
 
-  def init(ref, socket, transport, [own_id: own_id]) do
+  def init(ref, socket, transport, opts) do
     :ok = :ranch.accept_ack(ref)
-    loop(socket, transport, own_id)
+    own_id = Keyword.get(opts, :own_id)
+    timeout_seconds = Keyword.get(opts, :timeout_seconds, 60)
+    loop(socket, transport, own_id, timeout_seconds, 0)
   end
 
-  def loop(socket, transport, own_id) do
+  def loop(socket, transport, own_id, timeout_seconds, act_wait)
+  when NetID.is_valid(own_id) and
+       is_integer(timeout_seconds) and
+       is_integer(act_wait) and
+       act_wait < timeout_seconds
+  do
     IO.puts "loop"
     case transport.recv(socket, 0, 5000) do
       {:ok, data} ->
@@ -38,13 +45,15 @@ defmodule GroupManager.Chatter.IncomingHandler do
                                     Gossip.seen_ids(gossip))
 
             IO.inspect ["received TCP", gossip]
-            loop(socket, transport, own_id)
+            loop(socket, transport, own_id, timeout_seconds, 0)
 
           {:error, :invalid_data, _} ->
             IO.puts "invalid data"
             :ok = transport.close(socket)
         end
-      _ ->
+
+      whatever ->
+        IO.inspect ["whatever", whatever]
         :ok = transport.close(socket)
     end
   end
