@@ -7,6 +7,7 @@ defmodule GroupManager.Chatter do
   require GroupManager.Chatter.Gossip
   require GroupManager.Chatter.BroadcastID
   require GroupManager.Chatter.NetID
+  require GroupManager
   alias GroupManager.Chatter.OutgoingSupervisor
   alias GroupManager.Chatter.IncomingHandler
   alias GroupManager.Chatter.MulticastHandler

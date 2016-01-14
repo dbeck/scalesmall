@@ -3,8 +3,11 @@ require Logger
 defmodule GroupManager.Master do
 
   use Supervisor
+  require GroupManager
+  require GroupManager.Chatter.NetID
   alias GroupManager.Group.Engine
   alias GroupManager.Group.Worker
+  alias GroupManager.Chatter.NetID
 
   def start_link(opts \\ []) do
     case opts do
@@ -20,8 +23,10 @@ defmodule GroupManager.Master do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def start_group(master_pid, _peer, group_name)
-  when is_pid(master_pid)
+  def start_group(master_pid, peer, group_name)
+  when is_pid(master_pid) and
+       NetID.is_valid(peer) and
+       GroupManager.group_name_is_valid(group_name)
   do
     # create the atom to register the
     case Worker.locate(group_name) do
@@ -39,7 +44,7 @@ defmodule GroupManager.Master do
   end
 
   def leave_group(master_pid, group_name)
-  when is_pid(master_pid)
+  when is_pid(master_pid) and GroupManager.group_name_is_valid(group_name)
   do
     case Engine.locate(group_name) do
       engine_pid when is_pid(engine_pid) ->

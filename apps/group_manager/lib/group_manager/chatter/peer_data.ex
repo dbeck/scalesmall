@@ -38,9 +38,9 @@ defmodule GroupManager.Chatter.PeerData do
           is_list(:erlang.element(4, unquote(data)))
         end
       false ->
-        quote bind_quoted: [result: data] do
-          is_tuple(result) and tuple_size(result) == 4 and
-          :erlang.element(1, result) == :peer_data and
+        quote bind_quoted: binding() do
+          is_tuple(data) and tuple_size(data) == 4 and
+          :erlang.element(1, data) == :peer_data and
           # id
           NetID.is_valid(:erlang.element(2, data)) and
           # broadcast_seqno

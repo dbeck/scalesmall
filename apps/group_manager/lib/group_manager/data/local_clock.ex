@@ -48,7 +48,7 @@ defmodule GroupManager.Data.LocalClock do
           :erlang.element(3, unquote(data)) <= 0xffffffff
         end
       false ->
-        quote bind_quoted: [result: data] do
+        quote bind_quoted: binding() do
           is_tuple(data) and tuple_size(data) == 3 and
           :erlang.element(1, data) == :local_clock and
           # member

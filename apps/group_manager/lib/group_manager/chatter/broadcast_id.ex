@@ -34,7 +34,7 @@ defmodule GroupManager.Chatter.BroadcastID do
           :erlang.element(3, unquote(data)) >= 0
         end
       false ->
-        quote bind_quoted: [result: data] do
+        quote bind_quoted: binding() do
           is_tuple(unquote(data)) and tuple_size(data) == 3 and
           :erlang.element(1, data) == :broadcast_id and
           # origin

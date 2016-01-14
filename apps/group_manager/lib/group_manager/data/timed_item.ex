@@ -9,13 +9,15 @@ defmodule GroupManager.Data.TimedItem do
   require GroupManager.Chatter.NetID
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
+  alias GroupManager.Chatter.NetID
 
   Record.defrecord :timed_item, item: nil, updated_at: nil
   @type t :: record( :timed_item, item: Item.t, updated_at: LocalClock.t)
   @type timed_item_list :: list(t)
 
-  @spec new(term) :: t
+  @spec new(NetID.t) :: t
   def new(id)
+  when NetID.is_valid(id)
   do
     timed_item(item: Item.new(id)) |> timed_item(updated_at: LocalClock.new(id))
   end
@@ -45,15 +47,15 @@ defmodule GroupManager.Data.TimedItem do
           LocalClock.is_valid(:erlang.element(3, unquote(data)))
         end
       false ->
-        quote bind_quoted: [result: data] do
-          is_tuple(result) and tuple_size(result) == 3 and
-          :erlang.element(1, result) == :timed_item and
+        quote bind_quoted: binding() do
+          is_tuple(data) and tuple_size(data) == 3 and
+          :erlang.element(1, data) == :timed_item and
           # item
-          is_nil(:erlang.element(2, result)) == false and
-          Item.is_valid(:erlang.element(2, result)) and
+          is_nil(:erlang.element(2, data)) == false and
+          Item.is_valid(:erlang.element(2, data)) and
           # updated_at
-          is_nil(:erlang.element(3, result)) == false and
-          LocalClock.is_valid(:erlang.element(3, result))
+          is_nil(:erlang.element(3, data)) == false and
+          LocalClock.is_valid(:erlang.element(3, data))
         end
     end
   end

@@ -5,7 +5,7 @@ defmodule GroupManager.Data.Item do
   a record (tuple with these members):
 
   - :item atom
-  - member term
+  - member NetID
   - op atom
   - start_range integer
   - end_range integer
@@ -36,7 +36,7 @@ defmodule GroupManager.Data.Item do
   Validation rules are:
 
   - 1st is an `:item` atom
-  - 2nd `member`: is a non nil term
+  - 2nd `member`: is a non nil NetID
   - 3rd `op`: is :add or :rmv
   - 4th `start_range`: is non-negative integer [0x0..0xffffffff]
   - 5th `end_range`: is non-negative integer [0x0..0xffffffff]
@@ -54,7 +54,7 @@ defmodule GroupManager.Data.Item do
           # member
           NetID.is_valid(:erlang.element(2, unquote(data))) and
           # op
-          :erlang.element(3, unquote(data)) in [:add, :rmv] and
+          :erlang.element(3, unquote(data)) in [:add, :rmv, :get] and
           # start_range
           is_integer(:erlang.element(4, unquote(data))) and
           :erlang.element(4, unquote(data)) >= 0 and
@@ -71,13 +71,13 @@ defmodule GroupManager.Data.Item do
           :erlang.element(4, unquote(data)) <= :erlang.element(5, unquote(data))
         end
       false ->
-        quote bind_quoted: [result: data] do
+        quote bind_quoted: binding() do
           is_tuple(data) and tuple_size(data) == 6 and
           :erlang.element(1, data) == :item and
           # member
           NetID.is_valid(:erlang.element(2, data)) and
           # op
-          :erlang.element(3, data) in [:add, :rmv] and
+          :erlang.element(3, data) in [:add, :rmv, :get] and
            # start_range
           is_integer(:erlang.element(4, data)) and
           :erlang.element(4,data) >= 0 and
@@ -105,14 +105,14 @@ defmodule GroupManager.Data.Item do
 
   def valid?(_), do: false
 
-  @spec member(t) :: term
+  @spec member(t) :: NetID
   def member(itm)
   when is_valid(itm)
   do
     item(itm, :member)
   end
 
-  @spec op(t) :: :add | :rmv
+  @spec op(t) :: :add | :rmv | :get
   def op(itm)
   when is_valid(itm)
   do
@@ -121,7 +121,7 @@ defmodule GroupManager.Data.Item do
 
   @spec op(t, atom) :: t
   def op(itm, v)
-  when is_valid(itm) and (v == :add or v == :rmv)
+  when is_valid(itm) and v in [:add, :rmv, :get]
   do
     item(itm, op: v)
   end

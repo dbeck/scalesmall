@@ -13,6 +13,7 @@ defmodule GroupManager.Data.Message do
   require GroupManager.Data.Item
   require GroupManager.Data.LocalClock
   require GroupManager.Chatter.NetID
+  require GroupManager
   alias GroupManager.Data.WorldClock
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
@@ -20,10 +21,11 @@ defmodule GroupManager.Data.Message do
   Record.defrecord :message, time: nil, items: nil, group_name: nil
   @type t :: record( :message, time: WorldClock.t, items: TimedSet.t, group_name: binary )
 
-  @spec new() :: t
-  def new()
+  @spec new(binary) :: t
+  def new(group_name)
+  when GroupManager.group_name_is_valid(group_name)
   do
-    message(time: WorldClock.new()) |> message(items: TimedSet.new())
+    message([time: WorldClock.new(), items: TimedSet.new(), group_name: group_name])
   end
 
   @doc """
@@ -34,6 +36,7 @@ defmodule GroupManager.Data.Message do
   - 1st is an `:message` atom
   - 2nd `time`: is non-nil
   - 3rd `items`: is non-nil
+  - 4th `group_name`: is a non-empty string
 
   The purpose of this macro is to help checking input parameters in function guards.
   """
@@ -50,10 +53,10 @@ defmodule GroupManager.Data.Message do
           is_nil(:erlang.element(3, unquote(data))) == false and
           TimedSet.is_valid(:erlang.element(3, unquote(data))) and
           # group_name
-          is_binary(:erlang.element(4, unquote(data)))
+          GroupManager.group_name_is_valid(:erlang.element(4, unquote(data)))
         end
       false ->
-        quote bind_quoted: [result: data] do
+        quote bind_quoted: binding() do
           is_tuple(data) and tuple_size(data) == 4 and
           :erlang.element(1, data) == :message and
           # time
@@ -63,7 +66,7 @@ defmodule GroupManager.Data.Message do
           is_nil(:erlang.element(3, data)) == false and
           TimedSet.is_valid(:erlang.element(3, data)) and
           # group_name
-          is_binary(:erlang.element(4, data))
+          GroupManager.group_name_is_valid(:erlang.element(4, data))
         end
     end
   end
@@ -78,12 +81,11 @@ defmodule GroupManager.Data.Message do
           TimedSet.is_empty(:erlang.element(3, unquote(data)))
         end
       false ->
-        quote do
-          result = unquote(data)
+        quote bind_quoted: binding() do
           # time
-          WorldClock.is_empty(:erlang.element(2, result)) and
+          WorldClock.is_empty(:erlang.element(2, data)) and
           # items
-          TimedSet.is_empty(:erlang.element(3, result))
+          TimedSet.is_empty(:erlang.element(3, data))
         end
     end
   end
@@ -124,11 +126,19 @@ defmodule GroupManager.Data.Message do
     message(msg, :items)
   end
 
+  @spec group_name(t) :: binary
+  def group_name(msg)
+  when is_valid(msg)
+  do
+    message(msg, :group_name)
+  end
+
   @spec add(t, TimedItem.t) :: t
   def add(msg, timed_item)
   when is_valid(msg) and TimedItem.is_valid(timed_item)
   do
-    message(time: WorldClock.add(time(msg), TimedItem.updated_at(timed_item)))
+    msg
+    |> message( time: WorldClock.add(time(msg), TimedItem.updated_at(timed_item)))
     |> message(items: TimedSet.add(items(msg), timed_item))
   end
 end

@@ -49,7 +49,7 @@ defmodule GroupManager.Chatter.Gossip do
           is_nil(:erlang.element(5, unquote(data))) == false
         end
       false ->
-        quote bind_quoted: [result: data] do
+        quote bind_quoted: binding() do
           is_tuple(data) and tuple_size(data) == 5 and
           :erlang.element(1, data) == :gossip and
           # broadcast id

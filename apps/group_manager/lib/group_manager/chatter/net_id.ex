@@ -14,7 +14,7 @@ defmodule GroupManager.Chatter.NetID do
           unquote(data) <= 0xffff
         end
       false ->
-        quote bind_quoted: [result: data] do
+        quote bind_quoted: binding() do
           is_integer(data) and
           data >= 0 and
           data <= 0xffff
@@ -42,7 +42,7 @@ defmodule GroupManager.Chatter.NetID do
           :erlang.element(4,unquote(ip)) < 256
         end
       false ->
-        quote bind_quoted: [result: ip] do
+        quote bind_quoted: binding() do
           is_tuple(ip) and
           tuple_size(ip) == 4 and
           is_integer(:erlang.element(1,ip)) and
@@ -85,17 +85,17 @@ defmodule GroupManager.Chatter.NetID do
           :erlang.element(3, unquote(data)) <= 0xffff
         end
       false ->
-        quote bind_quoted: [result: data] do
-          is_tuple(result) and tuple_size(result) == 3 and
-          :erlang.element(1, result) == :net_id and
+        quote bind_quoted: binding() do
+          is_tuple(data) and tuple_size(data) == 3 and
+          :erlang.element(1, data) == :net_id and
           # ip
           # TODO : IPV6
           is_tuple(:erlang.element(2, data)) and
           tuple_size(:erlang.element(2, data)) == 4 and
           # port
-          is_integer(:erlang.element(3, result)) and
-          :erlang.element(3, result) >= 0 and
-          :erlang.element(3, result) <= 0xffff
+          is_integer(:erlang.element(3, data)) and
+          :erlang.element(3, data) >= 0 and
+          :erlang.element(3, data) <= 0xffff
         end
     end
   end
