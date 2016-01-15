@@ -38,14 +38,14 @@ defmodule GroupManager do
        group_name_is_valid(group_name)
   do
     master_pid = GroupManager.Master.locate!()
-    {:ok, _pid} = GroupManager.Master.start_group(master_pid, peer, group_name)
+    GroupManager.Master.start_group(master_pid, peer, group_name)
   end
 
   def leave(group_name)
   when group_name_is_valid(group_name)
   do
     master_pid = GroupManager.Master.locate!()
-    :ok = GroupManager.Master.leave_group(master_pid, group_name)
+    GroupManager.Master.leave_group(master_pid, group_name)
   end
 
   @spec members(binary) :: {:ok, list(NetID.t)} | {:error, :not_joined}
@@ -54,6 +54,13 @@ defmodule GroupManager do
   do
     master_pid = GroupManager.Master.locate!()
     GroupManager.Master.get_members(master_pid, group_name)
+  end
+
+  @spec joined_groups() :: {:ok, list(binary)}
+  def joined_groups()
+  do
+    master_pid = GroupManager.Master.locate!()
+    GroupManager.Master.joined_groups(master_pid)
   end
 
   # get topology

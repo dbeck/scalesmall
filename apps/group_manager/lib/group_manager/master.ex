@@ -53,11 +53,11 @@ defmodule GroupManager.Master do
           worker_pid when is_pid(worker_pid) ->
             Supervisor.terminate_child(master_pid, worker_pid)
           nil ->
-            {:error, :no_worker}
+            {:error, {:no_worker, "group_name"}}
         end
       nil ->
         Logger.warn "Not found Engine for local group: #{group_name}"
-        {:error, :no_engine}
+        {:error, {:no_engine, group_name}}
     end
   end
 

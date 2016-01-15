@@ -9,8 +9,9 @@ defmodule GroupManager.Group.Engine do
   defstart start_link(args, opts),
     gen_server_opts: opts
   do
-    own_id = Keyword.get(opts, :own_id, Chatter.local_netid)
-    initial_state({LocalClock.new(own_id), Message.new()})
+    own_id     = Keyword.get(args, :own_id, Chatter.local_netid)
+    group_name = Keyword.get(args, :group_name)
+    initial_state({LocalClock.new(own_id), Message.new(group_name)})
   end
 
   defcall get, state: state, do: reply(state)

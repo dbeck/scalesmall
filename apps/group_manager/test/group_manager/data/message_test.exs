@@ -96,4 +96,6 @@ defmodule GroupManager.Data.MessageTest do
     assert_raise FunctionClauseError, fn -> Message.add({}, timed_item) end
     assert_raise FunctionClauseError, fn -> Message.add(nil, timed_item) end
   end
+
+  # group_name
 end

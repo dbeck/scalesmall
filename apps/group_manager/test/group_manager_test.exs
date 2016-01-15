@@ -8,23 +8,29 @@ defmodule GroupManagerTest do
   end
 
   test "check if we can join and leave a new group" do
-    assert {:ok, _} = GroupManager.join(dummy_other, "hello1")
+    result = GroupManager.join(dummy_other, "hello1")
+    assert {:ok, _} = result
     assert :ok = GroupManager.leave("hello1")
   end
 
   test "ensure we can't leave a nonexistent group" do
-    assert {:error, _} = GroupManager.leave("nonexistent")
+    result = GroupManager.leave("nonexistent")
+    expected = {:error, {:no_engine, "nonexistent"}}
+    #Logger.warn "result=#{result |> inspect} expected=#{expected |> inspect}"
+    assert result == expected
   end
 
   test "ensure we can't leave a group twice" do
     assert {:ok, _} = GroupManager.join(dummy_other, "twice")
     assert :ok = GroupManager.leave("twice")
-    assert {:error, _} = GroupManager.leave("twice")
+    assert {:error, {:no_engine, "twice"}} == GroupManager.leave("twice")
   end
 
   test "ensure we can't join a group twice" do
     assert {:ok, _} = GroupManager.join(dummy_other, "join_twice")
-    assert {:error, {:already_started, _pid}} = GroupManager.join(dummy_other, "join_twice")
-    assert :ok = GroupManager.leave("join_twice")
+    result = GroupManager.join(dummy_other, "join_twice")
+    assert {:error, {:already_started, pid}} = result
+    assert is_pid(pid)
+    assert :ok == GroupManager.leave("join_twice")
   end
 end
