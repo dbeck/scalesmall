@@ -14,8 +14,9 @@ defmodule GroupManager do
   use Application
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter
 
-  defmacro group_name_is_valid(name) do
+  defmacro is_valid_group_name(name) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
         quote do
@@ -33,24 +34,27 @@ defmodule GroupManager do
     GroupManager.Supervisor.start_link(args)
   end
 
-  def join(peer, group_name)
-  when NetID.is_valid(peer) and
-       group_name_is_valid(group_name)
+  # TODO : peers, my_id, group_name
+  def join(peers, group_name)
+  when is_list(peers) and
+       is_valid_group_name(group_name)
   do
+    :ok = NetID.validate_list!(peers)
     master_pid = GroupManager.Master.locate!()
-    GroupManager.Master.start_group(master_pid, peer, group_name)
+    GroupManager.Master.join(master_pid, peers, my_id(), group_name)
   end
 
   def leave(group_name)
-  when group_name_is_valid(group_name)
+  when is_valid_group_name(group_name)
   do
     master_pid = GroupManager.Master.locate!()
-    GroupManager.Master.leave_group(master_pid, group_name)
+    GroupManager.Master.leave(master_pid, my_id(), group_name)
   end
 
-  @spec members(binary) :: {:ok, list(NetID.t)} | {:error, :not_joined}
+  # TODO :
+  @spec members(binary) :: list(NetID.t)
   def members(group_name)
-  when group_name_is_valid(group_name)
+  when is_valid_group_name(group_name)
   do
     master_pid = GroupManager.Master.locate!()
     GroupManager.Master.get_members(master_pid, group_name)
@@ -62,6 +66,9 @@ defmodule GroupManager do
     master_pid = GroupManager.Master.locate!()
     GroupManager.Master.joined_groups(master_pid)
   end
+
+  @spec my_id() :: NetID.t
+  def my_id(), do: Chatter.local_netid
 
   # get topology
   # my entries -> Message / filter

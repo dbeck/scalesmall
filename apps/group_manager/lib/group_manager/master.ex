@@ -23,11 +23,13 @@ defmodule GroupManager.Master do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def start_group(master_pid, peer, group_name)
+  def join(master_pid, peers, my_id, group_name)
   when is_pid(master_pid) and
-       NetID.is_valid(peer) and
-       GroupManager.group_name_is_valid(group_name)
+       is_list(peers) and
+       NetID.is_valid(my_id) and
+       GroupManager.is_valid_group_name(group_name)
   do
+    :ok = NetID.validate_list!(peers)
     # create the atom to register the
     case Worker.locate(group_name) do
       worker_pid when is_pid(worker_pid) ->
@@ -43,8 +45,10 @@ defmodule GroupManager.Master do
     end
   end
 
-  def leave_group(master_pid, group_name)
-  when is_pid(master_pid) and GroupManager.group_name_is_valid(group_name)
+  def leave(master_pid, my_id, group_name)
+  when is_pid(master_pid) and
+       NetID.is_valid(my_id) and
+       GroupManager.is_valid_group_name(group_name)
   do
     case Engine.locate(group_name) do
       engine_pid when is_pid(engine_pid) ->

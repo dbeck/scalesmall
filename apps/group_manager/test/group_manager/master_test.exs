@@ -11,8 +11,8 @@ defmodule GroupManager.MasterTest do
 
   test "group can be started and stopped with a non-default master" do
     assert {:ok, master_pid} = Master.start_link([name: :test_group_master])
-    assert {:ok, worker_pid} = Master.start_group(master_pid, NetID.new({1,2,3,4},5), "MasterTest1")
+    assert {:ok, worker_pid} = Master.join(master_pid, [NetID.new({1,2,3,4},5)], NetID.new({1,2,3,4},5), "MasterTest1")
     assert is_pid(worker_pid) == true
-    assert :ok = Master.leave_group(master_pid, "MasterTest1")
+    assert :ok = Master.leave(master_pid, NetID.new({1,2,3,4},5), "MasterTest1")
   end
 end

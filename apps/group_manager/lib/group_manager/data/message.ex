@@ -23,7 +23,7 @@ defmodule GroupManager.Data.Message do
 
   @spec new(binary) :: t
   def new(group_name)
-  when GroupManager.group_name_is_valid(group_name)
+  when GroupManager.is_valid_group_name(group_name)
   do
     message([time: WorldClock.new(), items: TimedSet.new(), group_name: group_name])
   end
@@ -53,7 +53,7 @@ defmodule GroupManager.Data.Message do
           is_nil(:erlang.element(3, unquote(data))) == false and
           TimedSet.is_valid(:erlang.element(3, unquote(data))) and
           # group_name
-          GroupManager.group_name_is_valid(:erlang.element(4, unquote(data)))
+          GroupManager.is_valid_group_name(:erlang.element(4, unquote(data)))
         end
       false ->
         quote bind_quoted: binding() do
@@ -66,7 +66,7 @@ defmodule GroupManager.Data.Message do
           is_nil(:erlang.element(3, data)) == false and
           TimedSet.is_valid(:erlang.element(3, data)) and
           # group_name
-          GroupManager.group_name_is_valid(:erlang.element(4, data))
+          GroupManager.is_valid_group_name(:erlang.element(4, data))
         end
     end
   end
