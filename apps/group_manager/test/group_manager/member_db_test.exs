@@ -1,4 +1,4 @@
-defmodule GroupManager.MemberDB do
+defmodule GroupManager.MemberDBTest do
   use ExUnit.Case
 
   test "the truth" do
