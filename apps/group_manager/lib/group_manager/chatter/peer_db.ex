@@ -19,25 +19,31 @@ defmodule GroupManager.Chatter.PeerDB do
   # Convenience API
 
   def add(pid, id)
-  when is_pid(pid) and NetID.is_valid(id)
+  when is_pid(pid) and
+       NetID.is_valid(id)
   do
     GenServer.cast(pid, {:add, id})
   end
 
   def get(pid, id)
-  when is_pid(pid) and NetID.is_valid(id)
+  when is_pid(pid) and
+       NetID.is_valid(id)
   do
     GenServer.call(pid, {:get, id})
   end
 
   def add_seen_id(pid, current_id, seen_id)
-  when is_pid(pid) and BroadcastID.is_valid(current_id) and BroadcastID.is_valid(seen_id)
+  when is_pid(pid) and
+       BroadcastID.is_valid(current_id) and
+       BroadcastID.is_valid(seen_id)
   do
     GenServer.cast(pid, {:add_seen_id_list, current_id, [seen_id]})
   end
 
   def add_seen_id_list(pid, current_id, seen_id_list)
-  when is_pid(pid) and BroadcastID.is_valid(current_id) and is_list(seen_id_list)
+  when is_pid(pid) and
+       BroadcastID.is_valid(current_id) and
+       is_list(seen_id_list)
   do
     :ok = BroadcastID.validate_list(seen_id_list)
     GenServer.cast(pid, {:add_seen_id_list, current_id, seen_id_list})
@@ -99,7 +105,8 @@ defmodule GroupManager.Chatter.PeerDB do
   end
 
   def handle_cast({:add_seen_id_list, current_id, seen_ids}, table)
-  when BroadcastID.is_valid(current_id) and is_list(seen_ids)
+  when BroadcastID.is_valid(current_id) and
+       is_list(seen_ids)
   do
     combined = [current_id | seen_ids]
     :ok = add_ids(combined, table)
@@ -119,7 +126,7 @@ defmodule GroupManager.Chatter.PeerDB do
   end
 
   def handle_call({:inc_broadcast_seqno, id}, _from, table)
-    when NetID.is_valid(id)
+  when NetID.is_valid(id)
   do
     # make sure we have a placeholder ID in ETS
     :ets.insert_new(table, PeerData.new(id))

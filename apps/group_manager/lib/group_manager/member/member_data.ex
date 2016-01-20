@@ -62,7 +62,7 @@ defmodule GroupManager.Member.MemberData do
   	newlist = [member| member_data(data, :members)]
   	|> Enum.into(HashSet.new)
   	|> HashSet.to_list
-  	member_data(data, members: newlist)
+  	member_data(group_name: member_data(data, :group_name), members: newlist)
   end
 
   @spec remove(t, NetID.t) :: t
@@ -72,6 +72,6 @@ defmodule GroupManager.Member.MemberData do
   do
   	newlist = member_data(data, :members)
   	|> Enum.filter( fn(x) -> x != member end)
-  	member_data(data, members: newlist)
+  	member_data(group_name: member_data(data, :group_name), members: newlist)
   end
 end
