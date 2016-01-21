@@ -4,6 +4,7 @@ defmodule GroupManager.Supervisor do
 
   alias GroupManager.Chatter
   alias GroupManager.MemberDB
+  alias GroupManager.TopologyDB
 
   def start_link(opts \\ []) do
     IO.inspect ["opts", opts]
@@ -17,8 +18,9 @@ defmodule GroupManager.Supervisor do
 
   def init(:no_args) do
     children = [
-      supervisor(Chatter,  [[name: Chatter.id_atom()]]),
-      supervisor(MemberDB, [[name: MemberDB.id_atom()]])
+      supervisor(MemberDB,   [[name: MemberDB.id_atom()]]),
+      supervisor(TopologyDB, [[name: TopologyDB.id_atom()]]),
+      supervisor(Chatter,    [[name: Chatter.id_atom()]])
     ]
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end
