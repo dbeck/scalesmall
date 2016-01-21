@@ -3,7 +3,6 @@ defmodule GroupManager.Supervisor do
   use Supervisor
 
   alias GroupManager.Chatter
-  alias GroupManager.Master
   alias GroupManager.MemberDB
 
   def start_link(opts \\ []) do
@@ -19,7 +18,6 @@ defmodule GroupManager.Supervisor do
   def init(:no_args) do
     children = [
       supervisor(Chatter,  [[name: Chatter.id_atom()]]),
-      supervisor(Master,   [[name: Master.id_atom()]]),
       supervisor(MemberDB, [[name: MemberDB.id_atom()]])
     ]
     {:ok, pid} = supervise(children, strategy: :one_for_one)
