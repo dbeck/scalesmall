@@ -42,6 +42,9 @@ defmodule GroupManager do
     :ok = NetID.validate_list!(peers)
     master_pid = GroupManager.Master.locate!()
     GroupManager.Master.join(master_pid, peers, my_id(), group_name)
+
+    # register membership locally
+    # send a dummy message to others to get members of the group
   end
 
   def leave(group_name)
@@ -49,6 +52,8 @@ defmodule GroupManager do
   do
     master_pid = GroupManager.Master.locate!()
     GroupManager.Master.leave(master_pid, my_id(), group_name)
+
+    # deregister local membership information
   end
 
   # TODO :

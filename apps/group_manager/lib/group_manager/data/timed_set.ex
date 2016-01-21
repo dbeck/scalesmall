@@ -97,6 +97,6 @@ defmodule GroupManager.Data.TimedSet do
   def add(set, item)
   when is_valid(set) and TimedItem.is_valid(item)
   do
-    timed_set(items: TimedItem.merge_into(items(set), item))
+    timed_set(items: TimedItem.merge_into(timed_set(set, :items), item))
   end
 end
