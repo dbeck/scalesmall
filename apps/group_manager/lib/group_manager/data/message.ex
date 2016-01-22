@@ -132,4 +132,17 @@ defmodule GroupManager.Data.Message do
     |> message(time: WorldClock.add(message(msg, :time), TimedItem.updated_at(timed_item)))
     |> message(items: TimedSet.add(message(msg, :items), timed_item))
   end
+
+  @spec merge(t,t) :: t
+  def merge(lhs, rhs)
+  when is_valid(lhs) and
+       is_valid(rhs) and
+       message(lhs, :group_name) == message(rhs, :group_name)
+  do
+    message(time: WorldClock.merge(message(lhs, :time),
+                                   message(rhs, :time)))
+    |> message(items: TimedSet.merge(message(lhs, :items),
+                                     message(rhs, :items)))
+    |> message(group_name: message(lhs, :group_name))
+  end
 end

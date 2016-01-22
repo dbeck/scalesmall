@@ -4,6 +4,7 @@ defmodule GroupManager.Data.WorldClock do
   require GroupManager.Data.LocalClock
   require GroupManager.Chatter.NetID
   alias GroupManager.Data.LocalClock
+  alias GroupManager.Chatter.NetID
 
   Record.defrecord :world_clock,
                    time: []
@@ -97,16 +98,31 @@ defmodule GroupManager.Data.WorldClock do
     length(world_clock(clock, :time))
   end
 
-  @spec get(t, term) :: LocalClock.t
+  @spec get(t, NetID.t) :: LocalClock.t | nil
   def get(clock, id)
-  when is_valid(clock)
+  when is_valid(clock) and
+       NetID.is_valid(id)
   do
-    [result] = Enum.reduce(world_clock(clock, :time), [], fn(local, acc) ->
-      case LocalClock.member(local) do
-        ^id -> [local|acc]
-        _ -> acc
-      end
-    end) |> Enum.take(1)
-    result
+    world_clock(clock, :time) |> Enum.find(fn(x) -> LocalClock.member(x) == id end)
+  end
+
+  @spec next(t, NetID.t) :: t
+  def next(clock, id)
+  when is_valid(clock) and
+       NetID.is_valid(id)
+  do
+    case WorldClock.get(clock, id) do
+      []            -> add(clock, LocalClock.new(id))
+      [local_clock] -> add(clock, LocalClock.next(local_clock))
+    end
+  end
+
+  @spec merge(t, t) :: t
+  def merge(lhs, rhs)
+  when is_valid(lhs) and
+       is_valid(rhs)
+  do
+    world_clock(time: LocalClock.merge(world_clock(lhs, :time),
+                                       world_clock(lhs, :time)))
   end
 end

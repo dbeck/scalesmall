@@ -11,6 +11,10 @@ defmodule GroupManager.Data.WorldClockTest do
     NetID.new({1,2,3,4},1)
   end
 
+  defp dummy_other do
+    NetID.new({2,3,4,5},2)
+  end
+
   test "basic test for new" do
     assert WorldClock.valid?(WorldClock.new())
   end
@@ -116,12 +120,17 @@ defmodule GroupManager.Data.WorldClockTest do
     assert_raise FunctionClauseError, fn -> WorldClock.get(nil, :ok) end
   end
 
-  test "get() returns X on missing clock" do
+  test "get() returns FunctionClauseError on missing clock" do
     w = WorldClock.new()
     l = LocalClock.new(dummy_me)
     new_clock = WorldClock.add(w, l)
-    assert_raise MatchError, fn -> WorldClock.get(new_clock, :missing) end
+    assert_raise FunctionClauseError, fn -> WorldClock.get(new_clock, :missing) end
+    assert nil == WorldClock.get(new_clock, dummy_other)
   end
 
-  # get
+  # next(clock, netid) adds a new local_clock if netid is not yet in the world clock
+  # next(clock, netid) increases the existing local_clock withing the world clock
+  # merge is idempotent
+  # merge raises on invalid input
+  # merge keeps the latest elements
 end

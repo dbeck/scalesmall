@@ -68,4 +68,8 @@ defmodule GroupManager.Data.TimedSetTest do
     assert_raise FunctionClauseError, fn -> TimedSet.add(ts, {}) end
     assert_raise FunctionClauseError, fn -> TimedSet.add(ts, nil) end
   end
+
+  # merge is idempotent
+  # merge raises on invalid input
+  # merge keeps the latest elements
 end

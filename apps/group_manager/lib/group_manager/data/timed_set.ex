@@ -91,4 +91,12 @@ defmodule GroupManager.Data.TimedSet do
     timed_set(items: TimedItem.merge(timed_set(set, :items), item))
   end
 
+  @spec merge(t, t) :: t
+  def merge(lhs, rhs)
+  when is_valid(lhs) and
+      is_valid(rhs)
+  do
+    timed_set(items: TimedItem.merge(timed_set(lhs, :items),
+                                     timed_set(rhs, :items)))
+  end
 end
