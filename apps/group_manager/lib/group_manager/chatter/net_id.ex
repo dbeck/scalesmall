@@ -2,8 +2,13 @@ defmodule GroupManager.Chatter.NetID do
 
   require Record
 
-  Record.defrecord :net_id, ip: nil, port: 0
-  @type t :: record( :net_id, ip: tuple, port: integer )
+  Record.defrecord :net_id,
+                   ip: nil,
+                   port: 0
+
+  @type t :: record( :net_id,
+                     ip: tuple,
+                     port: integer )
 
   defmacro is_valid_port(data) do
     case Macro.Env.in_guard?(__CALLER__) do
@@ -64,7 +69,8 @@ defmodule GroupManager.Chatter.NetID do
   @spec new(tuple, integer) :: t
   def new(ip, port)
   # TODO : IPV6
-  when is_valid_ip(ip) and is_valid_port(port)
+  when is_valid_ip(ip) and
+       is_valid_port(port)
   do
     net_id(ip: ip) |> net_id(port: port)
   end

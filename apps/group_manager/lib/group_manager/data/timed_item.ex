@@ -1,7 +1,4 @@
 defmodule GroupManager.Data.TimedItem do
-  @moduledoc """
-  TimedItem is a state (`Item`) as seen by the various members at a given LocalClock time.
-  """
 
   require Record
   require GroupManager.Data.Item
@@ -19,20 +16,10 @@ defmodule GroupManager.Data.TimedItem do
   def new(id)
   when NetID.is_valid(id)
   do
-    timed_item(item: Item.new(id)) |> timed_item(updated_at: LocalClock.new(id))
+    timed_item(item: Item.new(id))
+    |> timed_item(updated_at: LocalClock.new(id))
   end
 
-  @doc """
-  Validate as much as we can about the `data` parameter which should be a TimedItem record.
-
-  Validation rules are:
-
-  - 1st is an `:timed_item` atom
-  - 2nd `item`: is a valid `Item`
-  - 3rd `updated_at`: is a valid `LocalClock`
-
-  The purpose of this macro is to help checking input parameters in function guards.
-  """
   defmacro is_valid(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -85,7 +72,8 @@ defmodule GroupManager.Data.TimedItem do
 
   @spec construct(Item.t, LocalClock.t) :: t
   def construct(item, updated_at)
-  when Item.is_valid(item) and LocalClock.is_valid(updated_at) and
+  when Item.is_valid(item) and
+       LocalClock.is_valid(updated_at) and
        Item.item(item, :member) == LocalClock.local_clock(updated_at, :member)
   do
     timed_item(item: item) |> timed_item(updated_at: updated_at)
@@ -93,7 +81,8 @@ defmodule GroupManager.Data.TimedItem do
 
   @spec construct_next(Item.t, LocalClock.t) :: t
   def construct_next(item, updated_at)
-  when Item.is_valid(item) and LocalClock.is_valid(updated_at) and
+  when Item.is_valid(item) and
+       LocalClock.is_valid(updated_at) and
        Item.item(item, :member) == LocalClock.local_clock(updated_at, :member)
   do
     timed_item(item: item) |> timed_item(updated_at: LocalClock.next(updated_at))
@@ -111,20 +100,45 @@ defmodule GroupManager.Data.TimedItem do
     end
   end
 
-  @spec merge_into(timed_item_list, t) :: timed_item_list
-  def merge_into(lst, itm)
-  when is_list(lst) and is_valid(itm)
+  @spec merge(timed_item_list, t) :: timed_item_list
+  def merge(lhs, rhs)
+  when is_list(lhs) and
+       is_valid(rhs)
   do
     # optimize this ???
-    dict = Enum.map([itm|lst], fn(x) -> {
+    dict = Enum.map([rhs|lhs], fn(x) -> {
       # keep items based on the {member, start_range, end_range} triple
-      { item(x) |> Item.member, item(x) |> Item.start_range, item(x) |> Item.end_range }, x } end)
-    |> Enum.reduce(%{}, fn({k, itm} ,acc) ->
-      Map.update(acc, k, itm, fn(other_value) ->
-        max_item(itm, other_value)
+      { timed_item(x, :item) |> Item.member,
+        timed_item(x, :item) |> Item.start_range,
+        timed_item(x, :item) |> Item.end_range },
+      x } end)
+    |> Enum.reduce(%{}, fn({key, value} ,acc) ->
+      Map.update(acc, key, value, fn(other_value) ->
+        max_item(value, other_value)
       end)
     end)
     keys = Map.keys(dict) |> Enum.sort
-    Enum.map(keys, fn(k) -> Map.get(dict, k) end)
+    Enum.map(keys, fn(key) -> Map.get(dict, key) end)
+  end
+
+  @spec merge(timed_item_list, timed_item_list) :: timed_item_list
+  def merge(lhs, rhs)
+  when is_list(lhs) and
+       is_list(rhs)
+  do
+    # TODO : optimize this ???
+    dict = Enum.map(lhs ++ rhs, fn(x) -> {
+      # keep items based on the {member, start_range, end_range} triple
+      { item(x) |> Item.member,
+        item(x) |> Item.start_range,
+        item(x) |> Item.end_range },
+      x } end)
+    |> Enum.reduce(%{}, fn({key, value} ,acc) ->
+      Map.update(acc, key, value, fn(other_value) ->
+        max_item(value, other_value)
+      end)
+    end)
+    keys = Map.keys(dict) |> Enum.sort
+    Enum.map(keys, fn(key) -> Map.get(dict, key) end)
   end
 end

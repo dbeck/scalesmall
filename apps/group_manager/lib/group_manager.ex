@@ -1,15 +1,4 @@
 defmodule GroupManager do
-  @moduledoc """
-  The GroupManager application allows you to:
-  - join or leave a group of nodes
-  - register your intent for participating in the group's purpose
-    - the purpose is represented by a 32bit integer range and
-    - a priority hint supplied by the participant
-  - query the group's members
-
-  The group members are identified by GroupManager.Chatter.NetID which is a pair
-  of IP address and port.
-  """
 
   use Application
   require GroupManager.Chatter.NetID
@@ -48,14 +37,6 @@ defmodule GroupManager do
     # register membership locally
     # send a dummy message to others to get members of the group
   end
-
-  # from engine:
-  #defcast add_item(item), state: state
-  #do
-  #  {old_clock, msg} = state
-  #  next_clock = LocalClock.next(old_clock)
-  #  new_state( {next_clock, Message.add(msg, TimedItem.construct(item, next_clock))} )
-  #end
 
   def leave(group_name)
   when is_valid_group_name(group_name)

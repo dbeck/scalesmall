@@ -62,38 +62,35 @@ defmodule GroupManager.Data.LocalClockTest do
     assert_raise FunctionClauseError, fn -> LocalClock.member({:ok}) end
   end
 
-  test "merge_into() is idempotent" do
+  test "merge([], item) is idempotent" do
     lst = []
     clock = LocalClock.new(dummy_me)
-    merged = LocalClock.merge_into(lst, clock)
+    merged = LocalClock.merge(lst, clock)
     assert length(merged) == 1
-    assert merged == LocalClock.merge_into(merged, clock)
+    assert merged == LocalClock.merge(merged, clock)
     # merge in another one
     clock2 = LocalClock.new(dummy_other)
-    merged = LocalClock.merge_into(merged, clock2)
+    merged = LocalClock.merge(merged, clock2)
     assert length(merged) == 2
-    assert merged == LocalClock.merge_into(merged, clock)
+    assert merged == LocalClock.merge(merged, clock)
   end
 
-  test "merge_into() keeps the latest clock for a member" do
+  test "merge([], item) keeps the latest clock for a member" do
     clock = LocalClock.new(dummy_me)
     clock2 = LocalClock.next(clock)
     assert clock != clock2
-    assert [clock2] == LocalClock.merge_into([clock], clock2)
-    assert [clock2] == LocalClock.merge_into([clock2], clock)
-    assert [clock2] == LocalClock.merge_into([clock, clock], clock2)
-    assert [clock2] == LocalClock.merge_into([clock2, clock], clock)
+    assert [clock2] == LocalClock.merge([clock], clock2)
+    assert [clock2] == LocalClock.merge([clock2], clock)
+    assert [clock2] == LocalClock.merge([clock, clock], clock2)
+    assert [clock2] == LocalClock.merge([clock2, clock], clock)
   end
 
-  test "merge_into() raises on bad elements" do
+  test "merge([],*) raises on bad elements" do
+    assert_raise FunctionClauseError, fn -> LocalClock.merge([], :ok) end
+    assert_raise FunctionClauseError, fn -> LocalClock.merge([:ok], LocalClock.new(dummy_me)) end
     assert_raise FunctionClauseError, fn ->
-      LocalClock.merge_into([], :ok)
-    end
-    assert_raise FunctionClauseError, fn ->
-      LocalClock.merge_into([:ok], LocalClock.new(dummy_me))
-    end
-    assert_raise FunctionClauseError, fn ->
-      LocalClock.merge_into([LocalClock.new(dummy_me), :ok], LocalClock.new(dummy_me))
+      LocalClock.merge([LocalClock.new(dummy_me), :ok],
+                       LocalClock.new(dummy_me))
     end
   end
 
@@ -123,5 +120,21 @@ defmodule GroupManager.Data.LocalClockTest do
     assert_raise FunctionClauseError, fn ->  LocalClock.max_clock([], []) end
     assert_raise FunctionClauseError, fn ->  LocalClock.max_clock(clock, []) end
     assert_raise FunctionClauseError, fn ->  LocalClock.max_clock([], clock) end
+  end
+
+
+  # merge([],[])
+  test "merge([],[]) raises on bad elements" do
+    assert_raise FunctionClauseError, fn -> LocalClock.merge(:ok, :ok) end
+    assert_raise FunctionClauseError, fn -> LocalClock.merge({}, {}) end
+  end
+
+  test "merge([], []) is idempotent" do
+    assert [] == LocalClock.merge([], [])
+    clock = LocalClock.new(dummy_me)
+    assert [clock] == LocalClock.merge([clock], [clock])
+    other = LocalClock.new(dummy_other)
+    assert [clock, other] |> Enum.sort == LocalClock.merge([clock, other], [clock]) |> Enum.sort
+    assert [clock, other] |> Enum.sort == LocalClock.merge([clock], [clock, other]) |> Enum.sort
   end
 end

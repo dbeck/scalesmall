@@ -23,7 +23,8 @@ defmodule GroupManager.Chatter.OutgoingHandler do
 
   @spec send(pid, Gossip.t) :: Gossip.t
   def send(pid, gossip)
-  when is_pid(pid) and Gossip.is_valid(gossip)
+  when is_pid(pid) and
+       Gossip.is_valid(gossip)
   do
     GenServer.call(pid, {:send, gossip})
   end

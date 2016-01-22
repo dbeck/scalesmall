@@ -84,7 +84,9 @@ defmodule GroupManager.Chatter.PeerData do
 
   @spec broadcast_seqno(t, integer) :: t
   def broadcast_seqno(d, v)
-  when is_valid(d) and is_integer(v) and v >= 0
+  when is_valid(d) and
+       is_integer(v) and
+       v >= 0
   do
     peer_data(d, broadcast_seqno: v)
   end
@@ -107,7 +109,8 @@ defmodule GroupManager.Chatter.PeerData do
   def merge_seen_ids(d, []), do: d
 
   def merge_seen_ids(d, ids)
-  when is_valid(d) and is_list(ids)
+  when is_valid(d) and
+       is_list(ids)
   do
     old_ids = peer_data(d, :seen_ids)
     peer_data(d, seen_ids: BroadcastID.merge_lists(old_ids, ids))

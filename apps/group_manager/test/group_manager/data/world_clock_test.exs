@@ -122,4 +122,6 @@ defmodule GroupManager.Data.WorldClockTest do
     new_clock = WorldClock.add(w, l)
     assert_raise MatchError, fn -> WorldClock.get(new_clock, :missing) end
   end
+
+  # get
 end

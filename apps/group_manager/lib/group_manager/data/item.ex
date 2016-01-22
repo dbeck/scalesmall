@@ -1,27 +1,22 @@
 defmodule GroupManager.Data.Item do
-  @moduledoc """
-  Item represents a range associated to a member. Each member has a priority for each range. If multiple ranges exist for
-  a given point in the range, their resulting priority is the maximum of all priority values. The Item inside is represented by
-  a record (tuple with these members):
-
-  - :item atom
-  - member NetID
-  - op atom
-  - start_range integer
-  - end_range integer
-  - priority integer
-
-  The op member is either :add or :rmv. :add signifies the items membership in a group range and :rmv act as a tombstone.
-
-  `Item` itself is a Record type that we manipulate and access with the methods provided in the module.
-  """
 
   require Record
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
 
-  Record.defrecord :item, member: nil, op: :add, start_range: 0, end_range: 0xffffffff, priority: 0
-  @type t :: record( :item, member: NetID.t, op: atom, start_range: integer, end_range: integer, priority: integer )
+  Record.defrecord :item,
+                   member:       nil,
+                   op:           :add,
+                   start_range:  0,
+                   end_range:    0xffffffff,
+                   priority:     0
+
+  @type t :: record( :item,
+                     member:       NetID.t,
+                     op:           atom,
+                     start_range:  integer,
+                     end_range:    integer,
+                     priority:     integer )
 
   @spec new(NetID.t) :: t
   def new(id)
@@ -30,21 +25,23 @@ defmodule GroupManager.Data.Item do
     item(member: id)
   end
 
-  @doc """
-  Validate as much as we can about the `data` parameter which should be an Item record.
+  defmacro is_valid_uint32(data) do
+    case Macro.Env.in_guard?(__CALLER__) do
+      true ->
+        quote do
+          is_integer(unquote(data)) and
+          unquote(data) >= 0 and
+          unquote(data) <= 0xffffffff
+        end
+      false ->
+        quote bind_quoted: binding() do
+          is_integer(data) and
+          data >= 0 and
+          data <= 0xffffffff
+        end
+    end
+  end
 
-  Validation rules are:
-
-  - 1st is an `:item` atom
-  - 2nd `member`: is a non nil NetID
-  - 3rd `op`: is :add or :rmv
-  - 4th `start_range`: is non-negative integer [0x0..0xffffffff]
-  - 5th `end_range`: is non-negative integer [0x0..0xffffffff]
-  - 6th `priority`: is non-negative integer [0x0..0xffffffff]
-  - start_range <= end_range
-
-  The purpose of this macro is to help checking input parameters in function guards.
-  """
   defmacro is_valid(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -135,7 +132,8 @@ defmodule GroupManager.Data.Item do
 
   @spec start_range(t, integer) :: t
   def start_range(itm, v)
-  when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
+  when is_valid(itm) and
+       is_valid_uint32(v)
   do
     item(itm, start_range: v)
   end
@@ -149,7 +147,8 @@ defmodule GroupManager.Data.Item do
 
   @spec end_range(t, integer) :: t
   def end_range(itm, v)
-  when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
+  when is_valid(itm) and
+       is_valid_uint32(v)
   do
     item(itm, end_range: v)
   end
@@ -163,7 +162,8 @@ defmodule GroupManager.Data.Item do
 
   @spec priority(t, integer) :: t
   def priority(itm, v)
-  when is_valid(itm) and is_integer(v) and v >= 0 and v <= 0xffffffff
+  when is_valid(itm) and
+       is_valid_uint32(v)
   do
     item(itm, priority: v)
   end

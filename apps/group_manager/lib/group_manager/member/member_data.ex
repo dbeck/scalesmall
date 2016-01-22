@@ -5,8 +5,13 @@ defmodule GroupManager.Member.MemberData do
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
 
-  Record.defrecord :member_data, group_name: nil, members: []
-  @type t :: record( :member_data, group_name: binary, members: list(NetID.t) )
+  Record.defrecord :member_data,
+                   group_name: nil,
+                   members: []
+
+  @type t :: record( :member_data,
+                     group_name: binary,
+                     members: list(NetID.t) )
 
   @spec new(binary) :: t
   def new(group_name)

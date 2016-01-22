@@ -1,16 +1,15 @@
 defmodule GroupManager.Data.WorldClock do
-  @moduledoc """
-  WorldClock is a collection of LocalClocks gathered from members. WorldClocks can be merged by
-  selecting the latest clock from members.
-  """
 
   require Record
   require GroupManager.Data.LocalClock
   require GroupManager.Chatter.NetID
   alias GroupManager.Data.LocalClock
 
-  Record.defrecord :world_clock, time: []
-  @type t :: record( :world_clock, time: list(LocalClock.t) )
+  Record.defrecord :world_clock,
+                   time: []
+
+  @type t :: record( :world_clock,
+                     time: list(LocalClock.t) )
 
   @spec new() :: t
   def new()
@@ -18,16 +17,6 @@ defmodule GroupManager.Data.WorldClock do
     world_clock(time: [])
   end
 
-  @doc """
-  Validate as much as we can about the `data` parameter which should be a WorldClock record.
-
-  Validation rules are:
-
-  - 1st is an `:world_clock` atom
-  - 2nd `time`: is a list
-
-  The purpose of this macro is to help checking input parameters in function guards.
-  """
   defmacro is_valid(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -74,7 +63,8 @@ defmodule GroupManager.Data.WorldClock do
 
   @spec empty?(t) :: boolean
   def empty?(data)
-  when is_valid(data) and is_empty(data)
+  when is_valid(data) and
+       is_empty(data)
   do
     true
   end
@@ -94,9 +84,10 @@ defmodule GroupManager.Data.WorldClock do
 
   @spec add(t, LocalClock.t) :: t
   def add(clock, local_clock)
-  when is_valid(clock) and LocalClock.is_valid(local_clock)
+  when is_valid(clock) and
+       LocalClock.is_valid(local_clock)
   do
-    world_clock(time: LocalClock.merge_into(time(clock), local_clock))
+    world_clock(time: LocalClock.merge(world_clock(clock, :time), local_clock))
   end
 
   @spec size(t) :: integer

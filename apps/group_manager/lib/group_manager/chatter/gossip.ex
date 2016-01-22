@@ -27,7 +27,9 @@ defmodule GroupManager.Chatter.Gossip do
 
   @spec new(NetID.t, integer, term) :: t
   def new(my_id, seqno, data)
-  when NetID.is_valid(my_id) and is_integer(seqno) and seqno >= 0
+  when NetID.is_valid(my_id) and
+       is_integer(seqno) and
+       seqno >= 0
   do
     gossip(current_id: BroadcastID.new(my_id) |> BroadcastID.seqno(seqno))
     |> gossip(payload: data)
@@ -82,7 +84,8 @@ defmodule GroupManager.Chatter.Gossip do
 
   @spec seen_ids(t, list(BroadcastID.t)) :: t
   def seen_ids(g, ids)
-  when is_valid(g) and is_list(ids)
+  when is_valid(g) and
+       is_list(ids)
   do
     :ok = BroadcastID.validate_list!(ids)
     gossip(g, seen_ids: ids)
@@ -120,7 +123,8 @@ defmodule GroupManager.Chatter.Gossip do
 
   @spec distribution_list(t, list(NetID.t)) :: t
   def distribution_list(g, ids)
-  when is_valid(g) and is_list(ids)
+  when is_valid(g) and
+       is_list(ids)
   do
     :ok = NetID.validate_list!(ids)
     gossip(g, distribution_list: ids)

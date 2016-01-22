@@ -2,17 +2,22 @@ defmodule GroupManager.TopologyDB do
 
   use ExActor.GenServer
   require GroupManager
+  require GroupManager.Chatter.NetID
   require GroupManager.Data.Message
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
+  require GroupManager.Data.Item
   alias GroupManager.Data.Message
+  alias GroupManager.Data.Item
+  alias GroupManager.Chatter
 
   defstart start_link(opts \\ []),
     gen_server_opts: opts
   do
-    name = Keyword.get(opts, :name, id_atom())
-    table = :ets.new(name, [:named_table, :set, :protected, {:keypos, 4}])
-    initial_state(table)
+    name    = Keyword.get(opts, :name, id_atom())
+    own_id  = Keyword.get(opts, :own_id, Chatter.local_netid)
+    table   = :ets.new(name, [:named_table, :set, :protected, {:keypos, 4}])
+    initial_state({own_id, table})
   end
 
   # Convenience API
@@ -22,6 +27,14 @@ defmodule GroupManager.TopologyDB do
        Message.is_valid(message)
   do
     GenServer.cast(pid, {:add, message})
+  end
+
+  def add_item(pid, group_name, item)
+  when is_pid(pid) and
+       GroupManager.is_valid_group_name(group_name) and
+       Item.is_valid(item)
+  do
+    GenServer.call(pid, {:add_item, group_name, item})
   end
 
   def get(pid, group_name)
@@ -46,11 +59,18 @@ defmodule GroupManager.TopologyDB do
     end
   end
 
+  #defcast add_item(item), state: state
+  #do
+  #  {old_clock, msg} = state
+  #  next_clock = LocalClock.next(old_clock)
+  #  new_state( {next_clock, Message.add(msg, TimedItem.construct(item, next_clock))} )
+  #end
+
   # GenServer
 
   defcast stop, do: stop_server(:normal)
 
-  def handle_cast({:add, message}, table)
+  def handle_cast({:add, message}, {own_id, table})
   when Message.is_valid(message)
   do
     #TODO
@@ -65,7 +85,23 @@ defmodule GroupManager.TopologyDB do
     {:noreply, table}
   end
 
-  def handle_call({:get, group_name}, _from, table)
+  def handle_cast({:add_item, group_name, item}, {own_id, table})
+  when GroupManager.is_valid_group_name(group_name) and
+       Item.is_valid(item)
+  do
+    #TODO
+    #case :ets.lookup(table, group_name)
+    #do
+    #  [] ->
+    #   value = MemberData.new(group_name) |> MemberData.add(id)
+    #   :ets.insert_new(table, value)
+    #  [value] ->
+    #   :ets.insert(table, MemberData.add(value,id))
+    #end
+    {:noreply, table}
+  end
+
+  def handle_call({:get, group_name}, _from, {own_id, table})
   when GroupManager.is_valid_group_name(group_name)
   do
     case :ets.lookup(table, group_name)

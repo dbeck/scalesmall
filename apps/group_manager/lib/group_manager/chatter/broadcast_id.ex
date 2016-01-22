@@ -4,8 +4,13 @@ defmodule GroupManager.Chatter.BroadcastID do
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
 
-  Record.defrecord :broadcast_id, origin: nil, seqno: 0
-  @type t :: record( :broadcast_id, origin: NetID.t, seqno: integer )
+  Record.defrecord :broadcast_id,
+                   origin: nil,
+                   seqno: 0
+
+  @type t :: record( :broadcast_id,
+                     origin: NetID.t,
+                     seqno: integer )
 
   @spec new(NetID.t) :: t
   def new(id)
@@ -16,7 +21,9 @@ defmodule GroupManager.Chatter.BroadcastID do
 
   @spec new(NetID.t, integer) :: t
   def new(id, seqno)
-  when NetID.is_valid(id) and is_integer(seqno) and seqno >= 0
+  when NetID.is_valid(id) and
+       is_integer(seqno) and
+       seqno >= 0
   do
     broadcast_id(origin: id) |> broadcast_id(seqno: seqno)
   end
@@ -55,7 +62,8 @@ defmodule GroupManager.Chatter.BroadcastID do
 
   @spec origin(t,  NetID.t) :: t
   def origin(id, nid)
-  when is_valid(id) and NetID.is_valid(nid)
+  when is_valid(id) and
+       NetID.is_valid(nid)
   do
     broadcast_id(id, origin: nid)
   end
@@ -69,7 +77,9 @@ defmodule GroupManager.Chatter.BroadcastID do
 
   @spec seqno(t, integer) :: t
   def seqno(id, v)
-  when is_valid(id) and is_integer(v) and v >= 0
+  when is_valid(id) and
+       is_integer(v) and
+       v >= 0
   do
     broadcast_id(id, seqno: v)
   end
@@ -118,7 +128,8 @@ defmodule GroupManager.Chatter.BroadcastID do
   def merge_lists([], rhs) when is_list(rhs), do: rhs
 
   def merge_lists(lhs, rhs)
-  when is_list(lhs) and is_list(rhs)
+  when is_list(lhs) and
+       is_list(rhs)
   do
     # optimize this ???
     dict = Enum.map(lhs ++ rhs, fn(x) -> {origin(x), seqno(x)} end)

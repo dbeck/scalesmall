@@ -1,8 +1,4 @@
 defmodule GroupManager.Data.TimedSet do
-  @moduledoc """
-  TimedSet is a collection of TimedItems that represent the state of a collection as
-  seen by the members of the group at their LocalClock time.
-  """
 
   require Record
   require GroupManager.Data.Item
@@ -11,8 +7,11 @@ defmodule GroupManager.Data.TimedSet do
   require GroupManager.Chatter.NetID
   alias GroupManager.Data.TimedItem
 
-  Record.defrecord :timed_set, items: []
-  @type t :: record( :timed_set, items: list(TimedItem.t) )
+  Record.defrecord :timed_set,
+                   items: []
+
+  @type t :: record( :timed_set,
+                     items: list(TimedItem.t) )
 
   @spec new() :: t
   def new()
@@ -20,16 +19,6 @@ defmodule GroupManager.Data.TimedSet do
     timed_set()
   end
 
-  @doc """
-  Validate as much as we can about the `data` parameter which should be a TimedSet record.
-
-  Validation rules are:
-
-  - 1st is an `:world_clock` atom
-  - 2nd `items`: is a list
-
-  The purpose of this macro is to help checking input parameters in function guards.
-  """
   defmacro is_valid(data) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -75,7 +64,8 @@ defmodule GroupManager.Data.TimedSet do
 
   @spec empty?(t) :: boolean
   def empty?(data)
-  when is_valid(data) and is_empty(data)
+  when is_valid(data) and
+       is_empty(data)
   do
     true
   end
@@ -95,8 +85,10 @@ defmodule GroupManager.Data.TimedSet do
 
   @spec add(t, TimedItem.t) :: t
   def add(set, item)
-  when is_valid(set) and TimedItem.is_valid(item)
+  when is_valid(set) and
+       TimedItem.is_valid(item)
   do
-    timed_set(items: TimedItem.merge_into(timed_set(set, :items), item))
+    timed_set(items: TimedItem.merge(timed_set(set, :items), item))
   end
+
 end
