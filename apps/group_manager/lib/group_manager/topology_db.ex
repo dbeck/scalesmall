@@ -59,13 +59,6 @@ defmodule GroupManager.TopologyDB do
     end
   end
 
-  #defcast add_item(item), state: state
-  #do
-  #  {old_clock, msg} = state
-  #  next_clock = LocalClock.next(old_clock)
-  #  new_state( {next_clock, Message.add(msg, TimedItem.construct(item, next_clock))} )
-  #end
-
   # GenServer
 
   defcast stop, do: stop_server(:normal)
@@ -73,15 +66,14 @@ defmodule GroupManager.TopologyDB do
   def handle_cast({:add, message}, {own_id, table})
   when Message.is_valid(message)
   do
-    #TODO
-  	#case :ets.lookup(table, group_name)
-    #do
-    #  [] ->
-    #  	value = MemberData.new(group_name) |> MemberData.add(id)
-    #  	:ets.insert_new(table, value)
-    #  [value] ->
-    #  	:ets.insert(table, MemberData.add(value,id))
-    #end
+  	case :ets.lookup(table, Message.group_name(message))
+    do
+      [] ->
+        :ets.insert_new(table, message)
+      [old_message] ->
+        new_message = Message.merge(old_message, message)
+      	:ets.insert(table, new_message)
+    end
     {:noreply, table}
   end
 
@@ -89,15 +81,27 @@ defmodule GroupManager.TopologyDB do
   when GroupManager.is_valid_group_name(group_name) and
        Item.is_valid(item)
   do
-    #TODO
-    #case :ets.lookup(table, group_name)
-    #do
-    #  [] ->
-    #   value = MemberData.new(group_name) |> MemberData.add(id)
-    #   :ets.insert_new(table, value)
-    #  [value] ->
-    #   :ets.insert(table, MemberData.add(value,id))
-    #end
+    case :ets.lookup(table, group_name)
+    do
+      [] ->
+        clock = LocalClock.new(own_id)
+        timed_item = TimedItem.construct(item, clock)
+        new_message = Message.new(group_name) |> Message.add(timed_item)
+        :ets.insert(table, new_message)
+      [old_message] ->
+        old_clock = old_message
+        |> Message.time
+        |> WorldClock.get(own_id)
+        if( old_clock == nil )
+        do
+          new_clock = LocalClock.new(own_id)
+        else
+          new_clock = old_clock |> LocalClock.next
+        end
+        timed_item = TimedItem.construct(item, new_clock)
+        new_message = Message.add(old_message, timed_item)
+        :ets.insert(table, new_message)
+    end
     {:noreply, table}
   end
 

@@ -61,8 +61,7 @@ defmodule GroupManager.Data.LocalClock do
   def next(clock)
   when is_valid(clock)
   do
-    {:local_clock, member, time} = clock
-    {:local_clock, member, time+1}
+    local_clock(clock, time_val: local_clock(clock, :time_val)+1)
   end
 
   @spec time_val(t) :: integer
