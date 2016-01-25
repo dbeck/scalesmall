@@ -3,7 +3,6 @@ defmodule GroupManager.MemberDBTest do
   use ExUnit.Case
   alias GroupManager.MemberDB
   alias GroupManager.Chatter.NetID
-  alias GroupManager.Member.MemberData
 
   test "locate MemberDB" do
     pid = MemberDB.locate

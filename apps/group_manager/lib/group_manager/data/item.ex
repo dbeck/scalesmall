@@ -6,7 +6,7 @@ defmodule GroupManager.Data.Item do
 
   Record.defrecord :item,
                    member:       nil,
-                   op:           :add,
+                   op:           :get,
                    start_range:  0,
                    end_range:    0xffffffff,
                    priority:     0
