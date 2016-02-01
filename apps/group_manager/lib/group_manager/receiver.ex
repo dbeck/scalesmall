@@ -6,7 +6,6 @@ defmodule GroupManager.Receiver do
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
   alias GroupManager.Data.Message
-  alias GroupManager.
 
   defstart start_link(opts \\ []),
     gen_server_opts: opts
