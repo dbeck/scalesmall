@@ -112,6 +112,13 @@ defmodule GroupManager.Chatter.Gossip do
     gossip(g, :payload)
   end
 
+  @spec payload(t, term) :: t
+  def payload(g, pl)
+  when is_valid(g)
+  do
+    gossip(g, payload: pl)
+  end
+
   @spec seen_netids(t) :: list(NetID.t)
   def seen_netids(g)
   when is_valid(g)
