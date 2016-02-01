@@ -5,6 +5,7 @@ defmodule GroupManager.Supervisor do
   alias GroupManager.Chatter
   alias GroupManager.MemberDB
   alias GroupManager.TopologyDB
+  alias GroupManager.Receiver
 
   def start_link(opts \\ []) do
     IO.inspect ["opts", opts]
@@ -18,6 +19,7 @@ defmodule GroupManager.Supervisor do
 
   def init(:no_args) do
     children = [
+      supervisor(Receiver,   [[name: Receiver.id_atom()]]),
       supervisor(MemberDB,   [[name: MemberDB.id_atom()]]),
       supervisor(TopologyDB, [[name: TopologyDB.id_atom()]]),
       supervisor(Chatter,    [[name: Chatter.id_atom()]])

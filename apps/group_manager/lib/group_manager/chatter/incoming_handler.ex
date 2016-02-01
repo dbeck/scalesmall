@@ -1,5 +1,6 @@
 defmodule GroupManager.Chatter.IncomingHandler do
 
+  require Logger
   require GroupManager.Chatter.Gossip
   require GroupManager.Chatter.BroadcastID
   require GroupManager.Chatter.NetID
@@ -8,6 +9,8 @@ defmodule GroupManager.Chatter.IncomingHandler do
   alias GroupManager.Chatter.Serializer
   alias GroupManager.Chatter.PeerDB
   alias GroupManager.Chatter
+  alias GroupManager.Receiver
+  alias GroupManager.TopologyDB
 
   def start_link(ref, socket, transport, opts) do
     pid = spawn_link(__MODULE__, :init, [ref, socket, transport, opts])
@@ -50,10 +53,11 @@ defmodule GroupManager.Chatter.IncomingHandler do
                                     Gossip.current_id(gossip),
                                     Gossip.seen_ids(gossip))
 
-            IO.inspect ["received TCP", gossip]
+            Logger.info "received on TCP [#{inspect gossip}]"
+            {:ok, new_message} = Receiver.handle(Receiver.locate!, Gossip.payload(gossip))
 
-            # make sure we pass the message forward
-            :ok = Chatter.broadcast(gossip)
+            # make sure we pass the message forward with the modified payload
+            :ok = Chatter.broadcast(gossip |> Gossip.payload(new_message))
 
             loop(socket, transport, own_id, timeout_seconds, 0)
 

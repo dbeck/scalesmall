@@ -1,6 +1,7 @@
 defmodule GroupManager.Chatter.MulticastHandler do
 
   use ExActor.GenServer
+  require Logger
   require GroupManager.Chatter.Gossip
   require GroupManager.Chatter.BroadcastID
   require GroupManager.Chatter.NetID
@@ -9,9 +10,10 @@ defmodule GroupManager.Chatter.MulticastHandler do
   alias GroupManager.Chatter.Serializer
   alias GroupManager.Chatter.PeerDB
   alias GroupManager.Chatter.BroadcastID
+  alias GroupManager.Receiver
 
-  defstart start_link([own_id: own_id,
-                       multicast_id: multi_id,
+  defstart start_link([own_id:        own_id,
+                       multicast_id:  multi_id,
                        multicast_ttl: ttl],
                       opts),
     gen_server_opts: opts
@@ -31,7 +33,9 @@ defmodule GroupManager.Chatter.MulticastHandler do
     ]
 
     {:ok, socket} = :gen_udp.open( multicast_port, udp_options )
-    initial_state([socket: socket, own_id: own_id, multicast_id: multi_id])
+    initial_state([socket: socket,
+                   own_id: own_id,
+                   multicast_id: multi_id])
   end
 
   @spec send(pid, Gossip.t) :: Gossip.t
@@ -74,6 +78,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
           {:ok, tmp_seqno} -> tmp_seqno
           {:error, _} -> 0
         end
+
         # register that we have seen the peer
         PeerDB.add_seen_id(peer_db,
                            BroadcastID.new(own_id, my_seqno),
@@ -83,7 +88,8 @@ defmodule GroupManager.Chatter.MulticastHandler do
                                 Gossip.current_id(gossip),
                                 Gossip.seen_ids(gossip))
 
-        IO.inspect ["new data", gossip]
+        Logger.info "received on multicast [#{inspect gossip}]"
+        {:ok, _} = Receiver.handle(Receiver.locate!, Gossip.payload(gossip))
 
       {:error, :invalid_data, _}
         -> :error

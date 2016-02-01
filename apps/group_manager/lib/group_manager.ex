@@ -4,6 +4,8 @@ defmodule GroupManager do
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter
+  alias GroupManager.MemberDB
+  alias GroupManager.TopologyDB
 
   defmacro is_valid_group_name(name) do
     case Macro.Env.in_guard?(__CALLER__) do
@@ -23,19 +25,23 @@ defmodule GroupManager do
     GroupManager.Supervisor.start_link(args)
   end
 
-  # TODO : peers, my_id, group_name
   def join(peers, group_name)
   when is_list(peers) and
        is_valid_group_name(group_name)
   do
     :ok = NetID.validate_list!(peers)
-    :error
 
-    #master_pid = GroupManager.Master.locate!()
-    #GroupManager.Master.join(master_pid, peers, my_id(), group_name)
+    # 1: register in the member database
+    :ok = MemberDB.add(MemberDB.locate!, group_name, my_id)
 
-    # register membership locally
-    # send a dummy message to others to get members of the group
+    # 2: prepare a new message with the help of TopologyDB
+    topo_db    = TopologyDB.locate!
+    item       = Item.new(my_id) |> Item.op(:get)
+    :ok        = topo_db |> TopologyDB.add_item(item)
+    {:ok, msg} = topo_db |> TopologyDB.get(group_name)
+
+    # 3: broadcast the new message
+    :ok = Chatter.broadcast(peers, msg)
   end
 
   def leave(group_name)

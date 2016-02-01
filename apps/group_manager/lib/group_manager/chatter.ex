@@ -1,6 +1,7 @@
 defmodule GroupManager.Chatter do
 
   use Supervisor
+  require Logger
   require GroupManager.Data.Message
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
@@ -81,7 +82,7 @@ defmodule GroupManager.Chatter do
     |> Gossip.distribution_list(distribution_list)
     |> Gossip.seen_ids(seen_ids)
 
-    IO.inspect ["multicast_to", gossip]
+    Logger.info "multicasting [#{inspect gossip}]"
 
     # multicast first
     :ok = MulticastHandler.send(MulticastHandler.locate!, gossip)

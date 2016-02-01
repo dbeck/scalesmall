@@ -1,6 +1,7 @@
 defmodule GroupManager.Chatter.OutgoingHandler do
 
   use ExActor.GenServer
+  require Logger
   require GroupManager.Chatter.Gossip
   require GroupManager.Chatter.BroadcastID
   require GroupManager.Chatter.NetID
@@ -37,7 +38,7 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   when Gossip.is_valid(gossip)
   do
     [socket: socket, own_id: _own_id, peer_id: peer_id] = state
-    IO.inspect ["TCP OUT", peer_id, gossip]
+    Logger.info "sending on TCP [#{inspect gossip}]"
     packet = Serializer.encode(gossip)
     case :gen_tcp.send(socket, packet)
     do
