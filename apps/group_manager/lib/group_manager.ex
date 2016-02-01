@@ -6,6 +6,7 @@ defmodule GroupManager do
   alias GroupManager.Chatter
   alias GroupManager.MemberDB
   alias GroupManager.TopologyDB
+  alias GroupManager.Data.Item
 
   defmacro is_valid_group_name(name) do
     case Macro.Env.in_guard?(__CALLER__) do
@@ -37,7 +38,7 @@ defmodule GroupManager do
     # 2: prepare a new message with the help of TopologyDB
     topo_db    = TopologyDB.locate!
     item       = Item.new(my_id) |> Item.op(:get)
-    :ok        = topo_db |> TopologyDB.add_item(item)
+    :ok        = topo_db |> TopologyDB.add_item(group_name, item)
     {:ok, msg} = topo_db |> TopologyDB.get(group_name)
 
     # 3: broadcast the new message
