@@ -62,9 +62,11 @@ defmodule GroupManager do
   def members(group_name)
   when is_valid_group_name(group_name)
   do
-    topo_db        = TopologyDB.locate!
-    {:ok, members} = TopologyDB.members(topo_db, group_name)
-    members
+    case TopologyDB.members(TopologyDB.locate!, group_name)
+    do
+      {:error, :not_found} -> []
+      {:ok, members}       -> members
+    end
   end
 
   # TODO
