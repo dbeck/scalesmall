@@ -25,9 +25,9 @@ defmodule GroupManager do
     GroupManager.Supervisor.start_link(args)
   end
 
-  def join(peers, group_name)
-  when is_list(peers) and
-       is_valid_group_name(group_name)
+  def join(group_name, peers)
+  when is_valid_group_name(group_name) and
+       is_list(peers)
   do
     :ok = NetID.validate_list!(peers)
 
@@ -39,6 +39,13 @@ defmodule GroupManager do
 
     # 2: broadcast the new message
     :ok = Chatter.broadcast(peers, msg)
+  end
+
+  def join(group_name)
+  when is_valid_group_name(group_name)
+  do
+    others = members(group_name)
+    join(group_name, others)
   end
 
   def leave(group_name)
