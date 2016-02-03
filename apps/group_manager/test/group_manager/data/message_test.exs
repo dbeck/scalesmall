@@ -101,4 +101,5 @@ defmodule GroupManager.Data.MessageTest do
   # merge is idempotent
   # merge raises on invalid input
   # merge keeps the latest elements
+  # merge 4 elements
 end

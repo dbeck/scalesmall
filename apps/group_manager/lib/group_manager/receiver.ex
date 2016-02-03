@@ -30,8 +30,10 @@ defmodule GroupManager.Receiver do
   def handle_call({:handle, message}, _from, state)
   when Message.is_valid(message)
   do
-    TopologyDB.locate! |> TopologyDB.add(message)
-  	{:reply, {:ok, message}, state}
+    topo_db = TopologyDB.locate!
+    :ok = TopologyDB.add(topo_db, message)
+    {:ok, new_message} = TopologyDB.get(topo_db, Message.group_name(message))
+  	{:reply, {:ok, new_message}, state}
   end
 
   def locate, do: Process.whereis(id_atom())
