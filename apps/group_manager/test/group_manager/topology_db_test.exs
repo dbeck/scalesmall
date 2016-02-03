@@ -69,4 +69,6 @@ defmodule GroupManager.TopologyDBTest do
 
   # get
   # get_
+  # members
+  # members_
 end

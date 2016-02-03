@@ -4,7 +4,6 @@ defmodule GroupManager do
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter
-  alias GroupManager.MemberDB
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Item
 
@@ -32,16 +31,13 @@ defmodule GroupManager do
   do
     :ok = NetID.validate_list!(peers)
 
-    # 1: register in the member database
-    :ok = MemberDB.add(MemberDB.locate!, group_name, my_id)
-
-    # 2: prepare a new message with the help of TopologyDB
+    # 1: prepare a new message with the help of TopologyDB
     topo_db    = TopologyDB.locate!
     item       = Item.new(my_id) |> Item.op(:get)
     :ok        = topo_db |> TopologyDB.add_item(group_name, item)
     {:ok, msg} = topo_db |> TopologyDB.get(group_name)
 
-    # 3: broadcast the new message
+    # 2: broadcast the new message
     :ok = Chatter.broadcast(peers, msg)
   end
 
@@ -55,16 +51,16 @@ defmodule GroupManager do
     # deregister local membership information
   end
 
-  # TODO :
   @spec members(binary) :: list(NetID.t)
   def members(group_name)
   when is_valid_group_name(group_name)
   do
-    #master_pid = GroupManager.Master.locate!()
-    #GroupManager.Master.get_members(master_pid, group_name)
-    :error
+    topo_db        = TopologyDB.locate!
+    {:ok, members} = TopologyDB.members(topo_db, group_name)
+    members
   end
 
+  # TODO
   @spec joined_groups() :: {:ok, list(binary)}
   def joined_groups()
   do
