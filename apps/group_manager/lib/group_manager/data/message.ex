@@ -153,7 +153,7 @@ defmodule GroupManager.Data.Message do
   do
     List.foldl(message(m, :items) |> TimedSet.items, [], fn(x,acc) ->
       op = TimedItem.item(x) |> Item.op
-      if( op == :del )
+      if( op == :rmc )
       do
         acc
       else
@@ -169,7 +169,7 @@ defmodule GroupManager.Data.Message do
   do
     List.foldl(message(m, :items) |> TimedSet.items, [], fn(x,acc) ->
       op = TimedItem.item(x) |> Item.op
-      if( op == :del)
+      if( op == :rmc)
       do
         acc
       else

@@ -53,14 +53,14 @@ defmodule GroupManager do
   do
     # 1: prepare a leave message with the help of TopologyDB
     topo_db    = TopologyDB.locate!
-    item       = Item.new(my_id) |> Item.op(:del)
+    item       = Item.new(my_id) |> Item.op(:rmv)
     :ok        = topo_db |> TopologyDB.add_item(group_name, item)
     {:ok, msg} = topo_db |> TopologyDB.get(group_name)
 
     # 2: remove all other group participation from the message
     topology = Message.topology(msg)
     List.foldl(topology, msg, fn(x,acc) ->
-      del_item = TimedItem.item(x) |> Item.op(:del)
+      del_item = TimedItem.item(x) |> Item.op(:rmv)
       if( Item.member(del_item) == my_id )
       do
         local_clock = TimedItem.updated_at(x)
