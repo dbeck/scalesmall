@@ -256,6 +256,4 @@ defmodule GroupManager.Data.TimedItemTest do
     assert [it3, it4] == TimedItem.merge([], [it4]) |> TimedItem.merge([it1]) |> TimedItem.merge([it2]) |> TimedItem.merge([it3])
     assert [it3, it4] == TimedItem.merge([], [it4]) |> TimedItem.merge([it1]) |> TimedItem.merge([it3]) |> TimedItem.merge([it2])
   end
-
-
 end

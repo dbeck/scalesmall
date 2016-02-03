@@ -123,6 +123,22 @@ defmodule GroupManager.Data.WorldClock do
        is_valid(rhs)
   do
     world_clock(time: LocalClock.merge(world_clock(lhs, :time),
-                                       world_clock(lhs, :time)))
+                                       world_clock(rhs, :time)))
+  end
+
+  @spec count(t, NetID.t) :: t
+  def count(clock, id)
+  when is_valid(clock) and
+       NetID.is_valid(id)
+  do
+    List.foldl(world_clock(clock, :time), 0, fn(x, acc) ->
+      clock_id = LocalClock.member(x)
+      if( clock_id == id )
+      do
+        acc + 1
+      else
+        acc
+      end
+    end)
   end
 end

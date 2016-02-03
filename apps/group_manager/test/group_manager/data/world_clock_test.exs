@@ -15,6 +15,10 @@ defmodule GroupManager.Data.WorldClockTest do
     NetID.new({2,3,4,5},2)
   end
 
+  defp dummy_third do
+    NetID.new({3,4,5,6},3)
+  end
+
   test "basic test for new" do
     assert WorldClock.valid?(WorldClock.new())
   end
@@ -128,9 +132,76 @@ defmodule GroupManager.Data.WorldClockTest do
     assert nil == WorldClock.get(new_clock, dummy_other)
   end
 
+  # count
+  test "count() returns zero on empty world clock" do
+    w = WorldClock.new()
+    assert 0 == WorldClock.count(w, dummy_me)
+  end
+
+  test "count() raises on invalid parameters" do
+    assert_raise FunctionClauseError, fn -> WorldClock.count(:ok, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count([], :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count({}, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count(nil, :ok) end
+
+    w = WorldClock.new()
+    assert_raise FunctionClauseError, fn -> WorldClock.count(w, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count(w, []) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count(w, {}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count(w, nil) end
+
+    id = dummy_me
+    assert_raise FunctionClauseError, fn -> WorldClock.count(:ok, id) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count([], id) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count({}, id) end
+    assert_raise FunctionClauseError, fn -> WorldClock.count(nil, id) end
+  end
+
+  test "count() retuns 1 for a single existing elem w/ respect to add()" do
+    w = WorldClock.new() |> WorldClock.add(LocalClock.new(dummy_me))
+    assert 1 == WorldClock.count(w, dummy_me)
+    assert 0 == WorldClock.count(w, dummy_other)
+    w2 = WorldClock.add(w, LocalClock.new(dummy_other))
+    assert 1 == WorldClock.count(w2, dummy_me)
+    assert 1 == WorldClock.count(w2, dummy_other)
+    assert 0 == WorldClock.count(w2, dummy_third)
+    w3 = WorldClock.add(w2, LocalClock.new(dummy_third))
+    assert 1 == WorldClock.count(w3, dummy_me)
+    assert 1 == WorldClock.count(w3, dummy_other)
+    assert 1 == WorldClock.count(w3, dummy_third)
+  end
+
+  test "count() retuns 1 for a single existing elem w/ respect to merge()" do
+    w1 = WorldClock.new() |> WorldClock.add(LocalClock.new(dummy_me))
+    w2 = WorldClock.new() |> WorldClock.add(LocalClock.new(dummy_other))
+    w3 = WorldClock.new() |> WorldClock.add(LocalClock.new(dummy_third))
+
+    # merge is idempotent
+    assert 1 == WorldClock.merge(w1, w1) |> WorldClock.count(dummy_me)
+
+    # merge keeps both elements
+    w12 = WorldClock.merge(w1, w2)
+    assert 1 == WorldClock.count(w12, dummy_me)
+    assert 1 == WorldClock.count(w12, dummy_other)
+
+    # merge keeps all 3 elements
+    w123 = WorldClock.merge(w12, w3)
+    assert 1 == WorldClock.count(w123, dummy_me)
+    assert 1 == WorldClock.count(w123, dummy_other)
+    assert 1 == WorldClock.count(w123, dummy_third)
+
+    # merge keeps overlapping elemnts too
+    w23 = WorldClock.merge(w2, w3)
+    w1223 = WorldClock.merge(w12, w23)
+    assert 1 == WorldClock.count(w123, dummy_me)
+    assert 1 == WorldClock.count(w123, dummy_other)
+    assert 1 == WorldClock.count(w123, dummy_third)
+  end
+
   # next(clock, netid) adds a new local_clock if netid is not yet in the world clock
   # next(clock, netid) increases the existing local_clock withing the world clock
   # merge is idempotent
+  # merge adds two clocks
   # merge raises on invalid input
   # merge keeps the latest elements
 end

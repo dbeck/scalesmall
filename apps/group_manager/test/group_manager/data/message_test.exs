@@ -13,6 +13,14 @@ defmodule GroupManager.Data.MessageTest do
     NetID.new({1,2,3,4},1)
   end
 
+  defp dummy_other do
+    NetID.new({2,3,4,5},2)
+  end
+
+  defp dummy_third do
+    NetID.new({3,4,5,6},3)
+  end
+
   # TODO
   # doctest GroupManager.Data.Message
 
@@ -95,6 +103,75 @@ defmodule GroupManager.Data.MessageTest do
     assert_raise FunctionClauseError, fn -> Message.add([], timed_item) end
     assert_raise FunctionClauseError, fn -> Message.add({}, timed_item) end
     assert_raise FunctionClauseError, fn -> Message.add(nil, timed_item) end
+  end
+
+  test "add() updates both the world clock and the timed set" do
+    timed_item1 = Item.new(dummy_me)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    timed_item2 = Item.new(dummy_other) |> TimedItem.construct(LocalClock.new(dummy_other))
+    timed_item3 = Item.new(dummy_third) |> TimedItem.construct(LocalClock.new(dummy_third))
+
+    m = Message.new("hello") |> Message.add(timed_item1)
+
+    assert 1 == Message.time(m)  |> WorldClock.count(dummy_me)
+    assert 1 == Message.items(m) |> TimedSet.count(dummy_me)
+    assert 0 == Message.time(m)  |> WorldClock.count(dummy_other)
+    assert 0 == Message.items(m) |> TimedSet.count(dummy_other)
+
+    m = m |> Message.add(timed_item2)
+
+    assert 1 == Message.time(m)  |> WorldClock.count(dummy_me)
+    assert 1 == Message.items(m) |> TimedSet.count(dummy_me)
+    assert 1 == Message.time(m)  |> WorldClock.count(dummy_other)
+    assert 1 == Message.items(m) |> TimedSet.count(dummy_other)
+
+    m = m |> Message.add(timed_item3)
+
+    assert 1 == Message.time(m)  |> WorldClock.count(dummy_me)
+    assert 1 == Message.items(m) |> TimedSet.count(dummy_me)
+    assert 1 == Message.time(m)  |> WorldClock.count(dummy_other)
+    assert 1 == Message.items(m) |> TimedSet.count(dummy_other)
+    assert 1 == Message.time(m)  |> WorldClock.count(dummy_third)
+    assert 1 == Message.items(m) |> TimedSet.count(dummy_third)
+  end
+
+  test "merge() updates both the world clock and the timed set" do
+    timed_item1 = Item.new(dummy_me)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    timed_item2 = Item.new(dummy_other) |> TimedItem.construct(LocalClock.new(dummy_other))
+    timed_item3 = Item.new(dummy_third) |> TimedItem.construct(LocalClock.new(dummy_third))
+
+    m1 = Message.new("hello") |> Message.add(timed_item1)
+    m2 = Message.new("hello") |> Message.add(timed_item2)
+    m3 = Message.new("hello") |> Message.add(timed_item3)
+
+    # merge is idempotent w/ respect to world clock and items
+    assert 1 == Message.merge(m1,m1) |> Message.time  |> WorldClock.count(dummy_me)
+    assert 1 == Message.merge(m1,m1) |> Message.items |> TimedSet.count(dummy_me)
+
+    # merge keeps both elements
+    m12 = Message.merge(m1,m2)
+    assert 1 == m12 |> Message.time  |> WorldClock.count(dummy_me)
+    assert 1 == m12 |> Message.items |> TimedSet.count(dummy_me)
+    assert 1 == m12 |> Message.time  |> WorldClock.count(dummy_other)
+    assert 1 == m12 |> Message.items |> TimedSet.count(dummy_other)
+
+    # merge keeps all 3 elements
+    m123 = Message.merge(m12, m3)
+    assert 1 == m123 |> Message.time  |> WorldClock.count(dummy_me)
+    assert 1 == m123 |> Message.items |> TimedSet.count(dummy_me)
+    assert 1 == m123 |> Message.time  |> WorldClock.count(dummy_other)
+    assert 1 == m123 |> Message.items |> TimedSet.count(dummy_other)
+    assert 1 == m123 |> Message.time  |> WorldClock.count(dummy_third)
+    assert 1 == m123 |> Message.items |> TimedSet.count(dummy_third)
+
+    # merge keeps overlapping elemnts too
+    m23 = Message.merge(m2,m3)
+    m1223 = Message.merge(m12, m23)
+    assert 1 == m1223 |> Message.time  |> WorldClock.count(dummy_me)
+    assert 1 == m1223 |> Message.items |> TimedSet.count(dummy_me)
+    assert 1 == m1223 |> Message.time  |> WorldClock.count(dummy_other)
+    assert 1 == m1223 |> Message.items |> TimedSet.count(dummy_other)
+    assert 1 == m1223 |> Message.time  |> WorldClock.count(dummy_third)
+    assert 1 == m1223 |> Message.items |> TimedSet.count(dummy_third)
   end
 
   # group_name

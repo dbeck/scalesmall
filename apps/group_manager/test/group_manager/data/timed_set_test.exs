@@ -43,6 +43,10 @@ defmodule GroupManager.Data.TimedSetTest do
     NetID.new({2,3,4,5},2)
   end
 
+  defp dummy_third do
+    NetID.new({3,4,5,6},3)
+  end
+
   test "items() returns what had been added" do
     ti = TimedItem.new(dummy_me)
     ts = TimedSet.new() |> TimedSet.add(ti)
@@ -67,6 +71,45 @@ defmodule GroupManager.Data.TimedSetTest do
     assert_raise FunctionClauseError, fn -> TimedSet.add(ts, []) end
     assert_raise FunctionClauseError, fn -> TimedSet.add(ts, {}) end
     assert_raise FunctionClauseError, fn -> TimedSet.add(ts, nil) end
+  end
+
+  # count
+  test "count() returns zero on empty world clock" do
+    w = TimedSet.new()
+    assert 0 == TimedSet.count(w, dummy_me)
+  end
+
+  test "count() raises on invalid parameters" do
+    assert_raise FunctionClauseError, fn -> TimedSet.count(:ok, :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count([], :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count({}, :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count(nil, :ok) end
+
+    w = TimedSet.new()
+    assert_raise FunctionClauseError, fn -> TimedSet.count(w, :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count(w, []) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count(w, {}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count(w, nil) end
+
+    id = dummy_me
+    assert_raise FunctionClauseError, fn -> TimedSet.count(:ok, id) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count([], id) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count({}, id) end
+    assert_raise FunctionClauseError, fn -> TimedSet.count(nil, id) end
+  end
+
+  test "count() retuns 1 for a single existing elem" do
+    w = TimedSet.new() |> TimedSet.add(TimedItem.new(dummy_me))
+    assert 1 == TimedSet.count(w, dummy_me)
+    assert 0 == TimedSet.count(w, dummy_other)
+    w2 = TimedSet.add(w, TimedItem.new(dummy_other))
+    assert 1 == TimedSet.count(w2, dummy_me)
+    assert 1 == TimedSet.count(w2, dummy_other)
+    assert 0 == TimedSet.count(w2, dummy_third)
+    w3 = TimedSet.add(w2, TimedItem.new(dummy_third))
+    assert 1 == TimedSet.count(w3, dummy_me)
+    assert 1 == TimedSet.count(w3, dummy_other)
+    assert 1 == TimedSet.count(w3, dummy_third)
   end
 
   # merge is idempotent
