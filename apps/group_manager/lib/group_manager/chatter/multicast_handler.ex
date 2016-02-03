@@ -88,7 +88,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
                                 Gossip.current_id(gossip),
                                 Gossip.seen_ids(gossip))
 
-        Logger.info "received on multicast [#{inspect gossip}]"
+        Logger.info "received on multicast [#{inspect gossip}] size=[#{byte_size data}]"
         {:ok, _} = Receiver.handle(Receiver.locate!, Gossip.payload(gossip))
 
       {:error, :invalid_data, _}

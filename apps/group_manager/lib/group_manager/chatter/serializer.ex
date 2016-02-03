@@ -9,13 +9,14 @@ defmodule GroupManager.Chatter.Serializer do
   def encode(gossip)
   when Gossip.is_valid(gossip)
   do
-    :erlang.term_to_binary(gossip)
+    {:ok, result} = :erlang.term_to_binary(gossip) |> :snappy.compress
   end
 
   @spec decode(binary) :: {:ok, Gossip.t} | {:error, :invalid_data, integer}
   def decode(msg)
   do
-    gossip = :erlang.binary_to_term(msg)
+    {:ok, decomp} = :snappy.decompress(msg)
+    gossip = :erlang.binary_to_term(decomp)
     if Gossip.valid?(gossip)
     do
       {:ok, gossip}
