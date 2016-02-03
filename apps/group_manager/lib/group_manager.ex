@@ -59,14 +59,14 @@ defmodule GroupManager do
 
     # 2: remove all other group participation from the message
     topology = Message.topology(msg)
-    List.foldl(topology, msg, fn(x,acc) ->
+    msg = List.foldl(topology, msg, fn(x,acc) ->
       del_item = TimedItem.item(x) |> Item.op(:rmv)
       if( Item.member(del_item) == my_id )
       do
         local_clock = TimedItem.updated_at(x)
-        msg = Message.add_item(msg, TimedItem.construct_next(del_item, local_clock))
+        Message.add_item(acc, TimedItem.construct_next(del_item, local_clock))
       else
-        msg
+        acc
       end
     end)
 
