@@ -151,7 +151,7 @@ defmodule GroupManager.Data.Message do
   def members(m)
   when is_valid(m)
   do
-    List.foldl(message(m, :items), [], fn(x,acc) ->
+    List.foldl(message(m, :items) |> TimedSet.items, [], fn(x,acc) ->
       op = TimedItem.item(x) |> Item.op
       if( op == :del )
       do
