@@ -11,6 +11,7 @@ defmodule GroupManager.Data.Message do
   alias GroupManager.Data.WorldClock
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
+  alias GroupManager.Data.Item
 
   Record.defrecord :message,
                    time: nil,
