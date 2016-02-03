@@ -6,6 +6,7 @@ defmodule GroupManager.Receiver do
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
   alias GroupManager.Data.Message
+  alias GroupManager.TopologyDB
 
   defstart start_link(opts \\ []),
     gen_server_opts: opts
@@ -29,6 +30,7 @@ defmodule GroupManager.Receiver do
   def handle_call({:handle, message}, _from, state)
   when Message.is_valid(message)
   do
+    TopologyDB.locate! |> TopologyDB.add(message)
   	{:reply, {:ok, message}, state}
   end
 
