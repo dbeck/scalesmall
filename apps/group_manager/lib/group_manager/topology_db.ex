@@ -125,7 +125,7 @@ defmodule GroupManager.TopologyDB do
           :ets.insert(table, new_message)
           {:noreply, {own_id, table}}
         else
-          # warning
+          # TODO: warning
           {:noreply, {own_id, table}}
         end
     end

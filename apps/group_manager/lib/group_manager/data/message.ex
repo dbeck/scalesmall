@@ -145,4 +145,21 @@ defmodule GroupManager.Data.Message do
                                      message(rhs, :items)))
     |> message(group_name: message(lhs, :group_name))
   end
+
+  # members
+  @spec members(t) :: list(NetID.t)
+  def members(m)
+  when is_valid(m)
+  do
+    List.foldl(message(m, :items), [], fn(x,acc) ->
+      op = TimedItem.item(x) |> Item.op
+      if( op == :del )
+      do
+        acc
+      else
+        member = TimedItem.item(x) |> Item.member
+        [member|acc]
+      end
+    end) |> Enum.uniq
+  end
 end

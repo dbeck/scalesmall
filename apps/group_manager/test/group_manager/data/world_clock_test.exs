@@ -193,15 +193,142 @@ defmodule GroupManager.Data.WorldClockTest do
     # merge keeps overlapping elemnts too
     w23 = WorldClock.merge(w2, w3)
     w1223 = WorldClock.merge(w12, w23)
-    assert 1 == WorldClock.count(w123, dummy_me)
-    assert 1 == WorldClock.count(w123, dummy_other)
-    assert 1 == WorldClock.count(w123, dummy_third)
+    assert 1 == WorldClock.count(w1223, dummy_me)
+    assert 1 == WorldClock.count(w1223, dummy_other)
+    assert 1 == WorldClock.count(w1223, dummy_third)
   end
 
-  # next(clock, netid) adds a new local_clock if netid is not yet in the world clock
-  # next(clock, netid) increases the existing local_clock withing the world clock
-  # merge is idempotent
-  # merge adds two clocks
-  # merge raises on invalid input
-  # merge keeps the latest elements
+  test "count(local_clock) retuns 1 for a single existing elem w/ respect to merge()" do
+    lc1 = LocalClock.new(dummy_me)
+    lc2 = LocalClock.new(dummy_other)
+    lc3 = LocalClock.new(dummy_third)
+
+    w1 = WorldClock.new() |> WorldClock.add(lc1)
+    w2 = WorldClock.new() |> WorldClock.add(lc2)
+    w3 = WorldClock.new() |> WorldClock.add(lc3)
+
+    # merge is idempotent
+    assert 1 == WorldClock.merge(w1, w1) |> WorldClock.count(lc1)
+
+    # merge keeps both elements
+    w12 = WorldClock.merge(w1, w2)
+    assert 1 == WorldClock.count(w12, lc1)
+    assert 1 == WorldClock.count(w12, lc2)
+
+    # merge keeps all 3 elements
+    w123 = WorldClock.merge(w12, w3)
+    assert 1 == WorldClock.count(w123, lc1)
+    assert 1 == WorldClock.count(w123, lc2)
+    assert 1 == WorldClock.count(w123, lc3)
+
+    # merge keeps overlapping elemnts too
+    w23 = WorldClock.merge(w2, w3)
+    w1223 = WorldClock.merge(w12, w23)
+    assert 1 == WorldClock.count(w1223, lc1)
+    assert 1 == WorldClock.count(w1223, lc2)
+    assert 1 == WorldClock.count(w1223, lc3)
+  end
+
+  test "merge() raises on invalid parameters" do
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(:ok, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge([], :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge({}, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(nil, :ok) end
+
+    w = WorldClock.new()
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(w, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(w, []) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(w, {}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(w, nil) end
+
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(:ok, w) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge([], w) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge({}, w) end
+    assert_raise FunctionClauseError, fn -> WorldClock.merge(nil, w) end
+  end
+
+  test "merge() keeps the latest element" do
+    lc1 = LocalClock.new(dummy_me)
+    lc2 = LocalClock.new(dummy_other)
+    lc3 = LocalClock.new(dummy_third)
+
+    lc1p = LocalClock.next(lc1)
+    lc2p = LocalClock.next(lc2)
+    lc3p = LocalClock.next(lc3)
+
+    w1 = WorldClock.new() |> WorldClock.add(lc1)
+    w2 = WorldClock.new() |> WorldClock.add(lc2)
+    w3 = WorldClock.new() |> WorldClock.add(lc3)
+
+    # merge keeps both elements
+    w12 = WorldClock.merge(w1, w2)
+    assert 1 == WorldClock.count(w12, lc1)
+    assert 1 == WorldClock.count(w12, lc2)
+
+    w12 = WorldClock.add(w12, lc1p)
+    assert 0 == WorldClock.count(w12, lc1)
+    assert 1 == WorldClock.count(w12, lc1p)
+
+    w12 = WorldClock.add(w12, lc2p)
+    assert 0 == WorldClock.count(w12, lc2)
+    assert 1 == WorldClock.count(w12, lc1p)
+    assert 1 == WorldClock.count(w12, lc2p)
+
+    # merge keeps all 3 elements
+    w123 = WorldClock.merge(w12, w3)
+    assert 1 == WorldClock.count(w123, lc1p)
+    assert 1 == WorldClock.count(w123, lc2p)
+    assert 1 == WorldClock.count(w123, lc3)
+
+    w123 = WorldClock.add(w123, lc3p)
+    assert 0 == WorldClock.count(w123, lc3)
+    assert 1 == WorldClock.count(w123, lc3p)
+
+    # merge keeps the latest of the clocks
+    w23 = WorldClock.merge(w2, w3)
+    w1223 = WorldClock.merge(w12, w23)
+
+    assert 0 == WorldClock.count(w1223, lc1)
+    assert 0 == WorldClock.count(w1223, lc2)
+    assert 1 == WorldClock.count(w1223, lc3)
+    assert 1 == WorldClock.count(w1223, lc1p)
+    assert 1 == WorldClock.count(w1223, lc2p)
+    assert 0 == WorldClock.count(w1223, lc3p)
+  end
+
+  test "next(clock, netid) raises on invalid parameters" do
+    assert_raise FunctionClauseError, fn -> WorldClock.next(:ok, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next([], :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next({}, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next(nil, :ok) end
+
+    w = WorldClock.new()
+    assert_raise FunctionClauseError, fn -> WorldClock.next(w, :ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next(w, []) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next(w, {}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next(w, nil) end
+
+    id = dummy_me
+    assert_raise FunctionClauseError, fn -> WorldClock.next(:ok, id) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next([], id) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next({}, id) end
+    assert_raise FunctionClauseError, fn -> WorldClock.next(nil, id) end
+  end
+
+  test "next(clock, netid) adds a new local_clock if netid is not yet in the world clock" do
+    lc1 = LocalClock.new(dummy_me)
+    w = WorldClock.new() |> WorldClock.next(dummy_me)
+    assert 1 == WorldClock.count(w,lc1)
+  end
+
+  test "next(clock, netid) increases the existing local_clock withing the world clock" do
+    lc1 = LocalClock.new(dummy_me)
+    w = WorldClock.new() |> WorldClock.next(dummy_me)
+    assert 1 == WorldClock.count(w,lc1)
+    lc1p = LocalClock.next(lc1)
+    assert 0 == WorldClock.count(w,lc1p)
+    w = WorldClock.next(w,dummy_me)
+    assert 0 == WorldClock.count(w,lc1)
+    assert 1 == WorldClock.count(w,lc1p)
+  end
 end

@@ -8,6 +8,7 @@ defmodule GroupManager.Data.TimedSet do
   alias GroupManager.Data.TimedItem
   alias GroupManager.Chatter.NetID
   alias GroupManager.Data.Item
+  alias GroupManager.Data.LocalClock
 
   Record.defrecord :timed_set,
                    items: []
@@ -102,7 +103,7 @@ defmodule GroupManager.Data.TimedSet do
                                      timed_set(rhs, :items)))
   end
 
-  @spec count(t, NetID.t) :: t
+  @spec count(t, NetID.t) :: integer
   def count(set, id)
   when is_valid(set) and
        NetID.is_valid(id)
@@ -110,6 +111,21 @@ defmodule GroupManager.Data.TimedSet do
     List.foldl(timed_set(set, :items), 0, fn(x, acc) ->
       item_id = TimedItem.item(x) |> Item.member
       if( item_id == id )
+      do
+        acc + 1
+      else
+        acc
+      end
+    end)
+  end
+
+  @spec count(t, LocalClock.t) :: integer
+  def count(set, id)
+  when is_valid(set) and
+       LocalClock.is_valid(id)
+  do
+    List.foldl(timed_set(set, :items), 0, fn(x, acc) ->
+      if( TimedItem.updated_at(x) == id )
       do
         acc + 1
       else

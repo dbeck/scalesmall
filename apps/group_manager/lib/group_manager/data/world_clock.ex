@@ -111,9 +111,9 @@ defmodule GroupManager.Data.WorldClock do
   when is_valid(clock) and
        NetID.is_valid(id)
   do
-    case WorldClock.get(clock, id) do
-      []            -> add(clock, LocalClock.new(id))
-      [local_clock] -> add(clock, LocalClock.next(local_clock))
+    case get(clock, id) do
+      nil         -> add(clock, LocalClock.new(id))
+      local_clock -> add(clock, LocalClock.next(local_clock))
     end
   end
 
@@ -126,7 +126,7 @@ defmodule GroupManager.Data.WorldClock do
                                        world_clock(rhs, :time)))
   end
 
-  @spec count(t, NetID.t) :: t
+  @spec count(t, NetID.t) :: integer
   def count(clock, id)
   when is_valid(clock) and
        NetID.is_valid(id)
@@ -134,6 +134,21 @@ defmodule GroupManager.Data.WorldClock do
     List.foldl(world_clock(clock, :time), 0, fn(x, acc) ->
       clock_id = LocalClock.member(x)
       if( clock_id == id )
+      do
+        acc + 1
+      else
+        acc
+      end
+    end)
+  end
+
+  @spec count(t, LocalClock.t) :: integer
+  def count(clock, id)
+  when is_valid(clock) and
+       LocalClock.is_valid(id)
+  do
+    List.foldl(world_clock(clock, :time), 0, fn(x, acc) ->
+      if( x == id )
       do
         acc + 1
       else

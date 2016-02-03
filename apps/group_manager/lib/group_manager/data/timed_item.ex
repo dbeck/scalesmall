@@ -8,8 +8,14 @@ defmodule GroupManager.Data.TimedItem do
   alias GroupManager.Data.LocalClock
   alias GroupManager.Chatter.NetID
 
-  Record.defrecord :timed_item, item: nil, updated_at: nil
-  @type t :: record( :timed_item, item: Item.t, updated_at: LocalClock.t)
+  Record.defrecord :timed_item,
+                   item: nil,
+                   updated_at: nil
+
+  @type t :: record( :timed_item,
+                     item: Item.t,
+                     updated_at: LocalClock.t )
+
   @type timed_item_list :: list(t)
 
   @spec new(NetID.t) :: t

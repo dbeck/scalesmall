@@ -8,7 +8,6 @@ defmodule GroupManager.Supervisor do
   alias GroupManager.Receiver
 
   def start_link(opts \\ []) do
-    IO.inspect ["opts", opts]
     case opts do
       [name: name] ->
         Supervisor.start_link(__MODULE__, :no_args, opts)

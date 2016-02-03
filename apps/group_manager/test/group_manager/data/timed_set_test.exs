@@ -4,6 +4,7 @@ defmodule GroupManager.Data.TimedSetTest do
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Data.LocalClock
 
   # TODO
   # doctest GroupManager.Data.TimedSet
@@ -99,7 +100,8 @@ defmodule GroupManager.Data.TimedSetTest do
   end
 
   test "count() retuns 1 for a single existing elem" do
-    w = TimedSet.new() |> TimedSet.add(TimedItem.new(dummy_me))
+    ti = TimedItem.new(dummy_me)
+    w = TimedSet.new() |> TimedSet.add(ti)
     assert 1 == TimedSet.count(w, dummy_me)
     assert 0 == TimedSet.count(w, dummy_other)
     w2 = TimedSet.add(w, TimedItem.new(dummy_other))
@@ -112,7 +114,32 @@ defmodule GroupManager.Data.TimedSetTest do
     assert 1 == TimedSet.count(w3, dummy_third)
   end
 
+  test "count(local_clock) retuns 1 for a single existing elem" do
+    ti = TimedItem.new(dummy_me)
+    lc = TimedItem.updated_at(ti)
+    w = TimedSet.new() |> TimedSet.add(ti)
+    assert 1 == TimedSet.count(w, lc)
+    assert 0 == TimedSet.count(w, LocalClock.next(lc))
+  end
+
+  test "merge() raises on invalid parameters" do
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(:ok, :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge([], :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge({}, :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(nil, :ok) end
+
+    w = TimedSet.new()
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(w, :ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(w, []) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(w, {}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(w, nil) end
+
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(:ok, w) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge([], w) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge({}, w) end
+    assert_raise FunctionClauseError, fn -> TimedSet.merge(nil, w) end
+  end
+
   # merge is idempotent
-  # merge raises on invalid input
   # merge keeps the latest elements
 end

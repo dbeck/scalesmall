@@ -1,6 +1,7 @@
 defmodule GroupManager.Data.MessageTest do
 
   use ExUnit.Case
+  require GroupManager.Data.Message
   alias GroupManager.Data.Message
   alias GroupManager.Data.LocalClock
   alias GroupManager.Data.WorldClock
@@ -175,8 +176,48 @@ defmodule GroupManager.Data.MessageTest do
   end
 
   # group_name
-  # merge is idempotent
-  # merge raises on invalid input
+  test "group_name() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> Message.group_name(:ok) end
+    assert_raise FunctionClauseError, fn -> Message.group_name([]) end
+    assert_raise FunctionClauseError, fn -> Message.group_name({}) end
+    assert_raise FunctionClauseError, fn -> Message.group_name(nil) end
+  end
+
+  test "group_name() returns the name it was set to" do
+    m1 = Message.new("hello")
+    assert "hello" == Message.group_name(m1)
+  end
+
+  test "merge() is idempotent" do
+    timed_item1 = Item.new(dummy_me)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    timed_item2 = Item.new(dummy_other) |> TimedItem.construct(LocalClock.new(dummy_other))
+
+    m1 = Message.new("hello") |> Message.add(timed_item1)
+    m2 = Message.new("hello") |> Message.add(timed_item2)
+
+    assert m2 == Message.merge(m2,m2)
+    assert m2 == Message.merge(m2,m2) |> Message.merge(m2)
+
+    m12 = Message.merge(m1,m2)
+    assert m12 == Message.merge(m12,m1)
+    assert m12 == Message.merge(m12,m2)
+    assert m12 == Message.merge(m12,m1) |> Message.merge(m1)
+    assert m12 == Message.merge(m12,m2) |> Message.merge(m2)
+  end
+
+  test "merge() raises for invalid input" do
+    m = Message.new("hello")
+    assert_raise FunctionClauseError, fn -> Message.merge(m, :ok) end
+    assert_raise FunctionClauseError, fn -> Message.merge(m, []) end
+    assert_raise FunctionClauseError, fn -> Message.merge(m, {}) end
+    assert_raise FunctionClauseError, fn -> Message.merge(m, nil) end
+
+    assert_raise FunctionClauseError, fn -> Message.merge(:ok, m) end
+    assert_raise FunctionClauseError, fn -> Message.merge([], m) end
+    assert_raise FunctionClauseError, fn -> Message.merge({}, m) end
+    assert_raise FunctionClauseError, fn -> Message.merge(nil, m) end
+  end
+
   # merge keeps the latest elements
   # merge 4 elements
 end
