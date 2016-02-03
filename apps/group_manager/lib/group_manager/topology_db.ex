@@ -52,6 +52,20 @@ defmodule GroupManager.TopologyDB do
     GenServer.call(pid, {:get, group_name})
   end
 
+  def members(pid, group_name)
+  when is_pid(pid) and
+       GroupManager.is_valid_group_name(group_name)
+  do
+    res = GenServer.call(pid, {:get, group_name})
+    case res
+    do
+      {:error, _} ->
+        res
+      {:ok, msg} ->
+        {:ok, Message.members(msg)}
+    end
+  end
+
   def get_id(pid)
   when is_pid(pid)
   do
@@ -70,6 +84,19 @@ defmodule GroupManager.TopologyDB do
     do
       []      -> {:error, :not_found}
       [value] -> {:ok, value}
+    end
+  end
+
+  def members_(group_name)
+  when GroupManager.is_valid_group_name(group_name)
+  do
+    res = get_(group_name)
+    case res
+    do
+      {:error, _} ->
+        res
+      {:ok, msg} ->
+        {:ok, Message.members(msg)}
     end
   end
 
@@ -136,7 +163,7 @@ defmodule GroupManager.TopologyDB do
   do
     case :ets.lookup(table, group_name)
     do
-      []      -> {:reply, {:error, []}, {own_id, table}}
+      []      -> {:reply, {:error, :not_found}, {own_id, table}}
       [value] -> {:reply, {:ok, value}, {own_id, table}}
     end
   end
