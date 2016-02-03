@@ -147,7 +147,6 @@ defmodule GroupManager.Data.Message do
     |> message(group_name: message(lhs, :group_name))
   end
 
-  # members
   @spec members(t) :: list(NetID.t)
   def members(m)
   when is_valid(m)
@@ -162,5 +161,20 @@ defmodule GroupManager.Data.Message do
         [member|acc]
       end
     end) |> Enum.uniq
+  end
+
+  @spec topology(t) :: list(TimedItem.t)
+  def topology(m)
+  when is_valid(m)
+  do
+    List.foldl(message(m, :items) |> TimedSet.items, [], fn(x,acc) ->
+      op = TimedItem.item(x) |> Item.op
+      if( op == :del)
+      do
+        acc
+      else
+        [x|acc]
+      end
+    end)
   end
 end

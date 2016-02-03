@@ -51,21 +51,42 @@ defmodule GroupManager do
   def leave(group_name)
   when is_valid_group_name(group_name)
   do
-    :error
-    #master_pid = GroupManager.Master.locate!()
-    #GroupManager.Master.leave(master_pid, my_id(), group_name)
+    # 1: prepare a leave message with the help of TopologyDB
+    topo_db    = TopologyDB.locate!
+    item       = Item.new(my_id) |> Item.op(:del)
+    :ok        = topo_db |> TopologyDB.add_item(group_name, item)
+    {:ok, msg} = topo_db |> TopologyDB.get(group_name)
 
-    # deregister local membership information
+    # 2: remove all other group participation from the message
+    topology = Message.topology(msg)
+    List.foldl(topology, msg, fn(x,acc) ->
+      del_item = TimedItem.item(x) |> Item.op(:del)
+      if( Item.member(del_item) == my_id )
+      do
+        local_clock = TimedItem.updated_at(x)
+        msg = Message.add_item(msg, TimedItem.construct_next(del_item, local_clock))
+      else
+        msg
+      end
+    end)
+
+    # 3: update topo DB and get a new msg to be distributed
+    :ok = topo_db |> TopologyDB.add(msg)
+    {:ok, msg} = topo_db |> TopologyDB.get(group_name)
+
+    # 4: broadcast the new message
+    others = members(group_name)
+    :ok = Chatter.broadcast(others, msg)
   end
 
   @spec members(binary) :: list(NetID.t)
   def members(group_name)
   when is_valid_group_name(group_name)
   do
-    case TopologyDB.members(TopologyDB.locate!, group_name)
+    case TopologyDB.get(TopologyDB.locate!, group_name)
     do
       {:error, :not_found} -> []
-      {:ok, members}       -> members
+      {:ok, msg}           -> Message.members(msg)
     end
   end
 

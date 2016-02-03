@@ -220,4 +220,6 @@ defmodule GroupManager.Data.MessageTest do
 
   # merge keeps the latest elements
   # merge 4 elements
+  # members
+  # topology
 end
