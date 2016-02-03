@@ -6,6 +6,7 @@ defmodule GroupManager do
   alias GroupManager.Chatter
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Item
+  alias GroupManager.Data.Message
 
   defmacro is_valid_group_name(name) do
     case Macro.Env.in_guard?(__CALLER__) do
