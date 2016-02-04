@@ -222,4 +222,5 @@ defmodule GroupManager.Data.MessageTest do
   # merge 4 elements
   # members
   # topology
+  # count
 end

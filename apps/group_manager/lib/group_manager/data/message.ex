@@ -12,6 +12,7 @@ defmodule GroupManager.Data.Message do
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
   alias GroupManager.Data.Item
+  alias GroupManager.Chatter.NetID
 
   Record.defrecord :message,
                    time: nil,
@@ -174,6 +175,24 @@ defmodule GroupManager.Data.Message do
         acc
       else
         [x|acc]
+      end
+    end)
+  end
+
+  @spec count(t, NetID.t, :add|:rmv|:get) :: integer
+  def count(m, id, filter)
+  when is_valid(m) and
+       NetID.is_valid(id) and
+       filter in [:add, :rmv, :get]
+  do
+    List.foldl(message(m, :items) |> TimedSet.items, 0, fn(x,acc) ->
+      op     = TimedItem.item(x) |> Item.op
+      member = TimedItem.item(x) |> Item.member
+      if( op == filter and id == member )
+      do
+        acc+1
+      else
+        acc
       end
     end)
   end

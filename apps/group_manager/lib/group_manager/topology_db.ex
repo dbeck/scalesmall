@@ -12,6 +12,7 @@ defmodule GroupManager.TopologyDB do
   alias GroupManager.Data.LocalClock
   alias GroupManager.Data.Item
   alias GroupManager.Data.TimedItem
+  alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter
 
   defstart start_link(opts \\ []),
@@ -71,6 +72,27 @@ defmodule GroupManager.TopologyDB do
       []      -> {:error, :not_found}
       [value] -> {:ok, value}
     end
+  end
+
+  def groups_()
+  do
+    :ets.foldl(fn(x,acc) ->
+      [Message.group_name(x)|acc]
+    end, [], id_atom())
+  end
+
+  def groups_(type, id)
+  when type in [:add, :rmv, :get] and
+       NetID.is_valid(id)
+  do
+    :ets.foldl(fn(x,acc) ->
+      if( Message.count(x,id,type) )
+      do
+        [Message.group_name(x)|acc]
+      else
+        acc
+      end
+    end, [], id_atom())
   end
 
   # GenServer

@@ -38,9 +38,9 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   when Gossip.is_valid(gossip)
   do
     [socket: socket, own_id: _own_id, peer_id: peer_id] = state
-    Logger.info "sending on TCP [#{inspect gossip}]"
-    packet = Serializer.encode(gossip)
-    case :gen_tcp.send(socket, packet)
+    data = Serializer.encode(gossip)
+    Logger.debug "sending on TCP [#{inspect gossip}] size=[#{byte_size data}]"
+    case :gen_tcp.send(socket, data)
     do
       :ok -> {:reply, :ok, state}
       {:error, reason} ->

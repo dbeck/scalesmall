@@ -92,13 +92,17 @@ defmodule GroupManager do
     end
   end
 
-  # TODO
-  @spec joined_groups() :: {:ok, list(binary)}
-  def joined_groups()
+  @spec groups() :: {:ok, list(binary)}
+  def groups()
   do
-    #master_pid = GroupManager.Master.locate!()
-    #GroupManager.Master.joined_groups(master_pid)
-    :error
+    TopologyDB.groups_
+  end
+
+  @spec my_groups() :: {:ok, list(binary)}
+  def my_groups()
+  do
+    TopologyDB.groups_(:get, my_id) ++ TopologyDB.groups_(:add, my_id)
+    |> Enum.uniq
   end
 
   @spec my_id() :: NetID.t

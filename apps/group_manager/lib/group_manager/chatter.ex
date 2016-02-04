@@ -82,7 +82,7 @@ defmodule GroupManager.Chatter do
     |> Gossip.distribution_list(distribution_list)
     |> Gossip.seen_ids(seen_ids)
 
-    Logger.info "multicasting [#{inspect gossip}]"
+    Logger.debug "multicasting [#{inspect gossip}]"
 
     # multicast first
     :ok = MulticastHandler.send(MulticastHandler.locate!, gossip)
