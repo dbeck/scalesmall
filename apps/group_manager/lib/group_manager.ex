@@ -7,6 +7,7 @@ defmodule GroupManager do
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Item
   alias GroupManager.Data.TimedItem
+  alias GroupManager.Data.TimedSet
   alias GroupManager.Data.Message
 
   defmacro is_valid_group_name(name) do
@@ -27,6 +28,7 @@ defmodule GroupManager do
     GroupManager.Supervisor.start_link(args)
   end
 
+  @spec join(binary, list(NetID.t)) :: :ok
   def join(group_name, peers)
   when is_valid_group_name(group_name) and
        is_list(peers)
@@ -43,6 +45,7 @@ defmodule GroupManager do
     :ok = Chatter.broadcast(peers, msg)
   end
 
+  @spec join(binary) :: :ok
   def join(group_name)
   when is_valid_group_name(group_name)
   do
@@ -50,6 +53,7 @@ defmodule GroupManager do
     join(group_name, others)
   end
 
+  @spec leave(binary) :: :ok
   def leave(group_name)
   when is_valid_group_name(group_name)
   do
@@ -105,12 +109,38 @@ defmodule GroupManager do
     |> Enum.uniq
   end
 
+  @spec topology(binary) :: list(TimedItem.t)
+  def topology(group_name)
+  when is_valid_group_name(group_name)
+  do
+    case TopologyDB.get_(group_name)
+    do
+      {:error, :not_found} ->
+        []
+      {:ok, msg} ->
+        Message.items(msg) |> TimedSet.items
+    end
+  end
+
+  @spec topology(binary, :add|:rmv|:get) :: list(TimedItem.t)
+  def topology(group_name, filter)
+  when is_valid_group_name(group_name) and
+       filter in [:add, :rmv, :get]
+  do
+    case TopologyDB.get_(group_name)
+    do
+      {:error, :not_found} ->
+        []
+      {:ok, msg} ->
+        Message.items(msg)
+        |> TimedSet.items
+        |> Enum.filter(fn(x) -> (filter == TimedItem.item(x) |> Item.op) end)
+    end
+  end
+
   @spec my_id() :: NetID.t
   def my_id(), do: Chatter.local_netid
 
-  # get topology
-  # my entries -> Message / filter
   # add item
   # remove item
-
 end
