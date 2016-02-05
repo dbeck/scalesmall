@@ -56,9 +56,9 @@ defmodule GroupManager.Chatter.GossipTest do
     assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:ok}) end
     assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:ok, nil}) end
     assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:ok, nil, nil}) end
-    assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:broadcast_id, nil}) end
-    assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:broadcast_id, nil, nil}) end
-    assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:broadcast_id, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:gossip, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:gossip, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_ids({:gossip, nil, nil, nil}) end
 
     g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
     assert_raise FunctionClauseError, fn -> Gossip.seen_ids(nil, nil) end
@@ -85,9 +85,9 @@ defmodule GroupManager.Chatter.GossipTest do
     assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:ok}) end
     assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:ok, nil}) end
     assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:ok, nil, nil}) end
-    assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:broadcast_id, nil}) end
-    assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:broadcast_id, nil, nil}) end
-    assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:broadcast_id, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:gossip, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:gossip, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.distribution_list({:gossip, nil, nil, nil}) end
 
     g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
     assert_raise FunctionClauseError, fn -> Gossip.distribution_list(nil, nil) end
@@ -107,7 +107,127 @@ defmodule GroupManager.Chatter.GossipTest do
   end
 
   # remove_from_distribution_list
-  # seen_netids
+  test "remove_from_distribution_list throws on invalud input" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list(g, nil) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list(g, [ok: 1]) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list(g, {}) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list(g, {:ok}) end
+
+    id = NetID.new({127,0,0,1}, 29999)
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list(nil, [id]) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list([ok: 1], [id]) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list({}, [id]) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list({:ok}, [id]) end
+
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list(nil, []) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list([ok: 1], []) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list({}, []) end
+    assert_raise FunctionClauseError, fn -> Gossip.remove_from_distribution_list({:ok}, []) end
+  end
+
   # add_to_distribution_list
-  # payload set
+  test "add_to_distribution_list throws on invalud input" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list(g, nil) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list(g, [ok: 1]) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list(g, {}) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list(g, {:ok}) end
+
+    id = NetID.new({127,0,0,1}, 29999)
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list(nil, [id]) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list([ok: 1], [id]) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list({}, [id]) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list({:ok}, [id]) end
+
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list(nil, []) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list([ok: 1], []) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list({}, []) end
+    assert_raise FunctionClauseError, fn -> Gossip.add_to_distribution_list({:ok}, []) end
+  end
+
+  test "add and remove to/from the distribution_list" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    id1 = NetID.new({127,0,0,1}, 29998)
+    id2 = NetID.new({127,0,0,1}, 29997)
+    assert [] == g |> Gossip.distribution_list
+    g1 = g |> Gossip.add_to_distribution_list([id1])
+    assert [id1] == g1 |> Gossip.distribution_list
+    g12 = g1 |> Gossip.add_to_distribution_list([id2])
+    assert [id1] == g12 |> Gossip.distribution_list |> Enum.filter(fn(x) -> x == id1 end)
+    assert [id2] == g12 |> Gossip.distribution_list |> Enum.filter(fn(x) -> x == id2 end)
+    gx1 = g12 |> Gossip.remove_from_distribution_list([id2])
+    assert [id1] == gx1 |> Gossip.distribution_list
+    gx = gx1 |> Gossip.remove_from_distribution_list([id1])
+    assert [] == gx |> Gossip.distribution_list
+  end
+
+  test "add_to_distribution_list is idempotent" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    id1 = NetID.new({127,0,0,1}, 29998)
+    id2 = NetID.new({127,0,0,1}, 29997)
+    g1 = g |> Gossip.add_to_distribution_list([id1])
+    assert [id1] == g1 |> Gossip.distribution_list
+    assert [id1] == g1 |> Gossip.add_to_distribution_list([id1]) |> Gossip.distribution_list
+    g12 = g1 |> Gossip.add_to_distribution_list([id2]) |> Gossip.add_to_distribution_list([id2])
+    g12 = g12 |> Gossip.add_to_distribution_list([id1]) |> Gossip.add_to_distribution_list([id1])
+    assert [id1] == g12 |> Gossip.distribution_list |> Enum.filter(fn(x) -> x == id1 end)
+    assert [id2] == g12 |> Gossip.distribution_list |> Enum.filter(fn(x) -> x == id2 end)
+  end
+
+  test "remove from distribution_list can be applied multiple times" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    id1 = NetID.new({127,0,0,1}, 29998)
+    id2 = NetID.new({127,0,0,1}, 29997)
+    g12 = g |> Gossip.add_to_distribution_list([id1, id2])
+    assert [id1] == g12 |> Gossip.distribution_list |> Enum.filter(fn(x) -> x == id1 end)
+    assert [id2] == g12 |> Gossip.distribution_list |> Enum.filter(fn(x) -> x == id2 end)
+    g1 = g12 |> Gossip.remove_from_distribution_list([id2]) |> Gossip.remove_from_distribution_list([id2])
+    assert [id1] == g1 |> Gossip.distribution_list
+    g0 = g1 |> Gossip.remove_from_distribution_list([id1]) |> Gossip.remove_from_distribution_list([id1])
+    assert [] == g0 |> Gossip.distribution_list
+  end
+
+  # seen_netids
+  test "seen_netids() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids(nil) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids([]) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids({}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids({:ok}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids({:gossip, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids({:gossip, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.seen_netids({:gossip, nil, nil, nil}) end
+  end
+
+  test "seen_netids() get and set" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    ni1 = NetID.new({127,0,0,1}, 29998)
+    ni2 = NetID.new({127,0,0,1}, 29997)
+    id1 = BroadcastID.new(ni1)
+    id2 = BroadcastID.new(ni2)
+    g2 = g |> Gossip.seen_ids([id1, id2])
+    assert [] == g |> Gossip.seen_netids
+    assert [ni1] == g2 |> Gossip.seen_netids |> Enum.filter(fn(x) -> x == ni1 end)
+    assert [ni2] == g2 |> Gossip.seen_netids |> Enum.filter(fn(x) -> x == ni2 end)
+  end
+
+  # payload
+  test "payload() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> Gossip.payload(nil) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload([]) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload({}) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload({:ok}) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload({:gossip, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload({:gossip, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.payload({:gossip, nil, nil, nil}) end
+  end
+
+  test "payload() get/set" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), []) |> Gossip.payload(:hello_world)
+    assert :hello_world == Gossip.payload(g)
+  end
 end
