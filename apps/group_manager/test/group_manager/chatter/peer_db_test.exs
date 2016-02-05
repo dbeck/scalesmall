@@ -151,6 +151,4 @@ defmodule GroupManager.Chatter.PeerDBTest do
     assert seqno2 == (seqno1+1)
     assert {:ok, seqno2} == PeerDB.get_broadcast_seqno_(id)
   end
-
-  # start w/ different name
 end

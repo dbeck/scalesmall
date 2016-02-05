@@ -15,14 +15,21 @@ defmodule GroupManager.Chatter.Serializer do
 
   @spec decode(binary) :: {:ok, Gossip.t} | {:error, :invalid_data, integer}
   def decode(msg)
+  when is_binary(msg) and
+       byte_size(msg) > 0
   do
-    {:ok, decomp} = :snappy.decompress(msg)
-    gossip = :erlang.binary_to_term(decomp)
-    if Gossip.valid?(gossip)
+    case :snappy.decompress(msg)
     do
-      {:ok, gossip}
-    else
-      {:error, :invalid_data, byte_size(gossip)}
+      {:ok, decomp} ->
+        gossip = :erlang.binary_to_term(decomp)
+        if Gossip.valid?(gossip)
+        do
+          {:ok, gossip}
+        else
+          {:error, :invalid_data, byte_size(msg)}
+        end
+      {:error, :corrupted_data} ->
+        {:error, :invalid_data, byte_size(msg)}
     end
   end
 end
