@@ -33,5 +33,4 @@ defmodule GroupManagerTest do
     assert :ok == GroupManager.leave("test-my-group-1")
     assert [] == GroupManager.my_groups
   end
-
 end

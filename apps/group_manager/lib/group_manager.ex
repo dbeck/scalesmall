@@ -225,6 +225,7 @@ defmodule GroupManager do
   we are actively participating in (:add `Item`)
 
   Example usage:
+
   ```
   iex(1)> GroupManager.join("G")
   :ok
@@ -240,6 +241,42 @@ defmodule GroupManager do
     (get_lst ++ add_lst) |> Enum.uniq
   end
 
+  @doc """
+  returns the topology of the given group in the form of `list(TimedItem.t)`.
+
+  The `TimedItem` element has an `Item` member that is the topology information
+  together with a `LocalClock` which tells when the change has happened.
+
+  Example usage:
+
+  ```
+  iex(1)> GroupManager.topology("G")
+  []
+  iex(2)> GroupManager.join("G")
+  :ok
+  iex(3)> GroupManager.topology("G")
+  [{:timed_item,
+    {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0},
+    {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}]
+  iex(4)> GroupManager.add_item("G",0,255,10)
+  {:ok,
+   {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 0, 255, 10},
+    {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 1}}}
+  iex(5)> GroupManager.topology("G")
+  [{:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 0, 255, 10},
+    {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 1}},
+   {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0},
+    {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}]
+  ```
+
+  Explanation:
+
+  - `iex(1)`: when topology is empty it returns an empty list
+  - `iex(2)`: joining the group, which means we add a :get `Item` to the topology
+  - `iex(3)`: the topology has a single :get `Item`
+  - `iex(4)`: register that we want to serve the range 0-255 with priority=10
+  - `iex(5)`: the topology now has two items, the `:get` and the `:add`
+  """
   @spec topology(binary) :: list(TimedItem.t)
   def topology(group_name)
   when is_valid_group_name(group_name)
@@ -249,10 +286,20 @@ defmodule GroupManager do
       {:error, :not_found} ->
         []
       {:ok, msg} ->
-        Message.items(msg) |> TimedSet.items
+        Message.items(msg)
+        |> TimedSet.items
     end
   end
 
+  @doc """
+  see `topology(group_name)` for more information
+
+  This variant of the `topology` function returns the filtered list of
+  the topology items. The result set only has the items with the `op` field
+  equals to the `filter` parameter.
+
+  The filter parameter can be `:add`, `:rmv` or `:get`.
+  """
   @spec topology(binary, :add|:rmv|:get) :: list(TimedItem.t)
   def topology(group_name, filter)
   when is_valid_group_name(group_name) and
@@ -269,6 +316,39 @@ defmodule GroupManager do
     end
   end
 
+  @doc """
+  adds a topology item as an `:add` `Item` which represents a range that the
+  given node wants to serve within the group. The responsability of the group is
+  represented by a key range 0..0xffffffff. Each node tells what part of the range
+  it wants to serve. Further ranges can be added and removed based on the node's
+  decision, may be based on its capacity, speed or other factors.
+
+  Parameters:
+
+  - `group_name`
+  - `from` and `to` represent the boundaries of the range
+  - `priority` is a hint to other nodes based on the node's capacities
+
+  Example usage:
+
+  ```
+  iex(1)> GroupManager.add_item("G",1,2,3)
+  {:ok,
+   {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 1, 2, 3},
+     {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}}
+  iex(2)> GroupManager.my_groups
+  ["G"]
+  iex(3)> GroupManager.topology("G")
+  [{:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 1, 2, 3},
+    {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}]
+  ```
+
+  Explanation:
+
+  - `iex(1)`: add_item is also an implicit join to the group if it has not joined before
+  - `iex(2)`: `my_groups` show that we are now part of the `G` group
+  - `iex(3)`: the topology shows our new `:add` item
+  """
   @spec add_item(binary, integer, integer, integer) :: {:ok, TimedItem.t}
   def add_item(group_name, from, to, priority)
   when is_valid_group_name(group_name)
@@ -288,6 +368,10 @@ defmodule GroupManager do
     {:ok, timed_item}
   end
 
+  @doc """
+  similar to `add_item` except it adds a :rmv item to signify it no longer serves
+  the given range
+  """
   @spec remove_item(binary, integer, integer, integer) :: {:ok, TimedItem.t}
   def remove_item(group_name, from, to, priority)
   when is_valid_group_name(group_name)
@@ -307,7 +391,16 @@ defmodule GroupManager do
     {:ok, timed_item}
   end
 
+  @doc """
+  return our local identifier as a `NetID`
+
+  Example usage:
+
+  ```
+  iex(1)> GroupManager.my_id
+  {:net_id, {192, 168, 1, 100}, 29999}
+  ```
+  """
   @spec my_id() :: NetID.t
   def my_id(), do: Chatter.local_netid
-
 end
