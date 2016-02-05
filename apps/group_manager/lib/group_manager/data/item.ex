@@ -121,7 +121,8 @@ defmodule GroupManager.Data.Item do
 
   @spec set(t, :add|:rmv|:get, integer, integer, integer) :: t
   def set(itm, opv, from, to, port)
-  when opv in [:add, :rmv, :get] and
+  when is_valid(itm) and
+       opv in [:add, :rmv, :get] and
        is_valid_uint32(from) and
        is_valid_uint32(to) and
        from <= to and

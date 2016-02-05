@@ -49,12 +49,38 @@ defmodule GroupManager.Data.ItemTest do
     assert :add == Item.new(dummy_netid) |> Item.op(:add) |> Item.op
   end
 
+  test "cannot get op() from an invalid Item" do
+    assert_raise FunctionClauseError, fn -> Item.op(:ok) end
+    assert_raise FunctionClauseError, fn -> Item.op([]) end
+    assert_raise FunctionClauseError, fn -> Item.op({}) end
+    assert_raise FunctionClauseError, fn -> Item.op({:ok}) end
+    assert_raise FunctionClauseError, fn -> Item.op({:item}) end
+    assert_raise FunctionClauseError, fn -> Item.op({:item, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.op({:item, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.op({:item, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.op({:item, nil, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.op({:item, nil, nil, nil, nil, nil}) end
+  end
+
   test "cannot set invalid atom to op" do
     assert_raise FunctionClauseError, fn -> Item.new(dummy_netid) |> Item.op(:invalid) end
   end
 
   test "cannot set op on invalid Item" do
     assert_raise FunctionClauseError, fn -> Item.op(nil, :add) end
+  end
+
+  test "cannot get start_range() from an invalid Item" do
+    assert_raise FunctionClauseError, fn -> Item.start_range(:ok) end
+    assert_raise FunctionClauseError, fn -> Item.start_range([]) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({}) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({:ok}) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({:item}) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({:item, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({:item, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({:item, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({:item, nil, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.start_range({:item, nil, nil, nil, nil, nil}) end
   end
 
   test "start_range property can be set and retrieved" do
@@ -73,12 +99,38 @@ defmodule GroupManager.Data.ItemTest do
     assert 99 == Item.new(dummy_netid) |> Item.end_range(99) |> Item.end_range
   end
 
+  test "cannot get end_range() from an invalid Item" do
+    assert_raise FunctionClauseError, fn -> Item.end_range(:ok) end
+    assert_raise FunctionClauseError, fn -> Item.end_range([]) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({}) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({:ok}) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({:item}) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({:item, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({:item, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({:item, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({:item, nil, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.end_range({:item, nil, nil, nil, nil, nil}) end
+  end
+
   test "cannot set invalid end_range" do
     assert_raise FunctionClauseError, fn -> Item.new(dummy_netid) |> Item.end_range(-1) end
   end
 
   test "cannot set end_range on invalid Item" do
     assert_raise FunctionClauseError, fn -> Item.end_range(nil, 1) end
+  end
+
+  test "cannot get port() from an invalid Item" do
+    assert_raise FunctionClauseError, fn -> Item.port(:ok) end
+    assert_raise FunctionClauseError, fn -> Item.port([]) end
+    assert_raise FunctionClauseError, fn -> Item.port({}) end
+    assert_raise FunctionClauseError, fn -> Item.port({:ok}) end
+    assert_raise FunctionClauseError, fn -> Item.port({:item}) end
+    assert_raise FunctionClauseError, fn -> Item.port({:item, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.port({:item, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.port({:item, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.port({:item, nil, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Item.port({:item, nil, nil, nil, nil, nil}) end
   end
 
   test "port property can be set and retrieved" do
@@ -93,5 +145,43 @@ defmodule GroupManager.Data.ItemTest do
     assert_raise FunctionClauseError, fn -> Item.port(nil, 1) end
   end
 
-  # set
+  test "cannot set() values on an invalid Item" do
+    assert_raise FunctionClauseError, fn -> Item.set(:ok, :add, 0, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set([], :add, 0, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set({}, :add, 0, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set({:ok}, :add, 0, 0, 0) end
+  end
+
+  test "cannot set() invalid atom" do
+    it = Item.new(dummy_netid)
+    assert_raise FunctionClauseError, fn -> Item.set(it, :addx, 0, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, nil, 0, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, [], 0, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, {}, 0, 0, 0) end
+  end
+
+  test "cannot set() invalid start_range" do
+    it = Item.new(dummy_netid)
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, nil, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, -1, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0xffffffffffff, 0, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, [], 0, 0) end
+  end
+
+  test "cannot set() invalid end_range" do
+    it = Item.new(dummy_netid)
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, nil, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, -1, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, 0xffffffffffff, 0) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, [], 0) end
+  end
+
+  test "cannot set() invalid port" do
+    it = Item.new(dummy_netid)
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, 0, nil) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, 0, -1) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, 0, 0xffffffffffff) end
+    assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, 0, []) end
+  end
+
 end
