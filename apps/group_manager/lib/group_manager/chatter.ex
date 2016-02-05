@@ -116,7 +116,9 @@ defmodule GroupManager.Chatter do
   def get_local_ip
   do
     {:ok, list} = :inet.getif
-    [{ip, broadcast, netmask}] = list |> Enum.filter( fn({ip, bcast, nm}) -> bcast != :undefined end) |> Enum.take(1)
+    [{ip, _broadcast, _netmask}] = list
+    |> Enum.filter( fn({ip, bcast, nm}) -> bcast != :undefined end)
+    |> Enum.take(1)
     ip
   end
 

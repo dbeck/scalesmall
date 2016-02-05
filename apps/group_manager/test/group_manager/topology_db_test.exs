@@ -3,13 +3,16 @@ defmodule GroupManager.TopologyDBTest do
   use ExUnit.Case
   require GroupManager
   require GroupManager.Data.Item
-  require GroupManager.Chatter.NetID
   require GroupManager.Data.Message
   require GroupManager.Data.WorldClock
+  require GroupManager.Data.LocalClock
   require GroupManager.Data.TimedSet
+  require GroupManager.Data.TimedItem
+  require GroupManager.Chatter.NetID
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Message
   alias GroupManager.Data.Item
+  alias GroupManager.Data.TimedItem
   alias GroupManager.Chatter.NetID
 
   defp dummy_netid do
@@ -62,7 +65,8 @@ defmodule GroupManager.TopologyDBTest do
     assert {:ok, msg} == TopologyDB.get(pid, group)
     assert {:ok, id} = TopologyDB.get_id(pid)
     itm2 = Item.new(id)
-    assert :ok == TopologyDB.add_item(pid, group, itm2)
+    assert {:ok, timed_item} = TopologyDB.add_item(pid, group, itm2)
+    assert TimedItem.is_valid(timed_item)
     {:ok, msg2} = TopologyDB.get(pid, group)
     assert Message.is_valid(msg2)
   end

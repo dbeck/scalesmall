@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :group_manager,
-  my_addr: System.get_env("GROUP_MANAGER_ADDRESS"),
+  my_addr: System.get_env("GROUP_MANAGER_ADDRESS") || "127.0.0.1",
   my_port: System.get_env("GROUP_MANAGER_PORT") || "29999",
   multicast_addr: System.get_env("GROUP_MANAGER_MULTICAST_ADDRESS") || "224.1.1.1",
   multicast_port: System.get_env("GROUP_MANAGER_MULTICAST_PORT") || "29999",

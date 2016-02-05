@@ -95,4 +95,6 @@ defmodule GroupManager.Data.ItemTest do
   test "cannot set priority on invalid Item" do
     assert_raise FunctionClauseError, fn -> Item.priority(nil, 1) end
   end
+
+  # set
 end

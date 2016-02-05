@@ -102,6 +102,20 @@ defmodule GroupManager.Data.Item do
 
   def valid?(_), do: false
 
+  @spec set(t, :add|:rmv|:get, integer, integer, integer) :: t
+  def set(itm, opv, from, to, priority)
+  when opv in [:add, :rmv, :get] and
+       is_valid_uint32(from) and
+       is_valid_uint32(to) and
+       from <= to and
+       is_valid_uint32(priority)
+  do
+    item(itm, op: opv)
+    |> item(start_range: from)
+    |> item(end_range: to)
+    |> item(priority: priority)
+  end
+
   @spec member(t) :: NetID
   def member(itm)
   when is_valid(itm)
@@ -116,9 +130,10 @@ defmodule GroupManager.Data.Item do
     item(itm, :op)
   end
 
-  @spec op(t, atom) :: t
+  @spec op(t, :add|:rmv|:get) :: t
   def op(itm, v)
-  when is_valid(itm) and v in [:add, :rmv, :get]
+  when is_valid(itm) and
+       v in [:add, :rmv, :get]
   do
     item(itm, op: v)
   end

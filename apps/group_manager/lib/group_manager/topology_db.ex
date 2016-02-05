@@ -43,7 +43,7 @@ defmodule GroupManager.TopologyDB do
   do
     id = Item.member(item)
     {{:ok, ^id}, :lookup_own_id} = {GenServer.call(pid, {:get_id}), :lookup_own_id}
-    GenServer.cast(pid, {:add_item, group_name, item})
+    GenServer.call(pid, {:add_item, group_name, item})
   end
 
   def get(pid, group_name)
@@ -113,12 +113,11 @@ defmodule GroupManager.TopologyDB do
     {:noreply, {own_id, table}}
   end
 
-  def handle_cast({:add_item, group_name, item}, {own_id, table})
+  def handle_call({:add_item, group_name, item}, _from, {own_id, table})
   when GroupManager.is_valid_group_name(group_name) and
        Item.is_valid(item) and
        Item.item(item, :member) == own_id
   do
-    retval =
     case :ets.lookup(table, group_name)
     do
       [] ->
@@ -126,7 +125,7 @@ defmodule GroupManager.TopologyDB do
         timed_item = TimedItem.construct(item, clock)
         new_message = Message.new(group_name) |> Message.add(timed_item)
         :ets.insert(table, new_message)
-        {:noreply, {own_id, table}}
+        {:reply, {:ok, timed_item}, {own_id, table}}
 
       [old_message] ->
         old_clock = old_message
@@ -145,10 +144,10 @@ defmodule GroupManager.TopologyDB do
           timed_item = TimedItem.construct(item, new_clock)
           new_message = Message.add(old_message, timed_item)
           :ets.insert(table, new_message)
-          {:noreply, {own_id, table}}
+          {:reply, {:ok, timed_item}, {own_id, table}}
         else
           # TODO: warning
-          {:noreply, {own_id, table}}
+          {:reply, {:error, :invalid_member}, {own_id, table}}
         end
     end
   end

@@ -1,7 +1,17 @@
 defmodule GroupManager do
 
+  @moduledoc """
+  `GroupManager` is the top level wrapper over the group management
+  services provided by other modules:
+
+  - `GroupManager.Chatter` is responsible for network communication
+  - `GroupManager.Chatter.PeerDB` is a wrapper over the Chatter's knowledge about peers, stored in ETS
+  - `GroupManager.TopologyDB` stores information about groups and their topology (ETS)
+  """
+
   use Application
   require GroupManager.Chatter.NetID
+  require GroupManager.Data.Item
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter
   alias GroupManager.TopologyDB
@@ -10,6 +20,9 @@ defmodule GroupManager do
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.Message
 
+  @doc """
+  Helper macro used in function guards to validate group names.
+  """
   defmacro is_valid_group_name(name) do
     case Macro.Env.in_guard?(__CALLER__) do
       true ->
@@ -23,11 +36,42 @@ defmodule GroupManager do
     end
   end
 
+  @doc false
   def start(_type, args)
   do
     GroupManager.Supervisor.start_link(args)
   end
 
+  @doc """
+  Calling this function registers our interest in a group. It first checks what
+  we already know about the `group_name` and combines the information with our
+  intent to participate in the group. This combined information is the group
+  topology stored in the `TopologyDB`.
+
+  When the local `TopologyDB` is updated with our request to participate, we send
+  the new topology over to others. `Chatter` makes sure we both multicast the
+  new topology and also broadcast to the `peers` (parameter, a list of `NetID`s).
+
+  Parameters:
+
+  - `group_name` a non-empty string
+  - `peers` a list of `NetID`s
+
+  Returns: :ok or an exception is raised
+
+  Example `NetID`:
+
+  ```
+  iex(1)> GroupManager.my_id
+  {:net_id, {192, 168, 1, 100}, 29999}
+  ```
+
+  Example usage:
+  ```
+  iex(2)> GroupManager.join("G", [])
+  :ok
+  ```
+  """
   @spec join(binary, list(NetID.t)) :: :ok
   def join(group_name, peers)
   when is_valid_group_name(group_name) and
@@ -38,13 +82,23 @@ defmodule GroupManager do
     # 1: prepare a new message with the help of TopologyDB
     topo_db    = TopologyDB.locate!
     item       = Item.new(my_id) |> Item.op(:get)
-    :ok        = topo_db |> TopologyDB.add_item(group_name, item)
+    {:ok, _}   = topo_db |> TopologyDB.add_item(group_name, item)
     {:ok, msg} = topo_db |> TopologyDB.get(group_name)
 
     # 2: broadcast the new message
     :ok = Chatter.broadcast(peers, msg)
   end
 
+  @doc """
+  see `join(group_name, peers)`
+
+  The only difference is that this function checks the members of the group with
+  the help of the `GroupManager.member(group_name)` function. The group
+  membership information comes from the `TopologyDB`.
+
+  When it gathered the group members it calls `join(group_name, peers)` with that
+  member list.
+  """
   @spec join(binary) :: :ok
   def join(group_name)
   when is_valid_group_name(group_name)
@@ -60,7 +114,7 @@ defmodule GroupManager do
     # 1: prepare a leave message with the help of TopologyDB
     topo_db    = TopologyDB.locate!
     item       = Item.new(my_id) |> Item.op(:rmv)
-    :ok        = topo_db |> TopologyDB.add_item(group_name, item)
+    {:ok, _}   = topo_db |> TopologyDB.add_item(group_name, item)
     {:ok, msg} = topo_db |> TopologyDB.get(group_name)
 
     # 2: remove all other group participation from the message
@@ -138,9 +192,45 @@ defmodule GroupManager do
     end
   end
 
+  @spec add_item(binary, integer, integer, integer) :: {:ok, TimedItem.t}
+  def add_item(group_name, from, to, priority)
+  when is_valid_group_name(group_name)
+  do
+    # 1: prepare a new message with the help of TopologyDB
+    item               = Item.new(my_id) |> Item.set(:add, from, to, priority)
+    topo_db            = TopologyDB.locate!
+    {:ok, timed_item}  = topo_db |> TopologyDB.add_item(group_name, item)
+    {:ok, msg}         = topo_db |> TopologyDB.get(group_name)
+
+    # 2: gather peers
+    peers = members(group_name)
+
+    # 3: broadcast the new message
+    :ok = Chatter.broadcast(peers, msg)
+
+    {:ok, timed_item}
+  end
+
+  @spec remove_item(binary, integer, integer, integer) :: {:ok, TimedItem.t}
+  def remove_item(group_name, from, to, priority)
+  when is_valid_group_name(group_name)
+  do
+    # 1: prepare a new message with the help of TopologyDB
+    item               = Item.new(my_id) |> Item.set(:rmv, from, to, priority)
+    topo_db            = TopologyDB.locate!
+    {:ok, timed_item}  = topo_db |> TopologyDB.add_item(group_name, item)
+    {:ok, msg}         = topo_db |> TopologyDB.get(group_name)
+
+    # 2: gather peers
+    peers = members(group_name)
+
+    # 3: broadcast the new message
+    :ok = Chatter.broadcast(peers, msg)
+
+    {:ok, timed_item}
+  end
+
   @spec my_id() :: NetID.t
   def my_id(), do: Chatter.local_netid
 
-  # add item
-  # remove item
 end
