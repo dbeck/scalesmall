@@ -216,7 +216,6 @@ defmodule GroupManager.Data.MessageTest do
   end
 
   # merge keeps the latest elements
-  # merge 4 elements
   # members
   # topology
   # count
