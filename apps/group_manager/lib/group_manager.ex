@@ -129,7 +129,6 @@ defmodule GroupManager do
   - `group_name` a non-empty string
 
   Returns: :ok or an exception is raised
-  ```
 
   Example usage:
   ```
@@ -170,7 +169,19 @@ defmodule GroupManager do
   end
 
   @doc """
+  returns the list of nodes participating in a group in the form
+  of a list of `NetID`s.
 
+  Example usage:
+
+  ```
+  iex(1)> GroupManager.my_id
+  {:net_id, {192, 168, 1, 100}, 29999}
+  iex(2)> GroupManager.join("G")
+  :ok
+  iex(3)> GroupManager.members("G")
+  [{:net_id, {192, 168, 1, 100}, 29999}]
+  ```
   """
   @spec members(binary) :: list(NetID.t)
   def members(group_name)
@@ -183,18 +194,49 @@ defmodule GroupManager do
     end
   end
 
+  @doc """
+  returns the list of groups this node has ever seen. Note that this
+  checks the `TopologyDB` for the list of groups. `TopologyDB` may receive
+  uopdates from other nodes through UDP multicast so the list of
+  groups may contain group names without ever participating in any of them.
+
+  Example usage:
+  ```
+  iex(1)> GroupManager.groups
+  []
+  iex(2)> GroupManager.join("G")
+  :ok
+  iex(3)> GroupManager.leave("G")
+  :ok
+  iex(4)> GroupManager.my_groups
+  []
+  iex(5)> GroupManager.groups
+  ["G"]
+  ```
+  """
   @spec groups() :: {:ok, list(binary)}
   def groups()
   do
     TopologyDB.groups_
   end
 
+  @doc """
+  returns the list of groups we either want to receive messages from (:get `Item`) or
+  we are actively participating in (:add `Item`)
+
+  Example usage:
+  ```
+  iex(1)> GroupManager.join("G")
+  :ok
+  iex(2)> GroupManager.my_groups
+  ["G"]
+  ```
+  """
   @spec my_groups() :: {:ok, list(binary)}
   def my_groups()
   do
     get_lst = TopologyDB.groups_(:get, my_id)
     add_lst = TopologyDB.groups_(:add, my_id)
-    Logger.debug "get=[#{inspect get_lst}] add=[#{inspect add_lst}]"
     (get_lst ++ add_lst) |> Enum.uniq
   end
 
