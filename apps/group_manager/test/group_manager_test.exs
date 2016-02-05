@@ -31,6 +31,8 @@ defmodule GroupManagerTest do
       x == "test-my-group-1"
     end)
     assert :ok == GroupManager.leave("test-my-group-1")
-    assert [] == GroupManager.my_groups
+    assert [] == Enum.filter(GroupManager.my_groups(), fn(x) ->
+      x == "test-my-group-1"
+    end)
   end
 end

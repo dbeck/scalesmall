@@ -4,9 +4,6 @@ defmodule GroupManager.Data.WorldClockTest do
   alias GroupManager.Data.LocalClock
   alias GroupManager.Chatter.NetID
 
-  # TODO
-  # doctest GroupManager.Data.WorldClock
-
   defp dummy_me do
     NetID.new({1,2,3,4},1)
   end

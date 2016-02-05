@@ -6,9 +6,6 @@ defmodule GroupManager.Data.TimedSetTest do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Data.LocalClock
 
-  # TODO
-  # doctest GroupManager.Data.TimedSet
-
   test "basic test for new" do
     assert TimedSet.valid?(TimedSet.new())
   end

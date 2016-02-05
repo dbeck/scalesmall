@@ -258,12 +258,12 @@ defmodule GroupManager do
   [{:timed_item,
     {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0},
     {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}]
-  iex(4)> GroupManager.add_item("G",0,255,10)
+  iex(4)> GroupManager.add_item("G",0,255,11000)
   {:ok,
-   {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 0, 255, 10},
+   {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 0, 255, 11000},
     {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 1}}}
   iex(5)> GroupManager.topology("G")
-  [{:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 0, 255, 10},
+  [{:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :add, 0, 255, 11000},
     {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 1}},
    {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0},
     {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}]
@@ -274,7 +274,7 @@ defmodule GroupManager do
   - `iex(1)`: when topology is empty it returns an empty list
   - `iex(2)`: joining the group, which means we add a :get `Item` to the topology
   - `iex(3)`: the topology has a single :get `Item`
-  - `iex(4)`: register that we want to serve the range 0-255 with priority=10
+  - `iex(4)`: register that we want to serve the range 0-255 with port=11000
   - `iex(5)`: the topology now has two items, the `:get` and the `:add`
   """
   @spec topology(binary) :: list(TimedItem.t)
@@ -327,7 +327,7 @@ defmodule GroupManager do
 
   - `group_name`
   - `from` and `to` represent the boundaries of the range
-  - `priority` is a hint to other nodes based on the node's capacities
+  - `port` is a hint to other nodes based on the node's capacities
 
   Example usage:
 
@@ -350,11 +350,11 @@ defmodule GroupManager do
   - `iex(3)`: the topology shows our new `:add` item
   """
   @spec add_item(binary, integer, integer, integer) :: {:ok, TimedItem.t}
-  def add_item(group_name, from, to, priority)
+  def add_item(group_name, from, to, port)
   when is_valid_group_name(group_name)
   do
     # 1: prepare a new message with the help of TopologyDB
-    item               = Item.new(my_id) |> Item.set(:add, from, to, priority)
+    item               = Item.new(my_id) |> Item.set(:add, from, to, port)
     topo_db            = TopologyDB.locate!
     {:ok, timed_item}  = topo_db |> TopologyDB.add_item(group_name, item)
     {:ok, msg}         = topo_db |> TopologyDB.get(group_name)
@@ -373,11 +373,11 @@ defmodule GroupManager do
   the given range
   """
   @spec remove_item(binary, integer, integer, integer) :: {:ok, TimedItem.t}
-  def remove_item(group_name, from, to, priority)
+  def remove_item(group_name, from, to, port)
   when is_valid_group_name(group_name)
   do
     # 1: prepare a new message with the help of TopologyDB
-    item               = Item.new(my_id) |> Item.set(:rmv, from, to, priority)
+    item               = Item.new(my_id) |> Item.set(:rmv, from, to, port)
     topo_db            = TopologyDB.locate!
     {:ok, timed_item}  = topo_db |> TopologyDB.add_item(group_name, item)
     {:ok, msg}         = topo_db |> TopologyDB.get(group_name)

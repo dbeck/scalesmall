@@ -22,9 +22,6 @@ defmodule GroupManager.Data.MessageTest do
     NetID.new({3,4,5,6},3)
   end
 
-  # TODO
-  # doctest GroupManager.Data.Message
-
   test "basic test for new" do
     assert Message.valid?(Message.new("hello"))
   end

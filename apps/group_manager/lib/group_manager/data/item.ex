@@ -9,20 +9,37 @@ defmodule GroupManager.Data.Item do
                    op:           :get,
                    start_range:  0,
                    end_range:    0xffffffff,
-                   priority:     0
+                   port:         0
 
   @type t :: record( :item,
                      member:       NetID.t,
                      op:           atom,
                      start_range:  integer,
                      end_range:    integer,
-                     priority:     integer )
+                     port:         integer )
 
   @spec new(NetID.t) :: t
   def new(id)
   when NetID.is_valid(id)
   do
     item(member: id)
+  end
+
+  defmacro is_valid_port(data) do
+    case Macro.Env.in_guard?(__CALLER__) do
+      true ->
+        quote do
+          is_integer(unquote(data)) and
+          unquote(data) >= 0 and
+          unquote(data) <= 0xffff
+        end
+      false ->
+        quote bind_quoted: binding() do
+          is_integer(data) and
+          data >= 0 and
+          data <= 0xffff
+        end
+    end
   end
 
   defmacro is_valid_uint32(data) do
@@ -60,7 +77,7 @@ defmodule GroupManager.Data.Item do
           is_integer(:erlang.element(5, unquote(data))) and
           :erlang.element(5, unquote(data)) >= 0 and
           :erlang.element(5, unquote(data)) <= 0xffffffff and
-          # priority
+          # port
           is_integer(:erlang.element(6, unquote(data))) and
           :erlang.element(6, unquote(data)) >= 0 and
           :erlang.element(6, unquote(data)) <= 0xffffffff and
@@ -83,7 +100,7 @@ defmodule GroupManager.Data.Item do
           is_integer(:erlang.element(5, data)) and
           :erlang.element(5, data) >= 0 and
           :erlang.element(5, data) <= 0xffffffff and
-          # priority
+          # port
           is_integer(:erlang.element(6, data)) and
           :erlang.element(6, data) >= 0 and
           :erlang.element(6, data) <= 0xffffffff and
@@ -103,17 +120,17 @@ defmodule GroupManager.Data.Item do
   def valid?(_), do: false
 
   @spec set(t, :add|:rmv|:get, integer, integer, integer) :: t
-  def set(itm, opv, from, to, priority)
+  def set(itm, opv, from, to, port)
   when opv in [:add, :rmv, :get] and
        is_valid_uint32(from) and
        is_valid_uint32(to) and
        from <= to and
-       is_valid_uint32(priority)
+       is_valid_port(port)
   do
     item(itm, op: opv)
     |> item(start_range: from)
     |> item(end_range: to)
-    |> item(priority: priority)
+    |> item(port: port)
   end
 
   @spec member(t) :: NetID
@@ -168,18 +185,18 @@ defmodule GroupManager.Data.Item do
     item(itm, end_range: v)
   end
 
-  @spec priority(t) :: integer
-  def priority(itm)
+  @spec port(t) :: integer
+  def port(itm)
   when is_valid(itm)
   do
-    item(itm, :priority)
+    item(itm, :port)
   end
 
-  @spec priority(t, integer) :: t
-  def priority(itm, v)
+  @spec port(t, integer) :: t
+  def port(itm, v)
   when is_valid(itm) and
-       is_valid_uint32(v)
+       is_valid_port(v)
   do
-    item(itm, priority: v)
+    item(itm, port: v)
   end
 end

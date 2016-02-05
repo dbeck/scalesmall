@@ -4,9 +4,6 @@ defmodule GroupManager.Data.ItemTest do
   alias GroupManager.Data.Item
   alias GroupManager.Chatter.NetID
 
-  # TODO
-  # doctest GroupManager.Data.Item
-
   defp dummy_netid do
     NetID.new({1,2,3,4},1)
   end
@@ -84,16 +81,16 @@ defmodule GroupManager.Data.ItemTest do
     assert_raise FunctionClauseError, fn -> Item.end_range(nil, 1) end
   end
 
-  test "priority property can be set and retrieved" do
-    assert 1199 == Item.new(dummy_netid) |> Item.priority(1199) |> Item.priority
+  test "port property can be set and retrieved" do
+    assert 1199 == Item.new(dummy_netid) |> Item.port(1199) |> Item.port
   end
 
-  test "cannot set invalid priority" do
-    assert_raise FunctionClauseError, fn -> Item.new(dummy_netid) |> Item.priority(-1) end
+  test "cannot set invalid port" do
+    assert_raise FunctionClauseError, fn -> Item.new(dummy_netid) |> Item.port(-1) end
   end
 
-  test "cannot set priority on invalid Item" do
-    assert_raise FunctionClauseError, fn -> Item.priority(nil, 1) end
+  test "cannot set port on invalid Item" do
+    assert_raise FunctionClauseError, fn -> Item.port(nil, 1) end
   end
 
   # set

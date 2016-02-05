@@ -124,10 +124,10 @@ defmodule GroupManager.Data.TimedItemTest do
   end
 
   test "max_item() returns what has the max() of LocalClock" do
-    it = Item.new(dummy_me) |> Item.priority(1)
+    it = Item.new(dummy_me) |> Item.port(1)
     cl = LocalClock.new(dummy_me)
     ti = TimedItem.construct(it, cl)
-    it = Item.new(dummy_me) |> Item.priority(2) |> Item.op(:rmv)
+    it = Item.new(dummy_me) |> Item.port(2) |> Item.op(:rmv)
     ti2 = TimedItem.construct_next(it, cl)
     assert ti2 == TimedItem.max_item(ti, ti2)
   end
@@ -151,13 +151,13 @@ defmodule GroupManager.Data.TimedItemTest do
   end
 
   test "merge() updates the same item to the latest clock" do
-    it1 = Item.new(dummy_me)    |> Item.priority(1)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    it1 = Item.new(dummy_me)    |> Item.port(1)        |> TimedItem.construct(LocalClock.new(dummy_me))
     it2 = Item.new(dummy_other) |> Item.start_range(2) |> TimedItem.construct_next(LocalClock.new(dummy_other))
 
     assert [it1, it2] == TimedItem.merge([], it1) |> TimedItem.merge(it2)
 
     it3 = TimedItem.construct_next(TimedItem.item(it1), TimedItem.updated_at(it1))
-    it4 = TimedItem.construct_next(TimedItem.item(it2) |> Item.priority(20), TimedItem.updated_at(it2))
+    it4 = TimedItem.construct_next(TimedItem.item(it2) |> Item.port(20), TimedItem.updated_at(it2))
 
     # all permutations
     assert [it3, it4] == TimedItem.merge([], it1) |> TimedItem.merge(it2) |> TimedItem.merge(it3) |> TimedItem.merge(it4)
@@ -198,7 +198,7 @@ defmodule GroupManager.Data.TimedItemTest do
   end
 
   test "merge([],item) is idempotent" do
-    it1 = Item.new(dummy_me)    |> Item.priority(1)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    it1 = Item.new(dummy_me)    |> Item.port(1)    |> TimedItem.construct(LocalClock.new(dummy_me))
     it2 = Item.new(dummy_other) |> Item.start_range(2) |> TimedItem.construct_next(LocalClock.new(dummy_other))
 
     assert [it1, it2] == TimedItem.merge([],         it1) |> TimedItem.merge(it2)
@@ -208,7 +208,7 @@ defmodule GroupManager.Data.TimedItemTest do
   end
 
   test "merge([],[]) is idempotent" do
-    it1 = Item.new(dummy_me)    |> Item.priority(1)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    it1 = Item.new(dummy_me)    |> Item.port(1)        |> TimedItem.construct(LocalClock.new(dummy_me))
     it2 = Item.new(dummy_other) |> Item.start_range(2) |> TimedItem.construct_next(LocalClock.new(dummy_other))
 
     assert [it1, it2] == TimedItem.merge([],         [it1]) |> TimedItem.merge([it2])
@@ -219,13 +219,13 @@ defmodule GroupManager.Data.TimedItemTest do
   end
 
   test "merge([],[]) basic functionality" do
-    it1 = Item.new(dummy_me)    |> Item.priority(1)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    it1 = Item.new(dummy_me)    |> Item.port(1)    |> TimedItem.construct(LocalClock.new(dummy_me))
     it2 = Item.new(dummy_other) |> Item.start_range(2) |> TimedItem.construct_next(LocalClock.new(dummy_other))
 
     assert [it1, it2] == TimedItem.merge([], [it1]) |> TimedItem.merge([it2])
 
     it3 = TimedItem.construct_next(TimedItem.item(it1), TimedItem.updated_at(it1))
-    it4 = TimedItem.construct_next(TimedItem.item(it2) |> Item.priority(20), TimedItem.updated_at(it2))
+    it4 = TimedItem.construct_next(TimedItem.item(it2) |> Item.port(20), TimedItem.updated_at(it2))
 
     # all permutations
     assert [it3, it4] == TimedItem.merge([], [it1]) |> TimedItem.merge([it2]) |> TimedItem.merge([it3]) |> TimedItem.merge([it4])
