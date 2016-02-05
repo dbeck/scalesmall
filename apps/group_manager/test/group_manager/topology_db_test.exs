@@ -75,4 +75,6 @@ defmodule GroupManager.TopologyDBTest do
   # get_
   # members
   # members_
+  # groups_
+  # groups_(id,type)
 end

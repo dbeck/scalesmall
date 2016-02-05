@@ -10,6 +10,7 @@ defmodule GroupManager do
   """
 
   use Application
+  require Logger
   require GroupManager.Chatter.NetID
   require GroupManager.Data.Item
   alias GroupManager.Chatter.NetID
@@ -98,6 +99,12 @@ defmodule GroupManager do
 
   When it gathered the group members it calls `join(group_name, peers)` with that
   member list.
+
+  Example usage:
+  ```
+  iex(2)> GroupManager.join("G")
+  :ok
+  ```
   """
   @spec join(binary) :: :ok
   def join(group_name)
@@ -107,6 +114,29 @@ defmodule GroupManager do
     join(group_name, others)
   end
 
+  @doc """
+  Calling this function tells others that we leave the group. It first checks what
+  we already know about the `group_name` and for each non-removal `Item` it generates
+  a remove item and merges this into the topology. This effectively replaces all
+  `:get` and `:add` items in the `TopologyDB` for our `NetID`.
+
+  When the local `TopologyDB` is updated with our request, we send
+  the new topology over to others. `Chatter` makes sure we both multicast the
+  new topology and also broadcast to the `peers` (parameter, a list of `NetID`s).
+
+  Parameters:
+
+  - `group_name` a non-empty string
+
+  Returns: :ok or an exception is raised
+  ```
+
+  Example usage:
+  ```
+  iex(2)> GroupManager.leave("G")
+  :ok
+  ```
+  """
   @spec leave(binary) :: :ok
   def leave(group_name)
   when is_valid_group_name(group_name)
@@ -139,6 +169,9 @@ defmodule GroupManager do
     :ok = Chatter.broadcast(others, msg)
   end
 
+  @doc """
+
+  """
   @spec members(binary) :: list(NetID.t)
   def members(group_name)
   when is_valid_group_name(group_name)
@@ -159,8 +192,10 @@ defmodule GroupManager do
   @spec my_groups() :: {:ok, list(binary)}
   def my_groups()
   do
-    TopologyDB.groups_(:get, my_id) ++ TopologyDB.groups_(:add, my_id)
-    |> Enum.uniq
+    get_lst = TopologyDB.groups_(:get, my_id)
+    add_lst = TopologyDB.groups_(:add, my_id)
+    Logger.debug "get=[#{inspect get_lst}] add=[#{inspect add_lst}]"
+    (get_lst ++ add_lst) |> Enum.uniq
   end
 
   @spec topology(binary) :: list(TimedItem.t)

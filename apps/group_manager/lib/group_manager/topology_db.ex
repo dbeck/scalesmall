@@ -86,7 +86,7 @@ defmodule GroupManager.TopologyDB do
        NetID.is_valid(id)
   do
     :ets.foldl(fn(x,acc) ->
-      if( Message.count(x,id,type) )
+      if( Message.count(x,id,type) > 0 )
       do
         [Message.group_name(x)|acc]
       else
