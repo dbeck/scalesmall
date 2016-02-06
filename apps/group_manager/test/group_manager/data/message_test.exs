@@ -215,8 +215,121 @@ defmodule GroupManager.Data.MessageTest do
     assert_raise FunctionClauseError, fn -> Message.merge(nil, m) end
   end
 
-  # merge keeps the latest elements
-  # members
-  # topology
-  # count
+  test "count() raises for invalid input" do
+    m = Message.new("hello")
+    id = dummy_me
+    assert_raise FunctionClauseError, fn -> Message.count(m, id, :ok) end
+    assert_raise FunctionClauseError, fn -> Message.count(m, id, []) end
+    assert_raise FunctionClauseError, fn -> Message.count(m, id, {}) end
+    assert_raise FunctionClauseError, fn -> Message.count(m, id, nil) end
+
+    assert_raise FunctionClauseError, fn -> Message.count(:ok, id, :add) end
+    assert_raise FunctionClauseError, fn -> Message.count([], id, :add) end
+    assert_raise FunctionClauseError, fn -> Message.count({}, id, :add) end
+    assert_raise FunctionClauseError, fn -> Message.count(nil, id, :add) end
+
+    assert_raise FunctionClauseError, fn -> Message.count(m, :ok, :add) end
+    assert_raise FunctionClauseError, fn -> Message.count(m, [], :add) end
+    assert_raise FunctionClauseError, fn -> Message.count(m, {}, :add) end
+    assert_raise FunctionClauseError, fn -> Message.count(m, nil, :add) end
+  end
+
+  test "members() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> Message.members(:ok) end
+    assert_raise FunctionClauseError, fn -> Message.members([]) end
+    assert_raise FunctionClauseError, fn -> Message.members({}) end
+    assert_raise FunctionClauseError, fn -> Message.members(nil) end
+  end
+
+  test "topology() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> Message.topology(:ok) end
+    assert_raise FunctionClauseError, fn -> Message.topology([]) end
+    assert_raise FunctionClauseError, fn -> Message.topology({}) end
+    assert_raise FunctionClauseError, fn -> Message.topology(nil) end
+  end
+
+  test "merge() keeps the latest elements" do
+    timed_item1 = Item.new(dummy_me)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    timed_item2 = Item.new(dummy_other) |> TimedItem.construct(LocalClock.new(dummy_other))
+
+    m1 = Message.new("hello") |> Message.add(timed_item1)
+    m2 = Message.new("hello") |> Message.add(timed_item2)
+
+    timed_item1x = Item.new(dummy_me)    |> TimedItem.construct_next(LocalClock.new(dummy_me))
+    timed_item2x = Item.new(dummy_other) |> TimedItem.construct_next(LocalClock.new(dummy_other))
+
+    m1x = Message.new("hello") |> Message.add(timed_item1x)
+    m2x = Message.new("hello") |> Message.add(timed_item2x)
+
+    m12 = Message.merge(m1,m2)
+    m1x2 = Message.merge(m1x,m2)
+    m12x = Message.merge(m1,m2x)
+    m1x2x = Message.merge(m1x,m2x)
+
+    assert m1x2 == Message.merge(m1,m1x) |> Message.merge(m2)
+    assert m1x2 == Message.merge(m1,m2)  |> Message.merge(m1x)
+    assert m1x2 == Message.merge(m1x,m2) |> Message.merge(m1)
+
+    assert m12x == Message.merge(m2,m2x) |> Message.merge(m1)
+    assert m12x == Message.merge(m1,m2)  |> Message.merge(m2x)
+    assert m12x == Message.merge(m1,m2x) |> Message.merge(m2)
+
+    assert m1x2x == Message.merge(m12,m1x)  |> Message.merge(m2x)
+    assert m1x2x == Message.merge(m12x,m1x) |> Message.merge(m2)
+    assert m1x2x == Message.merge(m1x2,m1)  |> Message.merge(m2x)
+    assert m1x2x == Message.merge(m1x2,m1)  |> Message.merge(m2x)
+    assert m1x2x == Message.merge(m1x2,m2)  |> Message.merge(m2x)
+    assert m1x2x == Message.merge(m1x2,m2x) |> Message.merge(m2)
+    assert m1x2x == Message.merge(m1x2,m2x) |> Message.merge(m1)
+  end
+
+  test "members() returns all NetIDs" do
+    timed_item1 = Item.new(dummy_me)    |> TimedItem.construct(LocalClock.new(dummy_me))
+    timed_item2 = Item.new(dummy_other) |> TimedItem.construct(LocalClock.new(dummy_other))
+
+    m1 = Message.new("hello") |> Message.add(timed_item1)
+    m2 = Message.new("hello") |> Message.add(timed_item2)
+    m12 = Message.merge(m1,m2)
+
+    assert [dummy_me] == Message.members(m1)
+    assert [dummy_other] == Message.members(m2)
+    assert [dummy_me,dummy_other] == Message.members(m12) |> Enum.sort
+  end
+
+  test "count() works for all NetIDs" do
+    timed_item1 = Item.new(dummy_me)    |> Item.op(:add) |> TimedItem.construct(LocalClock.new(dummy_me))
+    timed_item2 = Item.new(dummy_other) |> Item.op(:get) |> TimedItem.construct(LocalClock.new(dummy_other))
+
+    m1 = Message.new("hello") |> Message.add(timed_item1)
+    m2 = Message.new("hello") |> Message.add(timed_item2)
+    m12 = Message.merge(m1,m2)
+
+    assert 1 == Message.count(m1,dummy_me,:add)
+    assert 0 == Message.count(m1,dummy_me,:get)
+    assert 0 == Message.count(m1,dummy_other,:add)
+    assert 0 == Message.count(m1,dummy_other,:get)
+
+    assert 0 == Message.count(m2,dummy_me,:add)
+    assert 0 == Message.count(m2,dummy_me,:get)
+    assert 0 == Message.count(m2,dummy_other,:add)
+    assert 1 == Message.count(m2,dummy_other,:get)
+
+    assert 1 == Message.count(m12,dummy_me,:add)
+    assert 0 == Message.count(m12,dummy_me,:get)
+    assert 0 == Message.count(m12,dummy_other,:add)
+    assert 1 == Message.count(m12,dummy_other,:get)
+  end
+
+  test "topology() returns the list of NetIDs" do
+    timed_item1 = Item.new(dummy_me)    |> Item.op(:add) |> TimedItem.construct(LocalClock.new(dummy_me))
+    timed_item2 = Item.new(dummy_other) |> Item.op(:get) |> TimedItem.construct(LocalClock.new(dummy_other))
+
+    m1 = Message.new("hello") |> Message.add(timed_item1)
+    m2 = Message.new("hello") |> Message.add(timed_item2)
+    m12 = Message.merge(m1,m2)
+
+    assert [timed_item1] == Message.topology(m1)
+    assert [timed_item2] == Message.topology(m2)
+    assert [timed_item1, timed_item2] == Message.topology(m12) |> Enum.sort
+  end
 end
