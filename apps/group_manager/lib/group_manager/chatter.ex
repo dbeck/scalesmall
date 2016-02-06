@@ -131,9 +131,15 @@ defmodule GroupManager.Chatter do
         my_addr = get_local_ip()
     end
 
-    {:ok, my_port_str} = Application.fetch_env(:group_manager, :my_port)
-    {my_port, ""}      = my_port_str |> Integer.parse
-
+    my_port = case Application.fetch_env(:group_manager, :my_port)
+    do
+      {:ok, val} ->
+        {my_port, ""} = val |> Integer.parse
+        my_port
+      :error ->
+        Logger.info "no my_port config value found for group_manager Application [default: 29999]"
+        29999
+    end
     NetID.new(my_addr, my_port)
   end
 
