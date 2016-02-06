@@ -1,14 +1,26 @@
 defmodule GroupManager.ChatterTest do
   use ExUnit.Case
+  require GroupManager.Chatter.NetID
+  alias GroupManager.Chatter
+  alias GroupManager.Chatter.NetID
 
-  test "the truth" do
-    assert 1 + 1 == 2
+  test "locate() returns valid pid" do
+    assert is_pid(Chatter.locate)
+    assert is_pid(Chatter.locate!)
   end
 
-  # locate
+  test "get_local_ip() returns valid NetID" do
+    assert is_tuple(Chatter.get_local_ip)
+  end
+
+  test "local_netid() returns valid NetID" do
+    assert NetID.valid?(Chatter.local_netid)
+  end
+
+  test "multicast_netid() returns valid NetID" do
+    assert NetID.valid?(Chatter.multicast_netid)
+  end
+
   # broadcast(gossip)
   # broadcast([nodes], message)
-  # get_local_ip
-  # local_netid
-  # multicast_netid
 end

@@ -71,10 +71,16 @@ defmodule GroupManager.TopologyDBTest do
     assert Message.is_valid(msg2)
   end
 
+  test "get() raises on invalid parameters" do
+    pid = TopologyDB.locate
+    assert_raise FunctionClauseError, fn -> TopologyDB.get(pid, nil) end
+    assert_raise FunctionClauseError, fn -> TopologyDB.get(pid, <<>>) end
+    assert_raise FunctionClauseError, fn -> TopologyDB.get(pid, []) end
+    assert_raise FunctionClauseError, fn -> TopologyDB.get(pid, {:message}) end
+  end
+
   # get
   # get_
-  # members
-  # members_
   # groups_
   # groups_(id,type)
 end
