@@ -137,6 +137,43 @@ defmodule GroupManager.Data.TimedSetTest do
     assert_raise FunctionClauseError, fn -> TimedSet.merge(nil, w) end
   end
 
-  # merge is idempotent
-  # merge keeps the latest elements
+  test "merge() is idempotent" do
+    ti1 = TimedItem.new(dummy_me)
+    ti2 = TimedItem.new(dummy_other)
+
+    w1 = TimedSet.new |> TimedSet.add(ti1)
+    w2 = TimedSet.new |> TimedSet.add(ti2)
+    w12 = TimedSet.new |> TimedSet.add(ti1) |> TimedSet.add(ti2)
+
+    assert w1 == TimedSet.merge(w1, w1)
+    assert w1 == TimedSet.merge(w1, w1) |> TimedSet.merge(w1)
+    assert w12 == TimedSet.merge(w1, w2)
+    assert w12 == TimedSet.merge(w1, w2) |> TimedSet.merge(w1)
+    assert w12 == TimedSet.merge(w1, w2) |> TimedSet.merge(w1) |> TimedSet.merge(w2)
+  end
+
+  test "merge() keeps the latest elements" do
+    ti1 = TimedItem.new(dummy_me)
+    ti2 = TimedItem.new(dummy_other)
+    ti1x = TimedItem.item(ti1) |> TimedItem.construct_next(TimedItem.updated_at(ti1))
+    ti2x = TimedItem.item(ti2) |> TimedItem.construct_next(TimedItem.updated_at(ti2))
+
+    w1    = TimedSet.new |> TimedSet.add(ti1)
+    w2    = TimedSet.new |> TimedSet.add(ti2)
+    w12   = TimedSet.new |> TimedSet.add(ti1)  |> TimedSet.add(ti2)
+    w1x   = TimedSet.new |> TimedSet.add(ti1x)
+    w2x   = TimedSet.new |> TimedSet.add(ti2x)
+    w1x2  = TimedSet.new |> TimedSet.add(ti1x) |> TimedSet.add(ti2)
+    w12x  = TimedSet.new |> TimedSet.add(ti1)  |> TimedSet.add(ti2x)
+    w1x2x = TimedSet.new |> TimedSet.add(ti1x) |> TimedSet.add(ti2x)
+
+    assert w1x   == TimedSet.merge(w1, w1x)
+    assert w1x2  == TimedSet.merge(w1, w2) |> TimedSet.merge(w1x)
+    assert w12x  == TimedSet.merge(w1, w2x) |> TimedSet.merge(w2)
+    assert w12x  == TimedSet.merge(w12, w2x)
+    assert w1x2x == TimedSet.merge(w1x, w2x)
+    assert w1x2x == TimedSet.merge(w1x2, w2x)
+    assert w1x2x == TimedSet.merge(w12x, w1x)
+    assert w1x2x == TimedSet.merge(w12, w1x) |> TimedSet.merge(w2x)
+  end
 end
