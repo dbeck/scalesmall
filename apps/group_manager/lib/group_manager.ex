@@ -153,7 +153,7 @@ defmodule GroupManager do
       if( Item.member(del_item) == my_id )
       do
         local_clock = TimedItem.updated_at(x)
-        Message.add_item(acc, TimedItem.construct_next(del_item, local_clock))
+        Message.add(acc, TimedItem.construct_next(del_item, local_clock))
       else
         acc
       end
