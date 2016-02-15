@@ -32,4 +32,15 @@ defmodule GroupManager.Chatter.Serializer do
         {:error, :invalid_data, byte_size(msg)}
     end
   end
+
+# {:gossip,
+#   {:broadcast_id,
+#     {:net_id, {192, 168, 1, 100}, 11225}, 1},
+#     [],
+#     [],
+#     {:message,
+#       {:world_clock, [{:local_clock, {:net_id, {192, 168, 1, 100}, 11225}, 0}]},
+#       {:timed_set, [
+#            {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 11225}, :get, 0, 4294967295, 0},
+#            {:local_clock, {:net_id, {192, 168, 1, 100}, 11225}, 0}}]}, "G2"}}
 end
