@@ -50,7 +50,7 @@ defmodule GroupManager.Chatter.Serializer do
     id_table = List.foldl(ids, encode_uint(length(ids)), fn(id, acc) ->
       acc <> NetID.encode(id)
     end)
-    {id_count, id_map} = ids |> Enum.reduce({0, %{}}, fn(x,acc) ->
+    {_count, id_map} = ids |> Enum.reduce({0, %{}}, fn(x,acc) ->
       {count, m} = acc
       {count+1, Map.put(m, x, count)}
     end)
@@ -85,14 +85,16 @@ defmodule GroupManager.Chatter.Serializer do
       x
     end)
 
-    #id_map = decode_netids(remaining, count, []) |> Enum.reduce({0, %{}}, fn(x, acc) ->
-    #  {count, m} = acc
-    #  {count+1, Map.put(m, x, count)}
-    #end)
+    {_count, id_map} = id_list |> Enum.reduce({0, %{}}, fn(x, acc) ->
+      {count, m} = acc
+      {count+1, Map.put(m, count, x)}
+    end)
 
-    #{decoded_gossip, remaining} = Gossip.decode_with(remaining, id_map)
-    #{decoded_message, remaining} = Message.decode_with(remaining, id_map)
-    #{Gossip.payload(decoded_gossip, decoded_message), remaining}
+    {decoded_gossip, remaining} = Gossip.decode_with(remaining, id_map)
+    {decoded_message, remaining} = Message.decode_with(remaining, id_map)
+    g = {Gossip.payload(decoded_gossip, decoded_message), remaining}
+
+    {id_list, id_map, decoded_gossip, decoded_message, g}
   end
 
 # {:gossip,

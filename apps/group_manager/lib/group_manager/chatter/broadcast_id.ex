@@ -151,6 +151,20 @@ defmodule GroupManager.Chatter.BroadcastID do
     << Serializer.encode_uint(id) :: binary, Serializer.encode_uint(broadcast_id(b, :seqno)) :: binary >>
   end
 
+  @spec encode_list_with(list(t), map) :: binary
+  def encode_list_with(ids, id_map)
+  when is_list(ids) and
+       is_map(id_map)
+  do
+    validate_list!(ids)
+    bin_size  = ids |> length |> Serializer.encode_uint
+    bin_list  = ids |> Enum.reduce(<<>>, fn(x,acc) ->
+      acc <> encode_with(x, id_map)
+    end)
+    << bin_size :: binary,
+       bin_list :: binary >>
+  end
+
   @spec decode_with(binary, map) :: {t, binary}
   def decode_with(bin, id_map)
   when is_binary(bin) and
@@ -161,5 +175,27 @@ defmodule GroupManager.Chatter.BroadcastID do
     {seqno, rest} = Serializer.decode_uint(rest)
     net_id        = Map.fetch!(id_map, id)
     {new(net_id, seqno), rest}
+  end
+
+  @spec decode_list_with(binary, map) :: {list(t), binary}
+  def decode_list_with(bin, id_map)
+  do
+    {count, remaining} = Serializer.decode_uint(bin)
+    {list, remaining} = decode_list_with_(remaining, count, [], id_map)
+    {Enum.reverse(list), remaining}
+  end
+
+  defp decode_list_with_(<<>>, _count, acc, _map), do: {acc, <<>>}
+  defp decode_list_with_(binary, 0, acc, _map), do: {acc, binary}
+
+  defp decode_list_with_(msg, count, acc, map)
+  when is_binary(msg) and
+       is_integer(count) and
+       count > 0 and
+       is_list(acc) and
+       is_map(map)
+  do
+    {id, remaining} = decode_with(msg, map)
+    decode_list_with_(remaining, count-1, [id | acc], map)
   end
 end

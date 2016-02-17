@@ -225,4 +225,6 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
 
   # encode_with
   # decode_with
+  # encode_list_with
+  # decode_list_with
 end

@@ -160,6 +160,6 @@ defmodule GroupManager.Data.LocalClock do
     {id, rest}    = Serializer.decode_uint(bin)
     {time, rest}  = Serializer.decode_uint(rest)
     net_id        = Map.fetch!(id_map, id)
-    {new(net_id,time) , rest}
+    { new(net_id,time) , rest }
   end
 end

@@ -226,6 +226,15 @@ defmodule GroupManager.Data.Item do
   defp op_to_id(:rmv), do: 2
   defp op_to_id(:get), do: 3
 
+  @spec decode_with(binary, map) :: {t, binary}
+  def decode_with(bin, id_map)
+  when is_binary(bin) and
+       byte_size(bin) > 0 and
+       is_map(id_map)
+  do
+    :error
+  end
+
   defp id_to_op(1), do: :add
   defp id_to_op(2), do: :rmv
   defp id_to_op(3), do: :get

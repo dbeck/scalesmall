@@ -159,4 +159,13 @@ defmodule GroupManager.Data.TimedItem do
     << bin_item :: binary,
        bin_updated :: binary >>
   end
+
+  @spec decode_with(binary, map) :: {t, binary}
+  def decode_with(bin, id_map)
+  when is_binary(bin) and
+       byte_size(bin) > 0 and
+       is_map(id_map)
+  do
+    :error
+  end
 end

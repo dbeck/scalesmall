@@ -221,4 +221,19 @@ defmodule GroupManager.Data.Message do
        bin_name_size              :: binary,
        message(msg, :group_name)  :: binary >>
   end
+
+  @spec decode_with(binary, map) :: {t, binary}
+  def decode_with(bin, id_map)
+  when is_binary(bin) and
+       byte_size(bin) > 0 and
+       is_map(id_map)
+  do
+    {decoded_time, remaining}    = WorldClock.decode_with(bin, id_map)
+    {decoded_items, remaining}   = TimedSet.decode_list_with(remaining, id_map)
+    {name_size, remaining}       = Serializer.decode_uint(remaining)
+
+    << name :: binary-size(name_size), remaining :: binary >> = remaining
+
+    { message([time: decoded_time, items: decoded_items, group_name: name]), remaining }
+  end
 end

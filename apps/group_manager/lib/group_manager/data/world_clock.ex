@@ -177,4 +177,14 @@ defmodule GroupManager.Data.WorldClock do
     end)
     << bin_time_size :: binary, bin_time :: binary >>
   end
+
+  @spec decode_with(binary, map) :: {t, binary}
+  def decode_with(bin, id_map)
+  when is_binary(bin) and
+       byte_size(bin) > 0 and
+       is_map(id_map)
+  do
+    :error
+  end
+
 end

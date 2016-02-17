@@ -195,36 +195,29 @@ defmodule GroupManager.Chatter.Gossip do
   when is_valid(g) and
        is_map(id_map) # TODO: check map too ...
   do
-    #current_id: BroadcastID.t,
-    bin_current_id    = gossip(g, :current_id) |> BroadcastID.encode_with(id_map)
-
-    #seen_ids: list(BroadcastID.t),
-    bin_seen_ids_size = gossip(g, :seen_ids) |> length |> Serializer.encode_uint
-    bin_seen_ids      = gossip(g, :seen_ids) |> Enum.reduce(<<>>, fn(x,acc) ->
-      acc <> BroadcastID.encode_with(x, id_map)
-    end)
-
-    #distribution_list: list(NetID.t),
-    bin_distrib_size  = gossip(g, :distribution_list) |> length |> Serializer.encode_uint
-    bin_distrib       = gossip(g, :distribution_list) |> Enum.reduce(<<>>, fn(x,acc) ->
-      id = Map.fetch!(id_map, x)
-      acc <> Serializer.encode_uint(id)
-    end)
+    bin_current_id    = gossip(g, :current_id)        |> BroadcastID.encode_with(id_map)
+    bin_seen_ids      = gossip(g, :seen_ids)          |> BroadcastID.encode_list_with(id_map)
+    bin_distrib       = gossip(g, :distribution_list) |> NetID.encode_list_with(id_map)
 
     << bin_current_id     :: binary,
-       bin_seen_ids_size  :: binary,
        bin_seen_ids       :: binary,
-       bin_distrib_size   :: binary,
        bin_distrib        :: binary >>
   end
 
-  @spec decode_with(binary, map) :: t
+  @spec decode_with(binary, map) :: {t, binary}
   def decode_with(bin, id_map)
   when is_binary(bin) and
        byte_size(bin) > 0 and
        is_map(id_map)
   do
-    {current_id, remaining} = BroadcastID.decode_with(bin, id_map)
-  end
+    {decoded_current_id, remaining} = BroadcastID.decode_with(bin, id_map)
+    {decoded_seen_ids, remaining}   = BroadcastID.decode_list_with(remaining, id_map)
+    {decoded_distrib, remaining}    = NetID.decode_list_with(remaining, id_map)
 
+    { gossip(current_id: decoded_current_id)
+      |> gossip(seen_ids: decoded_seen_ids)
+      |> gossip(distribution_list: decoded_distrib)
+      |> gossip(payload: :empty),
+      remaining }
+  end
 end

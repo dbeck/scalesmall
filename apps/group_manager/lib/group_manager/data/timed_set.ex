@@ -154,4 +154,13 @@ defmodule GroupManager.Data.TimedSet do
     end)
     << bin_set_size :: binary, bin_set :: binary >>
   end
+
+  @spec decode_with(binary, map) :: {t, binary}
+  def decode_with(bin, id_map)
+  when is_binary(bin) and
+       byte_size(bin) > 0 and
+       is_map(id_map)
+  do
+    :error
+  end
 end
