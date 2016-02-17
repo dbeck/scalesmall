@@ -3,6 +3,7 @@ defmodule GroupManager.Data.LocalClock do
   require Record
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :local_clock,
                    member: nil,
@@ -19,6 +20,16 @@ defmodule GroupManager.Data.LocalClock do
   when NetID.is_valid(id)
   do
     local_clock(member: id)
+  end
+
+  @spec new(NetID.t, integer) :: t
+  def new(id, time)
+  when NetID.is_valid(id) and
+       is_integer(time) and
+       time >= 0 and
+       time <= 0xffffffff
+  do
+    local_clock(member: id) |> local_clock(time_val: time)
   end
 
   defmacro is_valid(data) do
@@ -128,5 +139,27 @@ defmodule GroupManager.Data.LocalClock do
     else
       rhs
     end
+  end
+
+  @spec encode_with(t, map) :: binary
+  def encode_with(clock, id_map)
+  when is_valid(clock) and
+       is_map(id_map)
+  do
+    id = Map.fetch!(id_map, local_clock(clock, :member))
+    << Serializer.encode_uint(id) :: binary,
+       Serializer.encode_uint(local_clock(clock, :time_val)) :: binary >>
+  end
+
+  @spec decode_with(binary, map) :: {t, binary}
+  def decode_with(bin, id_map)
+  when is_binary(bin) and
+       byte_size(bin) > 0 and
+       is_map(id_map)
+  do
+    {id, rest}    = Serializer.decode_uint(bin)
+    {time, rest}  = Serializer.decode_uint(rest)
+    net_id        = Map.fetch!(id_map, id)
+    {new(net_id,time) , rest}
   end
 end

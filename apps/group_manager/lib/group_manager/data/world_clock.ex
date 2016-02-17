@@ -5,6 +5,7 @@ defmodule GroupManager.Data.WorldClock do
   require GroupManager.Chatter.NetID
   alias GroupManager.Data.LocalClock
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :world_clock,
                    time: []
@@ -155,5 +156,25 @@ defmodule GroupManager.Data.WorldClock do
         acc
       end
     end)
+  end
+
+  @spec extract_netids(t) :: list(NetID.t)
+  def extract_netids(clock)
+  when is_valid(clock)
+  do
+    Enum.map(world_clock(clock, :time), fn(x) -> LocalClock.member(x) end)
+    |> Enum.uniq
+  end
+
+  @spec encode_with(t, map) :: binary
+  def encode_with(clock, id_map)
+  when is_valid(clock) and
+       is_map(id_map)
+  do
+    bin_time_size = world_clock(clock, :time) |> length |> Serializer.encode_uint
+    bin_time      = world_clock(clock, :time) |> Enum.reduce(<<>>, fn(x,acc) ->
+      acc <> LocalClock.encode_with(x, id_map)
+    end)
+    << bin_time_size :: binary, bin_time :: binary >>
   end
 end

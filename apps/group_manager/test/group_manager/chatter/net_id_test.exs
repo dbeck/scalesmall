@@ -95,4 +95,9 @@ defmodule GroupManager.Chatter.NetIDTest do
     assert_raise FunctionClauseError, fn -> NetID.port({:net_id, nil, nil}) end
     assert_raise FunctionClauseError, fn -> NetID.port({:net_id, nil, nil, nil}) end
   end
+
+  # encode/decode
+  # encode_list_with
+  # decode_list
+  # decode_list_with
 end

@@ -1,6 +1,7 @@
 defmodule GroupManager.Chatter.NetID do
 
   require Record
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :net_id,
                    ip: nil,
@@ -147,5 +148,87 @@ defmodule GroupManager.Chatter.NetID do
   when is_valid(id)
   do
     net_id(id, :port)
+  end
+
+  @spec encode(t) :: binary
+  def encode(id)
+  when is_valid(id)
+  do
+    {ip1, ip2, ip3, ip4} = net_id(id, :ip)
+    << ip1 :: size(8), ip2 :: size(8), ip3 :: size(8), ip4 :: size(8), net_id(id, :port) :: little-size(16) >>
+  end
+
+  @spec encode_list_with(list(t), map) :: binary
+  def encode_list_with(ids, id_map)
+  when is_list(ids) and
+       is_map(id_map)
+  do
+    validate_list!(ids)
+    bin_size  = ids |> length |> Serializer.encode_uint
+    bin_list  = ids |> Enum.reduce(<<>>, fn(x,acc) ->
+      id = Map.fetch!(id_map, x)
+      acc <> Serializer.encode_uint(id)
+    end)
+    << bin_size :: binary,
+       bin_list :: binary >>
+  end
+
+  @spec decode(binary) :: {t, binary}
+  def decode(<< ip1 :: size(8), ip2 :: size(8), ip3 :: size(8), ip4 :: size(8), port :: little-size(16) >>)
+  when is_valid_port(port) and
+       is_valid_ip({ip1, ip2, ip3, ip4})
+  do
+    {net_id(ip: {ip1, ip2, ip3, ip4}) |> net_id(port: port), <<>>}
+  end
+
+  def decode(<< ip1 :: size(8), ip2 :: size(8), ip3 :: size(8), ip4 :: size(8), port :: little-size(16), remaining :: binary >>)
+  when is_valid_port(port) and
+       is_valid_ip({ip1, ip2, ip3, ip4})
+  do
+    {net_id(ip: {ip1, ip2, ip3, ip4}) |> net_id(port: port), remaining}
+  end
+
+  @spec decode_list(binary) :: {list(t), binary}
+  def decode_list(bin)
+  do
+    {count, remaining} = Serializer.decode_uint(bin)
+    {list, remaining} = decode_list_(remaining, count, [])
+    {Enum.reverse(list), remaining}
+  end
+
+  defp decode_list_(<<>>, _count, acc), do: {acc, <<>>}
+  defp decode_list_(binary, 0, acc), do: {acc, binary}
+
+  defp decode_list_(msg, count, acc)
+  when is_binary(msg) and
+       is_integer(count) and
+       count > 0 and
+       is_list(acc)
+  do
+    {id, remaining} = decode(msg)
+    decode_list_(remaining, count-1, [id | acc])
+  end
+
+  @spec decode_list_with(binary, map) :: {list(t), binary}
+  def decode_list_with(bin, id_map)
+  do
+    {count, remaining} = Serializer.decode_uint(bin)
+    {list, remaining} = decode_list_with_(remaining, count, [], id_map)
+    {Enum.reverse(list), remaining}
+  end
+
+  defp decode_list_with_(<<>>, _count, acc, _map), do: {acc, <<>>}
+  defp decode_list_with_(binary, 0, acc, _map), do: {acc, binary}
+
+  defp decode_list_with_(msg, count, acc, map)
+  when is_binary(msg) and
+       is_integer(count) and
+       count > 0 and
+       is_list(acc) and
+       is_map(map)
+  do
+    {id, remaining} = Serializer.decode_uint(msg)
+    netid = Map.fetch!(map, id)
+    decode_list_with_(remaining, count-1, [netid | acc], map)
   end
 end

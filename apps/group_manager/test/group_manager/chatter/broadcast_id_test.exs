@@ -222,4 +222,7 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
     assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:peer_data, nil, nil}) end
     assert_raise FunctionClauseError, fn -> BroadcastID.new(d, {:peer_data, nil, nil, nil}) end
   end
+
+  # encode_with
+  # decode_with
 end

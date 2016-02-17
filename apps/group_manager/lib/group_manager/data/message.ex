@@ -13,6 +13,7 @@ defmodule GroupManager.Data.Message do
   alias GroupManager.Data.TimedItem
   alias GroupManager.Data.Item
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :message,
                    time: nil,
@@ -195,5 +196,29 @@ defmodule GroupManager.Data.Message do
         acc
       end
     end)
+  end
+
+  @spec extract_netids(t) :: list(NetID.t)
+  def extract_netids(msg)
+  when is_valid(msg)
+  do
+    ((message(msg, :time) |> WorldClock.extract_netids) ++
+      (message(msg, :items) |> TimedSet.extract_netids))
+    |> Enum.uniq
+  end
+
+  @spec encode_with(t, map) :: binary
+  def encode_with(msg, id_map)
+  when is_valid(msg) and
+       is_map(id_map)
+  do
+    bin_time       = message(msg, :time)       |> WorldClock.encode_with(id_map)
+    bin_items      = message(msg, :items)      |> TimedSet.encode_with(id_map)
+    bin_name_size  = message(msg, :group_name) |> byte_size |> Serializer.encode_uint
+
+    << bin_time                   :: binary,
+       bin_items                  :: binary,
+       bin_name_size              :: binary,
+       message(msg, :group_name)  :: binary >>
   end
 end

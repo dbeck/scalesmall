@@ -230,4 +230,8 @@ defmodule GroupManager.Chatter.GossipTest do
     g = Gossip.new(NetID.new({127,0,0,1}, 29999), []) |> Gossip.payload(:hello_world)
     assert :hello_world == Gossip.payload(g)
   end
+
+  # extract_netids
+  # encode_with
+  # decode_with
 end

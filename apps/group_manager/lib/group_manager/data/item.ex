@@ -3,6 +3,7 @@ defmodule GroupManager.Data.Item do
   require Record
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :item,
                    member:       nil,
@@ -200,4 +201,33 @@ defmodule GroupManager.Data.Item do
   do
     item(itm, port: v)
   end
+
+  @spec encode_with(t, map) :: binary
+  def encode_with(itm, id_map)
+  when is_valid(itm) and
+       is_map(id_map)
+  do
+    id = Map.fetch!(id_map, item(itm, :member))
+
+    bin_member = id |> Serializer.encode_uint
+    bin_op     = item(itm, :op) |> op_to_id |> Serializer.encode_uint
+    bin_start  = item(itm, :start_range) |> Serializer.encode_uint
+    bin_end    = item(itm, :end_range) |> Serializer.encode_uint
+    bin_port   = item(itm, :port) |> Serializer.encode_uint
+
+    << bin_member  :: binary,
+       bin_op      :: binary,
+       bin_start   :: binary,
+       bin_end     :: binary,
+       bin_port    :: binary >>
+  end
+
+  defp op_to_id(:add), do: 1
+  defp op_to_id(:rmv), do: 2
+  defp op_to_id(:get), do: 3
+
+  defp id_to_op(1), do: :add
+  defp id_to_op(2), do: :rmv
+  defp id_to_op(3), do: :get
+
 end

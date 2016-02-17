@@ -3,6 +3,7 @@ defmodule GroupManager.Chatter.BroadcastID do
   require Record
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :broadcast_id,
                    origin: nil,
@@ -139,5 +140,26 @@ defmodule GroupManager.Chatter.BroadcastID do
       end)
     end)
     Enum.map(Map.keys(dict), fn(k) -> broadcast_id(origin: k) |> broadcast_id(seqno: Map.get(dict, k)) end)
+  end
+
+  @spec encode_with(t, map) :: binary
+  def encode_with(b, id_map)
+  when is_valid(b) and
+       is_map(id_map) # TODO: check map too ...
+  do
+    id = Map.fetch!(id_map, broadcast_id(b, :origin))
+    << Serializer.encode_uint(id) :: binary, Serializer.encode_uint(broadcast_id(b, :seqno)) :: binary >>
+  end
+
+  @spec decode_with(binary, map) :: {t, binary}
+  def decode_with(bin, id_map)
+  when is_binary(bin) and
+       byte_size(bin) > 0 and
+       is_map(id_map)
+  do
+    {id, rest}    = Serializer.decode_uint(bin)
+    {seqno, rest} = Serializer.decode_uint(rest)
+    net_id        = Map.fetch!(id_map, id)
+    {new(net_id, seqno), rest}
   end
 end

@@ -332,4 +332,8 @@ defmodule GroupManager.Data.MessageTest do
     assert [timed_item2] == Message.topology(m2)
     assert [timed_item1, timed_item2] == Message.topology(m12) |> Enum.sort
   end
+
+  # extract_netids
+  # encode_with
+  # decode_with
 end

@@ -328,4 +328,8 @@ defmodule GroupManager.Data.WorldClockTest do
     assert 0 == WorldClock.count(w,lc1)
     assert 1 == WorldClock.count(w,lc1p)
   end
+
+  # extract_netids
+  # encode_with
+  # decode_with
 end

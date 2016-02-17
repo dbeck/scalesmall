@@ -9,6 +9,7 @@ defmodule GroupManager.Data.TimedSet do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :timed_set,
                    items: []
@@ -132,5 +133,25 @@ defmodule GroupManager.Data.TimedSet do
         acc
       end
     end)
+  end
+
+  @spec extract_netids(t) :: list(NetID.t)
+  def extract_netids(set)
+  when is_valid(set)
+  do
+    Enum.map(timed_set(set, :items), fn(x) -> TimedItem.updated_at(x) |> LocalClock.member end)
+    |> Enum.uniq
+  end
+
+  @spec encode_with(t, map) :: binary
+  def encode_with(set, id_map)
+  when is_valid(set) and
+       is_map(id_map)
+  do
+    bin_set_size = timed_set(set, :items) |> length |> Serializer.encode_uint
+    bin_set      = timed_set(set, :items) |> Enum.reduce(<<>>, fn(x,acc) ->
+      acc <> TimedItem.encode_with(x, id_map)
+    end)
+    << bin_set_size :: binary, bin_set :: binary >>
   end
 end

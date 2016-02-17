@@ -31,4 +31,7 @@ defmodule GroupManager.Chatter.SerializerTest do
   	assert is_integer(size)
   	assert size > 0
   end
+
+  # encode/decode uint
+  # encode/decode gossip
 end

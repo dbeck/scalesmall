@@ -184,4 +184,6 @@ defmodule GroupManager.Data.ItemTest do
     assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, 0, []) end
   end
 
+  # encode_with
+  # decode_with
 end

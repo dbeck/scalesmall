@@ -137,4 +137,8 @@ defmodule GroupManager.Data.LocalClockTest do
     assert [clock, other] |> Enum.sort == LocalClock.merge([clock, other], [clock]) |> Enum.sort
     assert [clock, other] |> Enum.sort == LocalClock.merge([clock], [clock, other]) |> Enum.sort
   end
+
+  # new(id,time)
+  # encode_with
+  # decode_with
 end

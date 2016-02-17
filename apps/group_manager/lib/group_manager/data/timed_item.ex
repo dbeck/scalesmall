@@ -7,6 +7,7 @@ defmodule GroupManager.Data.TimedItem do
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
   alias GroupManager.Chatter.NetID
+  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :timed_item,
                    item: nil,
@@ -146,5 +147,16 @@ defmodule GroupManager.Data.TimedItem do
     end)
     keys = Map.keys(dict) |> Enum.sort
     Enum.map(keys, fn(key) -> Map.get(dict, key) end)
+  end
+
+  @spec encode_with(t, map) :: binary
+  def encode_with(itm, id_map)
+  when is_valid(itm) and
+       is_map(id_map)
+  do
+    bin_item     = timed_item(itm, :item)       |> Item.encode_with(id_map)
+    bin_updated  = timed_item(itm, :updated_at) |> LocalClock.encode_with(id_map)
+    << bin_item :: binary,
+       bin_updated :: binary >>
   end
 end

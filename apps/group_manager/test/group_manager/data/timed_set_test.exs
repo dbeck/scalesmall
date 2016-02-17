@@ -176,4 +176,8 @@ defmodule GroupManager.Data.TimedSetTest do
     assert w1x2x == TimedSet.merge(w12x, w1x)
     assert w1x2x == TimedSet.merge(w12, w1x) |> TimedSet.merge(w2x)
   end
+
+  # extract_netids
+  # encode_with
+  # decode_with
 end
