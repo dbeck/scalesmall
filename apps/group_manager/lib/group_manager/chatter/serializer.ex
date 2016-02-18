@@ -14,23 +14,27 @@ defmodule GroupManager.Chatter.Serializer do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Data.Message
 
+  # :crypto.aes_ctr_encrypt(<<0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0>>, <<1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0>>,"Hello World")
   @spec encode(Gossip.t) :: binary
   def encode(gossip)
   when Gossip.is_valid(gossip)
   do
-    {:ok, result} = :erlang.term_to_binary(gossip) |> :snappy.compress
-    result
+    {:ok, result} = encode_gossip(gossip) |> :snappy.compress
+
+    << 0xff :: size(8),
+       :rand.uniform(0xffff_ffff) :: size(32),
+       :rand.uniform(0xffff_ffff) :: size(32),
+       result :: binary >>
   end
 
   @spec decode(binary) :: {:ok, Gossip.t} | {:error, :invalid_data, integer}
-  def decode(msg)
-  when is_binary(msg) and
-       byte_size(msg) > 0
+  def decode(<< 0xff :: size(8), _rand1 :: size(32), _rand2 :: size(32), msg :: binary >>)
+  when byte_size(msg) > 0
   do
     case :snappy.decompress(msg)
     do
       {:ok, decomp} ->
-        gossip = :erlang.binary_to_term(decomp)
+        {gossip, _remaining} = decode_gossip(decomp)
         if Gossip.valid?(gossip)
         do
           {:ok, gossip}
@@ -80,47 +84,25 @@ defmodule GroupManager.Chatter.Serializer do
   def decode_gossip(msg)
   do
     {id_list, remaining} = NetID.decode_list(msg)
-    Enum.map(id_list, fn(x) ->
-      IO.inspect ["p:", x]
-      x
-    end)
 
     {_count, id_map} = id_list |> Enum.reduce({0, %{}}, fn(x, acc) ->
       {count, m} = acc
       {count+1, Map.put(m, count, x)}
     end)
 
-    {decoded_gossip, remaining} = Gossip.decode_with(remaining, id_map)
-    {decoded_message, remaining} = Message.decode_with(remaining, id_map)
-    g = {Gossip.payload(decoded_gossip, decoded_message), remaining}
+    {decoded_gossip, remaining}   = Gossip.decode_with(remaining, id_map)
+    {decoded_message, remaining}  = Message.decode_with(remaining, id_map)
 
-    {id_list, id_map, decoded_gossip, decoded_message, g}
+    { Gossip.payload(decoded_gossip, decoded_message), remaining }
   end
 
-# {:gossip,
-#  {:broadcast_id,
-#   {:net_id, {192, 168, 1, 97}, 29999}, 5},
-#  [{:broadcast_id, {:net_id, {192, 168, 1, 100}, 29999}, 3},
-#   {:broadcast_id, {:net_id, {192, 168, 1, 134}, 29999}, 1}],
-#  [{:net_id, {192, 168, 1, 97}, 29999},
-#   {:net_id, {192, 168, 1, 100}, 29999},
-#   {:net_id, {192, 168, 1, 134}, 29999}],
-#  {:message,
-#     {:world_clock,
-#      [{:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2},
-#       {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0},
-#       {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}]},
-#     {:timed_set,
-#       [{:timed_item,
-#          {:item, {:net_id, {192, 168, 1, 97}, 29999}, :get, 0, 4294967295, 0},
-#          {:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2}},
-#        {:timed_item,
-#          {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0},
-#          {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}},
-#        {:timed_item,
-#          {:item, {:net_id, {192, 168, 1, 134}, 29999}, :get, 0, 4294967295, 0},
-#          {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}}]},
-#     "G"}}
+  def testme
+  do
+    g = {:gossip, {:broadcast_id, {:net_id, {192, 168, 1, 97}, 29999}, 4}, [{:broadcast_id, {:net_id, {192, 168, 1, 100}, 29999}, 3}, {:broadcast_id, {:net_id, {192, 168, 1, 134}, 29999}, 1}], [{:net_id, {192, 168, 1, 97}, 29999}, {:net_id, {192, 168, 1, 100}, 29999}, {:net_id, {192, 168, 1, 134}, 29999}], {:message, {:world_clock, [{:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2}, {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}, {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}]}, {:timed_set, [{:timed_item, {:item, {:net_id, {192, 168, 1, 97}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2}}, {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}, {:timed_item, {:item, {:net_id, {192, 168, 1, 134}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}}]}, "G"}}
+    a = encode_gossip(g)
+    {b, <<>>} = decode_gossip(a)
+    {g, b, byte_size(a), g == b}
+  end
 
   @spec encode_uint(integer) :: binary
   def encode_uint(i)

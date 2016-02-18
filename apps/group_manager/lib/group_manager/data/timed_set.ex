@@ -148,11 +148,7 @@ defmodule GroupManager.Data.TimedSet do
   when is_valid(set) and
        is_map(id_map)
   do
-    bin_set_size = timed_set(set, :items) |> length |> Serializer.encode_uint
-    bin_set      = timed_set(set, :items) |> Enum.reduce(<<>>, fn(x,acc) ->
-      acc <> TimedItem.encode_with(x, id_map)
-    end)
-    << bin_set_size :: binary, bin_set :: binary >>
+    timed_set(set, :items) |> TimedItem.encode_list_with(id_map)
   end
 
   @spec decode_with(binary, map) :: {t, binary}
@@ -161,6 +157,7 @@ defmodule GroupManager.Data.TimedSet do
        byte_size(bin) > 0 and
        is_map(id_map)
   do
-    :error
+    {elems, remaining} = TimedItem.decode_list_with(bin, id_map)
+    {timed_set(items: elems), remaining}
   end
 end

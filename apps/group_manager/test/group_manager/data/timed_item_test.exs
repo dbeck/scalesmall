@@ -259,4 +259,8 @@ defmodule GroupManager.Data.TimedItemTest do
 
   # encode_with
   # decode_with
+  # encode_list_with
+  # decode_list_with
+  # validate_list
+  # validate_list!
 end

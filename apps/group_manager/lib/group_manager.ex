@@ -40,6 +40,7 @@ defmodule GroupManager do
   @doc false
   def start(_type, args)
   do
+    :random.seed(:os.timestamp)
     GroupManager.Supervisor.start_link(args)
   end
 

@@ -209,11 +209,11 @@ defmodule GroupManager.Data.Item do
   do
     id = Map.fetch!(id_map, item(itm, :member))
 
-    bin_member = id |> Serializer.encode_uint
+    bin_member = id                         |> Serializer.encode_uint
     bin_op     = item(itm, :op) |> op_to_id |> Serializer.encode_uint
-    bin_start  = item(itm, :start_range) |> Serializer.encode_uint
-    bin_end    = item(itm, :end_range) |> Serializer.encode_uint
-    bin_port   = item(itm, :port) |> Serializer.encode_uint
+    bin_start  = item(itm, :start_range)    |> Serializer.encode_uint
+    bin_end    = item(itm, :end_range)      |> Serializer.encode_uint
+    bin_port   = item(itm, :port)           |> Serializer.encode_uint
 
     << bin_member  :: binary,
        bin_op      :: binary,
@@ -232,7 +232,22 @@ defmodule GroupManager.Data.Item do
        byte_size(bin) > 0 and
        is_map(id_map)
   do
-    :error
+
+    {id, remaining}              = Serializer.decode_uint(bin)
+    {decoded_op_raw, remaining}  = Serializer.decode_uint(remaining)
+    {decoded_start,  remaining}  = Serializer.decode_uint(remaining)
+    {decoded_end,    remaining}  = Serializer.decode_uint(remaining)
+    {decoded_port,   remaining}  = Serializer.decode_uint(remaining)
+
+    decoded_member  = Map.fetch!(id_map, id)
+    decoded_op      = id_to_op(decoded_op_raw)
+
+    { new(decoded_member)
+      |> op(decoded_op)
+      |> start_range(decoded_start)
+      |> end_range(decoded_end)
+      |> port(decoded_port),
+      remaining }
   end
 
   defp id_to_op(1), do: :add

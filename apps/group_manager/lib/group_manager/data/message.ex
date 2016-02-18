@@ -229,7 +229,7 @@ defmodule GroupManager.Data.Message do
        is_map(id_map)
   do
     {decoded_time, remaining}    = WorldClock.decode_with(bin, id_map)
-    {decoded_items, remaining}   = TimedSet.decode_list_with(remaining, id_map)
+    {decoded_items, remaining}   = TimedSet.decode_with(remaining, id_map)
     {name_size, remaining}       = Serializer.decode_uint(remaining)
 
     << name :: binary-size(name_size), remaining :: binary >> = remaining

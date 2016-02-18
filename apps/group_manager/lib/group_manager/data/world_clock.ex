@@ -171,11 +171,7 @@ defmodule GroupManager.Data.WorldClock do
   when is_valid(clock) and
        is_map(id_map)
   do
-    bin_time_size = world_clock(clock, :time) |> length |> Serializer.encode_uint
-    bin_time      = world_clock(clock, :time) |> Enum.reduce(<<>>, fn(x,acc) ->
-      acc <> LocalClock.encode_with(x, id_map)
-    end)
-    << bin_time_size :: binary, bin_time :: binary >>
+    world_clock(clock, :time) |> LocalClock.encode_list_with(id_map)
   end
 
   @spec decode_with(binary, map) :: {t, binary}
@@ -184,7 +180,7 @@ defmodule GroupManager.Data.WorldClock do
        byte_size(bin) > 0 and
        is_map(id_map)
   do
-    :error
+    {elems, remaining} = LocalClock.decode_list_with(bin, id_map)
+    {world_clock(time: elems), remaining}
   end
-
 end

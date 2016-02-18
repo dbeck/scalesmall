@@ -63,6 +63,26 @@ defmodule GroupManager.Data.TimedItem do
 
   def valid?(_), do: false
 
+  @spec validate_list(list(t)) :: :ok | :error
+  def validate_list([]), do: :ok
+
+  def validate_list([head|rest])
+  do
+    case valid?(head) do
+      true -> validate_list(rest)
+      false -> :error
+    end
+  end
+
+  @spec validate_list!(list(t)) :: :ok
+  def validate_list!([]), do: :ok
+
+  def validate_list!([head|rest])
+  when is_valid(head)
+  do
+    validate_list!(rest)
+  end
+
   @spec item(TimedItem.t) :: Item.t
   def item(itm)
   when is_valid(itm)
@@ -166,6 +186,44 @@ defmodule GroupManager.Data.TimedItem do
        byte_size(bin) > 0 and
        is_map(id_map)
   do
-    :error
+    { decoded_item, remaining } = Item.decode_with(bin, id_map)
+    { decoded_time, remaining } = LocalClock.decode_with(remaining, id_map)
+    { timed_item([item: decoded_item, updated_at: decoded_time]), remaining }
+  end
+
+  @spec encode_list_with(list(t), map) :: binary
+  def encode_list_with(elems, id_map)
+  when is_list(elems) and
+       is_map(id_map)
+  do
+    validate_list!(elems)
+    bin_size  = elems |> length |> Serializer.encode_uint
+    bin_list  = elems |> Enum.reduce(<<>>, fn(x,acc) ->
+      acc <> encode_with(x, id_map)
+    end)
+    << bin_size :: binary,
+       bin_list :: binary >>
+  end
+
+  @spec decode_list_with(binary, map) :: {list(t), binary}
+  def decode_list_with(bin, id_map)
+  do
+    {count, remaining} = Serializer.decode_uint(bin)
+    {list, remaining}  = decode_list_with_(remaining, count, [], id_map)
+    {Enum.reverse(list), remaining}
+  end
+
+  defp decode_list_with_(<<>>, _count, acc, _map), do: {acc, <<>>}
+  defp decode_list_with_(binary, 0, acc, _map), do: {acc, binary}
+
+  defp decode_list_with_(msg, count, acc, map)
+  when is_binary(msg) and
+       is_integer(count) and
+       count > 0 and
+       is_list(acc) and
+       is_map(map)
+  do
+    {id, remaining} = decode_with(msg, map)
+    decode_list_with_(remaining, count-1, [id | acc], map)
   end
 end
