@@ -51,7 +51,7 @@ defmodule GroupManager.Chatter.IncomingHandler do
                                     Gossip.current_id(gossip),
                                     Gossip.seen_ids(gossip))
 
-            Logger.debug "received on TCP [#{inspect gossip}] size=[#{byte_size data}]"
+            ## Logger.debug "received on TCP [#{inspect gossip}] size=[#{byte_size data}]"
             {:ok, new_message} = Receiver.handle(Receiver.locate!, Gossip.payload(gossip))
 
             # make sure we pass the message forward with the modified payload
