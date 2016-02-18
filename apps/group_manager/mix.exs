@@ -11,7 +11,6 @@ defmodule GroupManager.Mixfile do
       deps: deps,
       deps_path: "../../deps",
       lockfile: "../../mix.lock"
-      # test_coverage: [tool: ExCoveralls]
    ]
   end
 
@@ -26,11 +25,8 @@ defmodule GroupManager.Mixfile do
     [
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
       {:snappy, "~> 1.1"},
-      {:fsm, "~> 0.2.0"},
       {:exactor, "~> 2.2"},
-      {:ranch, "~> 1.2"},
-      {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.11", only: :dev}
+      {:ranch, "~> 1.2"}
     ]
   end
 end

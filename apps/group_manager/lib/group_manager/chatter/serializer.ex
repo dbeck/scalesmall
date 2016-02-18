@@ -14,35 +14,79 @@ defmodule GroupManager.Chatter.Serializer do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Data.Message
 
-  # :crypto.aes_ctr_encrypt(<<0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0>>, <<1,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0>>,"Hello World")
-  @spec encode(Gossip.t) :: binary
-  def encode(gossip)
-  when Gossip.is_valid(gossip)
+  @spec encode(Gossip.t, binary) :: binary
+  def encode(gossip, key)
+  when Gossip.is_valid(gossip) and
+       is_binary(key) and
+       byte_size(key) == 32
   do
-    {:ok, result} = encode_gossip(gossip) |> :snappy.compress
+    encoded = encode_gossip(gossip)
+    cksum   = :xxhash.hash32(encoded)
 
-    << 0xff :: size(8),
-       :rand.uniform(0xffff_ffff) :: size(32),
-       :rand.uniform(0xffff_ffff) :: size(32),
-       result :: binary >>
+    {:ok, compressed} = :snappy.compress(encoded)
+
+    to_encrypt = <<
+       :rand.uniform(0xffff_ffff_ffff_ffff) :: size(64),
+       :rand.uniform(0xffff_ffff_ffff_ffff) :: size(64),
+       :rand.uniform(0xffff_ffff_ffff_ffff) :: size(64),
+       :rand.uniform(0xffff_ffff_ffff_ffff) :: size(64),
+       cksum :: size(32),
+       compressed :: binary
+    >>
+
+    {_new_state, encrypted} = :crypto.stream_init(:aes_ctr, key, "- GroupManager -")
+    |> :crypto.stream_encrypt(to_encrypt)
+
+    << 0xff :: size(8), encrypted :: binary >>
   end
 
-  @spec decode(binary) :: {:ok, Gossip.t} | {:error, :invalid_data, integer}
-  def decode(<< 0xff :: size(8), _rand1 :: size(32), _rand2 :: size(32), msg :: binary >>)
-  when byte_size(msg) > 0
+  @spec decode(binary, binary) :: {:ok, Gossip.t} | {:error, :invalid_data, integer}
+  def decode(<< 0xff :: size(8), encrypted :: binary >>, key)
+  when byte_size(encrypted) > 36 and
+       is_binary(key) and
+       byte_size(key) == 32
   do
+    {_new_state, decrypted} = :crypto.stream_init(:aes_ctr, key, "- GroupManager -")
+    |> :crypto.stream_decrypt(encrypted)
+
+    << _ :: size(64), _ :: size(64), _ :: size(64), _ :: size(64),
+       cksum :: size(32),
+       msg :: binary >> = decrypted
+
     case :snappy.decompress(msg)
     do
-      {:ok, decomp} ->
-        {gossip, _remaining} = decode_gossip(decomp)
-        if Gossip.valid?(gossip)
-        do
-          {:ok, gossip}
-        else
-          {:error, :invalid_data, byte_size(msg)}
+      {:error, :data_not_compressed} ->
+        cond do
+          cksum != :xxhash.hash32(msg) ->
+            {:error, :invalid_data, :cksum_error_not_compressed}
+
+          true ->
+            {gossip, _remaining} = decode_gossip(msg)
+            if Gossip.valid?(gossip)
+            do
+              {:ok, gossip}
+            else
+              {:error, :invalid_data, :failed_to_decode_uncompressed}
+            end
         end
+
+      {:ok, decomp} ->
+        cond do
+          cksum != :xxhash.hash32(decomp) ->
+            {:error, :invalid_data, :cksum_error}
+
+          true ->
+            {gossip, _remaining} = decode_gossip(decomp)
+            if Gossip.valid?(gossip)
+            do
+              {:ok, gossip}
+            else
+              {:error, :invalid_data, :failed_to_decode}
+            end
+        end
+
       {:error, :corrupted_data} ->
-        {:error, :invalid_data, byte_size(msg)}
+        {:error, :invalid_data, :corrupted_data}
     end
   end
 
@@ -67,20 +111,6 @@ defmodule GroupManager.Chatter.Serializer do
        encoded_message :: binary >>
   end
 
-  # format:
-  # 0xff - magic
-  # \- encrypted :
-  #    11 bytes random padding
-  #    \- compressed content:
-  #       1 byte version
-  #       \- data
-  #          id table
-  #          payload
-  #    4 byte checksum
-
-  # alias GroupManager.Chatter.Serializer
-  # g = {:gossip, {:broadcast_id, {:net_id, {192, 168, 1, 97}, 29999}, 4}, [{:broadcast_id, {:net_id, {192, 168, 1, 100}, 29999}, 3}, {:broadcast_id, {:net_id, {192, 168, 1, 134}, 29999}, 1}], [{:net_id, {192, 168, 1, 97}, 29999}, {:net_id, {192, 168, 1, 100}, 29999}, {:net_id, {192, 168, 1, 134}, 29999}], {:message, {:world_clock, [{:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2}, {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}, {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}]}, {:timed_set, [{:timed_item, {:item, {:net_id, {192, 168, 1, 97}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2}}, {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}, {:timed_item, {:item, {:net_id, {192, 168, 1, 134}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}}]}, "G"}}
-
   def decode_gossip(msg)
   do
     {id_list, remaining} = NetID.decode_list(msg)
@@ -94,14 +124,6 @@ defmodule GroupManager.Chatter.Serializer do
     {decoded_message, remaining}  = Message.decode_with(remaining, id_map)
 
     { Gossip.payload(decoded_gossip, decoded_message), remaining }
-  end
-
-  def testme
-  do
-    g = {:gossip, {:broadcast_id, {:net_id, {192, 168, 1, 97}, 29999}, 4}, [{:broadcast_id, {:net_id, {192, 168, 1, 100}, 29999}, 3}, {:broadcast_id, {:net_id, {192, 168, 1, 134}, 29999}, 1}], [{:net_id, {192, 168, 1, 97}, 29999}, {:net_id, {192, 168, 1, 100}, 29999}, {:net_id, {192, 168, 1, 134}, 29999}], {:message, {:world_clock, [{:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2}, {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}, {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}]}, {:timed_set, [{:timed_item, {:item, {:net_id, {192, 168, 1, 97}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 97}, 29999}, 2}}, {:timed_item, {:item, {:net_id, {192, 168, 1, 100}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 100}, 29999}, 0}}, {:timed_item, {:item, {:net_id, {192, 168, 1, 134}, 29999}, :get, 0, 4294967295, 0}, {:local_clock, {:net_id, {192, 168, 1, 134}, 29999}, 0}}]}, "G"}}
-    a = encode_gossip(g)
-    {b, <<>>} = decode_gossip(a)
-    {g, b, byte_size(a), g == b}
   end
 
   @spec encode_uint(integer) :: binary

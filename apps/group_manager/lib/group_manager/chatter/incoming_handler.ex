@@ -39,7 +39,7 @@ defmodule GroupManager.Chatter.IncomingHandler do
     case transport.recv(socket, 0, 5000) do
       {:ok, data} ->
         # process data
-        case Serializer.decode(data)
+        case Serializer.decode(data, "01234567890123456789012345678901")
         do
           {:ok, gossip} ->
             peer_db = PeerDB.locate!

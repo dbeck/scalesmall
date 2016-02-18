@@ -53,7 +53,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
   when Gossip.is_valid(gossip)
   do
     [socket: socket, own_id: _own_id, multicast_id: multi_id] = state
-    packet = Serializer.encode(gossip)
+    packet = Serializer.encode(gossip, "01234567890123456789012345678901")
     case :gen_udp.send(socket, NetID.ip(multi_id), NetID.port(multi_id), packet)
     do
       :ok ->
@@ -70,7 +70,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
   do
     [socket: _socket, own_id: own_id, multicast_id: _multi_id] = state
     # process data
-    case Serializer.decode(data)
+    case Serializer.decode(data, "01234567890123456789012345678901")
     do
       {:ok, gossip} ->
         peer_db = PeerDB.locate!
