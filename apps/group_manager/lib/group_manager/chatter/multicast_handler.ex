@@ -14,7 +14,8 @@ defmodule GroupManager.Chatter.MulticastHandler do
 
   defstart start_link([own_id:        own_id,
                        multicast_id:  multi_id,
-                       multicast_ttl: ttl],
+                       multicast_ttl: ttl,
+                       key: key],
                       opts),
     gen_server_opts: opts
   do
@@ -35,7 +36,8 @@ defmodule GroupManager.Chatter.MulticastHandler do
     {:ok, socket} = :gen_udp.open( multicast_port, udp_options )
     initial_state([socket: socket,
                    own_id: own_id,
-                   multicast_id: multi_id])
+                   multicast_id: multi_id,
+                   key: key])
   end
 
   @spec send(pid, Gossip.t) :: Gossip.t
@@ -52,8 +54,8 @@ defmodule GroupManager.Chatter.MulticastHandler do
   def handle_call({:send, gossip}, _from, state)
   when Gossip.is_valid(gossip)
   do
-    [socket: socket, own_id: _own_id, multicast_id: multi_id] = state
-    packet = Serializer.encode(gossip, "01234567890123456789012345678901")
+    [socket: socket, own_id: _own_id, multicast_id: multi_id, key: key] = state
+    packet = Serializer.encode(gossip, key)
     case :gen_udp.send(socket, NetID.ip(multi_id), NetID.port(multi_id), packet)
     do
       :ok ->
@@ -66,11 +68,11 @@ defmodule GroupManager.Chatter.MulticastHandler do
   end
 
   # incoming handler
-  def handle_info({:udp, socket, ip, port, data}, state)
+  def handle_info({:udp, socket, _ip, _port, data}, state)
   do
-    [socket: _socket, own_id: own_id, multicast_id: _multi_id] = state
+    [socket: _socket, own_id: own_id, multicast_id: _multi_id, key: key] = state
     # process data
-    case Serializer.decode(data, "01234567890123456789012345678901")
+    case Serializer.decode(data, key)
     do
       {:ok, gossip} ->
         peer_db = PeerDB.locate!
@@ -100,7 +102,7 @@ defmodule GroupManager.Chatter.MulticastHandler do
     {:noreply, state}
   end
 
-  def handle_info(msg, state)
+  def handle_info(_msg, state)
   do
     {:noreply, state}
   end

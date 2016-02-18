@@ -10,7 +10,6 @@ defmodule GroupManager.Chatter do
   require GroupManager.Chatter.NetID
   require GroupManager
   alias GroupManager.Chatter.OutgoingSupervisor
-  alias GroupManager.Chatter.IncomingHandler
   alias GroupManager.Chatter.MulticastHandler
   alias GroupManager.Chatter.PeerDB
   alias GroupManager.Chatter.NetID
@@ -20,7 +19,7 @@ defmodule GroupManager.Chatter do
   def start_link(opts \\ [])
   do
     case opts do
-      [name: name] ->
+      [name: _name] ->
         Supervisor.start_link(__MODULE__, :no_args, opts)
       _ ->
         Supervisor.start_link(__MODULE__, :no_args, [name: id_atom()] ++ opts)
@@ -40,13 +39,14 @@ defmodule GroupManager.Chatter do
       :ranch_tcp,
       opts,
       GroupManager.Chatter.IncomingHandler,
-      [own_id: own_id]
+      [own_id: own_id, key: group_manager_key]
     )
 
     multicast_args = [
       own_id:          own_id,
       multicast_id:    multi_id,
-      multicast_ttl:   multicast_ttl
+      multicast_ttl:   multicast_ttl,
+      key:             group_manager_key
     ]
 
     children = [
@@ -56,7 +56,7 @@ defmodule GroupManager.Chatter do
       worker(MulticastHandler, [multicast_args, [name: MulticastHandler.id_atom()]])
     ]
 
-    {:ok, pid} = supervise(children, strategy: :one_for_one)
+    {:ok, _pid} = supervise(children, strategy: :one_for_one)
   end
 
   @spec broadcast(Gossip.t) :: :ok
@@ -96,7 +96,7 @@ defmodule GroupManager.Chatter do
 
     # outgoing handler uses its already open channels and returns the gossip
     # what couldn't be delivered
-    :ok = OutgoingSupervisor.broadcast(gossip)
+    :ok = OutgoingSupervisor.broadcast(gossip, group_manager_key)
   end
 
   def locate, do: Process.whereis(id_atom())
@@ -114,7 +114,7 @@ defmodule GroupManager.Chatter do
   do
     {:ok, list} = :inet.getif
     [{ip, _broadcast, _netmask}] = list
-    |> Enum.filter( fn({ip, bcast, nm}) -> bcast != :undefined end)
+    |> Enum.filter( fn({_ip, bcast, _nm}) -> bcast != :undefined end)
     |> Enum.take(1)
     ip
   end
@@ -179,6 +179,24 @@ defmodule GroupManager.Chatter do
       :error ->
         Logger.info "no multicast_ttl config value found for group_manager Application [default: 4]"
         4
+    end
+  end
+
+  def group_manager_key
+  do
+    case Application.fetch_env(:group_manager, :key)
+    do
+      {:ok, key} when is_binary(key) and byte_size(key) == 32->
+        key
+
+      :error ->
+        Logger.error "no 'key' config value found for group_manager Application"
+        "01234567890123456789012345678901"
+
+      {:ok, key} ->
+        Logger.error "'key' has to be 32 bytes long for group_manager Application"
+        << retval :: binary-size(32), _rest :: binary  >> = key <> "01234567890123456789012345678901"
+        retval
     end
   end
 end

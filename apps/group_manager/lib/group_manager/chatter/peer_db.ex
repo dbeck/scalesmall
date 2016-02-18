@@ -142,7 +142,7 @@ defmodule GroupManager.Chatter.PeerDB do
     end
   end
 
-  defp add_ids([], table), do: :ok
+  defp add_ids([], _table), do: :ok
 
   defp add_ids([head|rest], table)
   do
@@ -151,7 +151,7 @@ defmodule GroupManager.Chatter.PeerDB do
     add_ids(rest, table)
   end
 
-  defp update_seqnos([], table), do: :ok
+  defp update_seqnos([], _table), do: :ok
 
   defp update_seqnos([head|rest], table)
   do
@@ -169,12 +169,11 @@ defmodule GroupManager.Chatter.PeerDB do
     end
   end
 
-  defp update_seen_ids(current_id, [], table), do: :ok
+  defp update_seen_ids(_current_id, [], _table), do: :ok
 
   defp update_seen_ids(current_id, id_list, table)
   do
     netid = BroadcastID.origin(current_id)
-    seqno = BroadcastID.seqno(current_id)
 
     case :ets.lookup(table, netid)
     do

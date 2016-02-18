@@ -8,10 +8,8 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.Gossip
   alias GroupManager.Chatter.Serializer
-  alias GroupManager.Chatter.PeerDB
-  alias GroupManager.Chatter.BroadcastID
 
-  defstart start_link([own_id: own_id, peer_id: peer_id], opts),
+  defstart start_link([own_id: own_id, peer_id: peer_id, key: key], opts),
     gen_server_opts: opts
   do
     # kept 'active' so we can stop on anything from the other side
@@ -19,7 +17,7 @@ defmodule GroupManager.Chatter.OutgoingHandler do
     true = NetID.valid?(peer_id)
     true = NetID.valid?(own_id)
     {:ok, socket} = :gen_tcp.connect(NetID.ip(peer_id), NetID.port(peer_id), opts)
-    initial_state([socket: socket, own_id: own_id, peer_id: peer_id])
+    initial_state([socket: socket, own_id: own_id, peer_id: peer_id, key: key])
   end
 
   @spec send(pid, Gossip.t) :: Gossip.t
@@ -37,8 +35,8 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   def handle_call({:send, gossip}, _from, state)
   when Gossip.is_valid(gossip)
   do
-    [socket: socket, own_id: _own_id, peer_id: peer_id] = state
-    data = Serializer.encode(gossip, "01234567890123456789012345678901")
+    [socket: socket, own_id: _own_id, peer_id: _peer_id, key: key] = state
+    data = Serializer.encode(gossip, key)
     Logger.debug "sending on TCP [#{inspect gossip}] size=[#{byte_size data}]"
     case :gen_tcp.send(socket, data)
     do
@@ -52,7 +50,7 @@ defmodule GroupManager.Chatter.OutgoingHandler do
   # stop on any message or event from the other side
   def handle_info({:tcp_closed, _port}, state), do: {:stop, :normal, state}
   def handle_info({:tcp_error, _port, reason}, state), do: {:stop, reason, state}
-  def handle_info(msg, state), do: {:stop, "unknown message received", state}
+  def handle_info(_msg, state), do: {:stop, "unknown message received", state}
 
   def locate(id)
   when NetID.is_valid(id)

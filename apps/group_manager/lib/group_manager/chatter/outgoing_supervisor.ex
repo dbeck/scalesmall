@@ -11,7 +11,7 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
 
   def start_link(args, opts \\ []) do
     case opts do
-      [name: name] ->
+      [name: _name] ->
         Supervisor.start_link(__MODULE__, args, opts)
       _ ->
         Supervisor.start_link(__MODULE__, args, [name: __MODULE__] ++ opts)
@@ -23,26 +23,28 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def broadcast(gossip)
-  when Gossip.is_valid(gossip)
+  def broadcast(gossip, key)
+  when Gossip.is_valid(gossip) and
+       is_binary(key) and
+       byte_size(key) == 32
   do
-    broadcast_to(Gossip.distribution_list(gossip), gossip)
+    broadcast_to(Gossip.distribution_list(gossip), gossip, key)
   end
 
-  defp broadcast_to([], gossip), do: :ok
+  defp broadcast_to([], _gossip, _key), do: :ok
 
-  defp broadcast_to(distribution_list, gossip)
+  defp broadcast_to(distribution_list, gossip, key)
   do
     len = length(distribution_list)
     take_n = div(len, 2)
     {next, [head|rest]} = distribution_list |> Enum.shuffle |> Enum.split(take_n)
     own_id = Gossip.current_id(gossip) |> BroadcastID.origin
-    {:ok, handler_pid} = start_handler(locate!, [own_id: own_id, peer_id: head])
+    {:ok, handler_pid} = start_handler(locate!, [own_id: own_id, peer_id: head, key: key])
     OutgoingHandler.send(handler_pid, gossip |> Gossip.distribution_list(rest))
-    broadcast_to(next, Gossip.distribution_list(gossip, next))
+    broadcast_to(next, Gossip.distribution_list(gossip, next), key)
   end
 
-  def start_handler(sup_pid, [own_id: own_id, peer_id: peer_id])
+  def start_handler(sup_pid, [own_id: own_id, peer_id: peer_id, key: key])
   when is_pid(sup_pid) and
        NetID.is_valid(peer_id) and
        NetID.is_valid(own_id)
@@ -53,7 +55,7 @@ defmodule GroupManager.Chatter.OutgoingSupervisor do
       _ ->
         id = OutgoingHandler.id_atom(peer_id)
         Supervisor.start_child(sup_pid, [
-          [own_id: own_id, peer_id: peer_id],
+          [own_id: own_id, peer_id: peer_id, key: key],
           [name: id]])
     end
   end

@@ -9,7 +9,6 @@ defmodule GroupManager.Data.TimedSet do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
-  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :timed_set,
                    items: []

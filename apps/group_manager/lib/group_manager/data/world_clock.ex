@@ -5,7 +5,6 @@ defmodule GroupManager.Data.WorldClock do
   require GroupManager.Chatter.NetID
   alias GroupManager.Data.LocalClock
   alias GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :world_clock,
                    time: []

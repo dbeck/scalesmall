@@ -5,7 +5,6 @@ defmodule GroupManager.Chatter.Gossip do
   require GroupManager.Chatter.NetID
   alias GroupManager.Chatter.BroadcastID
   alias GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.Serializer
 
   Record.defrecord :gossip,
                    current_id: nil,
