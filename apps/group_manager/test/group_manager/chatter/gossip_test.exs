@@ -232,6 +232,95 @@ defmodule GroupManager.Chatter.GossipTest do
   end
 
   # extract_netids
-  # encode_with
+  test "extract_netids() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids(nil) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids([]) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids({}) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids({:ok}) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids({:gossip, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids({:gossip, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> Gossip.extract_netids({:gossip, nil, nil, nil}) end
+  end
+
+  test "extract_netids() returns own id" do
+    id = NetID.new({127,0,0,1}, 29999)
+    g = Gossip.new(id, [])
+    assert :ok  == Gossip.extract_netids(g) |> NetID.validate_list
+    assert [id] == Gossip.extract_netids(g)
+  end
+
+  test "extract_netids() returns seen_ids" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    ni1 = NetID.new({127,0,0,1}, 29998)
+    ni2 = NetID.new({127,0,0,1}, 29997)
+    id1 = BroadcastID.new(ni1)
+    id2 = BroadcastID.new(ni2)
+    g2 = g |> Gossip.seen_ids([id1, id2])
+    assert [ni1] == g2 |> Gossip.extract_netids |> Enum.filter(fn(x) -> x == ni1 end)
+    assert [ni2] == g2 |> Gossip.extract_netids |> Enum.filter(fn(x) -> x == ni2 end)
+  end
+
+  test "extract_netids() returns distribution_list" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    ni1 = NetID.new({127,0,0,1}, 29998)
+    ni2 = NetID.new({127,0,0,1}, 29997)
+    g2 = g |> Gossip.distribution_list([ni1, ni2])
+    assert [ni1] == g2 |> Gossip.extract_netids |> Enum.filter(fn(x) -> x == ni1 end)
+    assert [ni2] == g2 |> Gossip.extract_netids |> Enum.filter(fn(x) -> x == ni2 end)
+  end
+
+  test "encode_with() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with(nil, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with([], %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with({}, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with({:ok}, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with({:ok, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with({:ok, nil, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with({:gossip, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with({:gossip, nil, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.encode_with({:gossip, nil, nil, nil}, %{}) end
+  end
+
+  test "encode_with() works with decode_with()" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    ni1 = NetID.new({127,0,0,1}, 29998)
+    ni2 = NetID.new({127,0,0,1}, 29997)
+    id1 = BroadcastID.new(ni1)
+    id2 = BroadcastID.new(ni2)
+
+    g = g |> Gossip.distribution_list([ni1, ni2]) |> Gossip.seen_ids([id1, id2])
+    ids = Gossip.extract_netids(g) |> Enum.uniq
+    {_count,fwd,rev} = ids |> Enum.reduce({0, %{}, %{}}, fn(x,acc) ->
+      {count, fw, re} = acc
+      {count+1, Map.put(fw, x, count), Map.put(re, count, x)}
+    end)
+
+    encoded = Gossip.encode_with(g, fwd)
+    {decoded, <<>>} = Gossip.decode_with(encoded, rev)
+    assert Gossip.payload(decoded, []) == g
+  end
+
   # decode_with
+  test "decode_with() throws on invalid input" do
+    g = Gossip.new(NetID.new({127,0,0,1}, 29999), [])
+    ni1 = NetID.new({127,0,0,1}, 29998)
+    ni2 = NetID.new({127,0,0,1}, 29997)
+    id1 = BroadcastID.new(ni1)
+    id2 = BroadcastID.new(ni2)
+
+    g = g |> Gossip.distribution_list([ni1, ni2]) |> Gossip.seen_ids([id1, id2])
+    ids = Gossip.extract_netids(g) |> Enum.uniq
+    {_count, fwd, _rev} = ids |> Enum.reduce({0, %{}, %{}}, fn(x,acc) ->
+      {count, fw, re} = acc
+      {count+1, Map.put(fw, x, count), Map.put(re, count, x)}
+    end)
+
+    encoded = Gossip.encode_with(g, fwd)
+
+    # check invalid map
+    assert_raise KeyError, fn -> Gossip.decode_with(encoded, %{}) end
+    assert_raise FunctionClauseError, fn -> Gossip.decode_with(encoded, %{0 => 0}) end
+  end
 end
