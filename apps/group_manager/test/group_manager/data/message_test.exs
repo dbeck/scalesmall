@@ -334,6 +334,55 @@ defmodule GroupManager.Data.MessageTest do
   end
 
   # extract_netids
-  # encode_with
-  # decode_with
+  test "extract_netids() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> Message.extract_netids(:ok) end
+    assert_raise FunctionClauseError, fn -> Message.extract_netids([]) end
+    assert_raise FunctionClauseError, fn -> Message.extract_netids({}) end
+    assert_raise FunctionClauseError, fn -> Message.extract_netids(nil) end
+  end
+
+  test "extract_netids() returns empty list for empty message" do
+    m = Message.new("hello")
+    assert [] = Message.extract_netids(m)
+  end
+
+  test "extract_netids() returns added items" do
+    ni1 = dummy_me
+    ni2 = dummy_other
+    timed_item1 = Item.new(ni1)  |> TimedItem.construct(LocalClock.new(ni1))
+    timed_item2 = Item.new(ni2) |> TimedItem.construct(LocalClock.new(ni2))
+    m = Message.new("hello") |> Message.add(timed_item1) |> Message.add(timed_item2)
+    assert [ni1] == m |> Message.extract_netids |> Enum.filter(fn(x) -> x == ni1 end)
+    assert [ni2] == m |> Message.extract_netids |> Enum.filter(fn(x) -> x == ni2 end)
+  end
+
+  test "encode_with() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> Message.encode_with(:ok, %{}) end
+    assert_raise FunctionClauseError, fn -> Message.encode_with([], %{}) end
+    assert_raise FunctionClauseError, fn -> Message.encode_with({}, %{}) end
+    assert_raise FunctionClauseError, fn -> Message.encode_with(nil, %{}) end
+  end
+
+  test "encode_with() works with decode_with" do
+    ni1 = dummy_me
+    ni2 = dummy_other
+    timed_item1 = Item.new(ni1)  |> TimedItem.construct(LocalClock.new(ni1))
+    timed_item2 = Item.new(ni2) |> TimedItem.construct(LocalClock.new(ni2))
+    m = Message.new("hello") |> Message.add(timed_item1) |> Message.add(timed_item2)
+
+    ids = Message.extract_netids(m) |> Enum.uniq
+    {_count, fwd, rev} = ids |> Enum.reduce({0, %{}, %{}}, fn(x,acc) ->
+      {count, fw, re} = acc
+      {count+1, Map.put(fw, x, count), Map.put(re, count, x)}
+    end)
+
+    encoded = Message.encode_with(m, fwd)
+    {decoded, <<>>} = Message.decode_with(encoded, rev)
+
+    assert decoded == m
+
+    # check decode_with raises on bad input
+    assert_raise KeyError, fn -> Message.decode_with(encoded, %{}) end
+    assert_raise FunctionClauseError, fn -> Message.decode_with(encoded, %{0 => 0}) end
+  end
 end
