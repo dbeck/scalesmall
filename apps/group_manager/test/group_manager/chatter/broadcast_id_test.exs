@@ -3,6 +3,28 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
   alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.BroadcastID
 
+  defp dummy_me do
+    NetID.new({1,2,3,4},1)
+  end
+
+  defp dummy_other do
+    NetID.new({2,3,4,5},2)
+  end
+
+  defp dummy_third do
+    NetID.new({3,4,5,6},3)
+  end
+
+  defp dummy_list do
+    [dummy_me, dummy_other, dummy_third]
+  end
+
+  defp dummy_bc_list do
+    dummy_list |> Enum.reduce([], fn(x,acc) ->
+      [BroadcastID.new(x,123457678) | acc]
+    end)
+  end
+
   test "basic test for new" do
     assert BroadcastID.valid?(BroadcastID.new(NetID.new({127,0,0,1}, 29999)))
   end
@@ -163,15 +185,15 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
 
   # inc_seqno
   test "inc_seqno() throws on invalid input" do
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno(nil) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno([]) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno({}) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno({:ok}) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno({:ok, nil}) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno({:ok, nil, nil}) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno({:broadcast_id, nil}) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno({:broadcast_id, nil, nil}) end
-    assert_raise FunctionClauseError, fn -> BroadcastID.seqno({:broadcast_id, nil, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno(nil) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno([]) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno({}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno({:ok}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno({:broadcast_id, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno({:broadcast_id, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.inc_seqno({:broadcast_id, nil, nil, nil}) end
   end
 
   test "inc_seqno() bumps the sequence number" do
@@ -224,7 +246,66 @@ defmodule GroupManager.Chatter.BroadcastIDTest do
   end
 
   # encode_with
-  # decode_with
+  test "encode_with() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with(nil, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with([], %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with({}, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with({:ok}, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with({:ok, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with({:ok, nil, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with({:broadcast_id, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with({:broadcast_id, nil, nil}, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_with({:broadcast_id, nil, nil, nil}, %{}) end
+  end
+
+  test "decode_with() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, nil) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, []) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, {}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, {:ok}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, {:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, {:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, {:broadcast_id, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, {:broadcast_id, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(<<>>, {:broadcast_id, nil, nil, nil}) end
+  end
+
+  test "encode_with() works with decode_with()" do
+    fwd = %{dummy_me => 0}
+    rev = %{0 => dummy_me}
+    id = BroadcastID.new(dummy_me, 123456)
+    encoded = BroadcastID.encode_with(id, fwd)
+    {decoded, <<>>} = BroadcastID.decode_with(encoded, rev)
+    assert decoded == id
+
+    # check bad inputs
+    assert_raise KeyError, fn -> BroadcastID.decode_with(encoded, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_with(encoded, %{0 => 0}) end
+  end
+
   # encode_list_with
+  test "encode_list_with() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_list_with(<<>>, %{dummy_me => 0}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_list_with({}, %{dummy_me => 0}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_list_with([{:ok}], %{dummy_me => 0}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.encode_list_with([:ok], %{dummy_me => 0}) end
+  end
+
   # decode_list_with
+  test "decode_list_with() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_list_with(<<>>, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_list_with({}, %{}) end
+    assert_raise FunctionClauseError, fn -> BroadcastID.decode_list_with(:ok, %{}) end
+  end
+
+  test "encode_list_with() works with decode_list_with()" do
+    {_count, fwd, rev} = dummy_list |> Enum.reduce({0, %{}, %{}}, fn(x,acc) ->
+      {count, fw, re} = acc
+      {count+1, Map.put(fw, x, count), Map.put(re, count, x)}
+    end)
+    encoded = BroadcastID.encode_list_with(dummy_bc_list, fwd)
+    {decoded, <<>>} = BroadcastID.decode_list_with(encoded, rev)
+
+    assert decoded == dummy_bc_list
+  end
 end
