@@ -90,6 +90,7 @@ defmodule GroupManager.Chatter.Serializer do
     end
   end
 
+  @spec encode_gossip(Gossip.t) :: binary
   def encode_gossip(gossip)
   when Gossip.is_valid(gossip)
   do
@@ -109,7 +110,10 @@ defmodule GroupManager.Chatter.Serializer do
        encoded_message :: binary >>
   end
 
+  @spec decode_gossip(binary) :: {Gossip.t, binary}
   def decode_gossip(msg)
+  when is_binary(msg) and
+       byte_size(msg) > 0
   do
     {id_list, remaining} = NetID.decode_list(msg)
 
