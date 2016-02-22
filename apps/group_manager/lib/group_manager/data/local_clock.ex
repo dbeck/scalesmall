@@ -79,6 +79,8 @@ defmodule GroupManager.Data.LocalClock do
     end
   end
 
+  def validate_list(_), do: :error
+
   @spec validate_list!(list(t)) :: :ok
   def validate_list!([]), do: :ok
 
@@ -188,7 +190,7 @@ defmodule GroupManager.Data.LocalClock do
   when is_list(elems) and
        is_map(id_map)
   do
-    validate_list!(elems)
+    :ok = validate_list!(elems)
     bin_size  = elems |> length |> Serializer.encode_uint
     bin_list  = elems |> Enum.reduce(<<>>, fn(x,acc) ->
       acc <> encode_with(x, id_map)

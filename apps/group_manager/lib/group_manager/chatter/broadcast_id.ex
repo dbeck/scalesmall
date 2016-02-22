@@ -156,7 +156,7 @@ defmodule GroupManager.Chatter.BroadcastID do
   when is_list(ids) and
        is_map(id_map)
   do
-    validate_list!(ids)
+    :ok = validate_list!(ids)
     bin_size  = ids |> length |> Serializer.encode_uint
     bin_list  = ids |> Enum.reduce(<<>>, fn(x,acc) ->
       acc <> encode_with(x, id_map)

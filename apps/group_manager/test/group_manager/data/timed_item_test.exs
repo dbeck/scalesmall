@@ -5,15 +5,26 @@ defmodule GroupManager.Data.TimedItemTest do
   alias GroupManager.Data.LocalClock
   alias GroupManager.Chatter.NetID
 
-  # TODO
-  # doctest GroupManager.Data.TimedItem
-
   defp dummy_me do
     NetID.new({1,2,3,4},1)
   end
 
   defp dummy_other do
     NetID.new({2,3,4,5},2)
+  end
+
+  defp dummy_third do
+    NetID.new({3,4,5,6},3)
+  end
+
+  defp dummy_list do
+    [dummy_me, dummy_other, dummy_third]
+  end
+
+  defp dummy_item_list do
+    dummy_list |> Enum.reduce([], fn(x,acc) ->
+      [TimedItem.new(x) | acc]
+    end)
   end
 
   test "basic test for new" do
@@ -257,10 +268,110 @@ defmodule GroupManager.Data.TimedItemTest do
     assert [it3, it4] == TimedItem.merge([], [it4]) |> TimedItem.merge([it1]) |> TimedItem.merge([it3]) |> TimedItem.merge([it2])
   end
 
-  # encode_with
-  # decode_with
-  # encode_list_with
-  # decode_list_with
   # validate_list
+  test "validate_list() returns :error on invalid input" do
+    assert :error = TimedItem.validate_list({})
+    assert :error = TimedItem.validate_list({:ok})
+    assert :error = TimedItem.validate_list({:ok, nil})
+    assert :error = TimedItem.validate_list({:ok, nil, nil})
+    assert :error = TimedItem.validate_list({:local_clock, nil})
+    assert :error = TimedItem.validate_list({:local_clock, nil, nil})
+    assert :error = TimedItem.validate_list({:local_clock, nil, nil, nil})
+
+    assert :error = TimedItem.validate_list([{}])
+    assert :error = TimedItem.validate_list([{:ok}])
+    assert :error = TimedItem.validate_list([{:ok, nil}])
+    assert :error = TimedItem.validate_list([{:ok, nil, nil}])
+    assert :error = TimedItem.validate_list([{:local_clock, nil}])
+    assert :error = TimedItem.validate_list([{:local_clock, nil, nil}])
+    assert :error = TimedItem.validate_list([{:local_clock, nil, nil, nil}])
+  end
+
+  test "validate_list([]) is :ok" do
+    assert :ok == TimedItem.validate_list([])
+  end
+
+  test "validate_list([valid_item]) is :ok" do
+    assert :ok == TimedItem.validate_list([TimedItem.new(dummy_me)])
+  end
+
   # validate_list!
+  test "validate_list!() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!(nil) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!({}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!({:ok}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!({:ok, nil}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!({:ok, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!({:local_clock, nil}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!({:local_clock, nil, nil}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!({:local_clock, nil, nil, nil}) end
+
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!([{}]) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!([{:ok}]) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!([{:ok, nil}]) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!([{:ok, nil, nil}]) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!([{:local_clock, nil}]) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!([{:local_clock, nil, nil}]) end
+    assert_raise FunctionClauseError, fn -> TimedItem.validate_list!([{:local_clock, nil, nil, nil}]) end
+  end
+
+  test "validate_list!([]) is :ok" do
+    assert :ok == TimedItem.validate_list!([])
+  end
+
+  test "validate_list!([valid_item]) is :ok" do
+    assert :ok == TimedItem.validate_list!([TimedItem.new(dummy_me)])
+  end
+
+  test "encode_with() failes with invalid input" do
+    assert_raise FunctionClauseError, fn -> TimedItem.encode_with(:ok, %{}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.encode_with([], %{}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.encode_with({:item, 0}, %{}) end
+
+    itm = TimedItem.new(dummy_me)
+    assert_raise KeyError, fn -> TimedItem.encode_with(itm, %{}) end
+    assert_raise KeyError, fn -> TimedItem.encode_with(itm, %{0 => 0}) end
+  end
+
+  test "encode_with() works with decode_with()" do
+    itm = TimedItem.new(dummy_me)
+    encoded = TimedItem.encode_with(itm, %{dummy_me => 9911231})
+    {decoded, <<>>} = TimedItem.decode_with(encoded, %{9911231 => dummy_me})
+    assert decoded == itm
+
+    # decode_with fails on bad input
+    assert_raise KeyError, fn -> TimedItem.decode_with(encoded, %{}) end
+    assert_raise KeyError, fn -> TimedItem.decode_with(encoded, %{0 => 0}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.decode_with(encoded, %{9911231 => 0}) end
+  end
+
+  # encode_list_with
+  test "encode_list_with() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> TimedItem.encode_list_with(<<>>, %{dummy_me => 0}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.encode_list_with({}, %{dummy_me => 0}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.encode_list_with([{:ok}], %{dummy_me => 0}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.encode_list_with([:ok], %{dummy_me => 0}) end
+  end
+
+  # decode_list_with
+  test "decode_list_with() throws on invalid input" do
+    assert_raise FunctionClauseError, fn -> TimedItem.decode_list_with(<<>>, %{}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.decode_list_with({}, %{}) end
+    assert_raise FunctionClauseError, fn -> TimedItem.decode_list_with(:ok, %{}) end
+  end
+
+  test "encode_list_with() works with decode_list_with()" do
+    {_count, fwd, rev} = dummy_list |> Enum.reduce({0, %{}, %{}}, fn(x,acc) ->
+      {count, fw, re} = acc
+      {count+1, Map.put(fw, x, count), Map.put(re, count, x)}
+    end)
+    encoded = TimedItem.encode_list_with(dummy_item_list, fwd)
+    {decoded, <<>>} = TimedItem.decode_list_with(encoded, rev)
+
+    assert decoded == dummy_item_list
+
+    # decode_list_with fails with bad input
+    assert_raise KeyError, fn -> TimedItem.decode_list_with(encoded, %{}) end
+    assert_raise KeyError, fn -> TimedItem.decode_list_with(encoded, %{0 => 0}) end
+  end
 end
