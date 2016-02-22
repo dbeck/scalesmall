@@ -20,7 +20,7 @@ config :group_manager,
 Add this to your dependencies:
 
 ```elixir
-{:scalesmall, git: "https://github.com/dbeck/scalesmall.git", tag: "0.0.5"}
+{:scalesmall, git: "https://github.com/dbeck/scalesmall.git", tag: "0.0.6"}
 ```
 
 And start the `group_manager` application.
