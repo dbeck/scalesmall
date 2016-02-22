@@ -178,6 +178,55 @@ defmodule GroupManager.Data.TimedSetTest do
   end
 
   # extract_netids
-  # encode_with
-  # decode_with
+  test "extract_netids() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> TimedSet.extract_netids(:ok) end
+    assert_raise FunctionClauseError, fn -> TimedSet.extract_netids([]) end
+    assert_raise FunctionClauseError, fn -> TimedSet.extract_netids({}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.extract_netids(nil) end
+  end
+
+  test "extract_netids() returns empty list for empty message" do
+    m = TimedSet.new
+    assert [] = TimedSet.extract_netids(m)
+  end
+
+  test "extract_netids() returns added items" do
+    ni1 = dummy_me
+    ni2 = dummy_other
+    timed_item1 = TimedItem.new(ni1)
+    timed_item2 = TimedItem.new(ni2)
+    set = TimedSet.new |> TimedSet.add(timed_item1) |> TimedSet.add(timed_item2)
+    assert [ni1] == set |> TimedSet.extract_netids |> Enum.filter(fn(x) -> x == ni1 end)
+    assert [ni2] == set |> TimedSet.extract_netids |> Enum.filter(fn(x) -> x == ni2 end)
+  end
+
+  test "encode_with() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> TimedSet.encode_with(:ok, %{}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.encode_with([], %{}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.encode_with({}, %{}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.encode_with(nil, %{}) end
+  end
+
+  test "encode_with() works with decode_with" do
+    ni1 = dummy_me
+    ni2 = dummy_other
+    timed_item1 = TimedItem.new(ni1)
+    timed_item2 = TimedItem.new(ni2)
+    set = TimedSet.new |> TimedSet.add(timed_item1) |> TimedSet.add(timed_item2)
+
+    ids = TimedSet.extract_netids(set) |> Enum.uniq
+    {_count, fwd, rev} = ids |> Enum.reduce({0, %{}, %{}}, fn(x,acc) ->
+      {count, fw, re} = acc
+      {count+1, Map.put(fw, x, count), Map.put(re, count, x)}
+    end)
+
+    encoded = TimedSet.encode_with(set, fwd)
+    {decoded, <<>>} = TimedSet.decode_with(encoded, rev)
+
+    assert decoded == set
+
+    # check decode_with raises on bad input
+    assert_raise KeyError, fn -> TimedSet.decode_with(encoded, %{}) end
+    assert_raise FunctionClauseError, fn -> TimedSet.decode_with(encoded, %{0 => 0}) end
+  end
 end

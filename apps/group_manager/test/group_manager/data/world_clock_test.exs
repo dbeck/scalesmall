@@ -330,6 +330,55 @@ defmodule GroupManager.Data.WorldClockTest do
   end
 
   # extract_netids
-  # encode_with
-  # decode_with
+  test "extract_netids() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> WorldClock.extract_netids(:ok) end
+    assert_raise FunctionClauseError, fn -> WorldClock.extract_netids([]) end
+    assert_raise FunctionClauseError, fn -> WorldClock.extract_netids({}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.extract_netids(nil) end
+  end
+
+  test "extract_netids() returns empty list for empty message" do
+    m = WorldClock.new
+    assert [] = WorldClock.extract_netids(m)
+  end
+
+  test "extract_netids() returns added items" do
+    ni1 = dummy_me
+    ni2 = dummy_other
+    lc1 = LocalClock.new(ni1)
+    lc2 = LocalClock.new(ni2)
+    set = WorldClock.new |> WorldClock.add(lc1) |> WorldClock.add(lc2)
+    assert [ni1] == set |> WorldClock.extract_netids |> Enum.filter(fn(x) -> x == ni1 end)
+    assert [ni2] == set |> WorldClock.extract_netids |> Enum.filter(fn(x) -> x == ni2 end)
+  end
+
+  test "encode_with() raises on invalid input" do
+    assert_raise FunctionClauseError, fn -> WorldClock.encode_with(:ok, %{}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.encode_with([], %{}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.encode_with({}, %{}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.encode_with(nil, %{}) end
+  end
+
+  test "encode_with() works with decode_with" do
+    ni1 = dummy_me
+    ni2 = dummy_other
+    lc1 = LocalClock.new(ni1)
+    lc2 = LocalClock.new(ni2)
+    set = WorldClock.new |> WorldClock.add(lc1) |> WorldClock.add(lc2)
+
+    ids = WorldClock.extract_netids(set) |> Enum.uniq
+    {_count, fwd, rev} = ids |> Enum.reduce({0, %{}, %{}}, fn(x,acc) ->
+      {count, fw, re} = acc
+      {count+1, Map.put(fw, x, count), Map.put(re, count, x)}
+    end)
+
+    encoded = WorldClock.encode_with(set, fwd)
+    {decoded, <<>>} = WorldClock.decode_with(encoded, rev)
+
+    assert decoded == set
+
+    # check decode_with raises on bad input
+    assert_raise KeyError, fn -> WorldClock.decode_with(encoded, %{}) end
+    assert_raise FunctionClauseError, fn -> WorldClock.decode_with(encoded, %{0 => 0}) end
+  end
 end
