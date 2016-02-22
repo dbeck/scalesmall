@@ -158,6 +158,15 @@ defmodule GroupManager.Chatter.NetID do
     << ip1 :: size(8), ip2 :: size(8), ip3 :: size(8), ip4 :: size(8), net_id(id, :port) :: little-size(16) >>
   end
 
+  @spec encode_list(list(t)) :: binary
+  def encode_list(ids)
+  when is_list(ids)
+  do
+    List.foldl(ids, Serializer.encode_uint(length(ids)), fn(id, acc) ->
+      acc <> encode(id)
+    end)
+  end
+
   @spec encode_list_with(list(t), map) :: binary
   def encode_list_with(ids, id_map)
   when is_list(ids) and

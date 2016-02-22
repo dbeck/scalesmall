@@ -95,9 +95,7 @@ defmodule GroupManager.Chatter.Serializer do
   do
     ids = (extract_netids(gossip) ++ extract_netids(Gossip.payload(gossip)))
     |> Enum.uniq
-    id_table = List.foldl(ids, encode_uint(length(ids)), fn(id, acc) ->
-      acc <> NetID.encode(id)
-    end)
+    id_table = NetID.encode_list(ids)
     {_count, id_map} = ids |> Enum.reduce({0, %{}}, fn(x,acc) ->
       {count, m} = acc
       {count+1, Map.put(m, x, count)}
