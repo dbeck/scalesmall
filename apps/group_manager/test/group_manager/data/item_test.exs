@@ -184,6 +184,25 @@ defmodule GroupManager.Data.ItemTest do
     assert_raise FunctionClauseError, fn -> Item.set(it, :add, 0, 0, []) end
   end
 
-  # encode_with
-  # decode_with
+  test "encode_with() failes with invalid input" do
+    assert_raise FunctionClauseError, fn -> Item.encode_with(:ok, %{}) end
+    assert_raise FunctionClauseError, fn -> Item.encode_with([], %{}) end
+    assert_raise FunctionClauseError, fn -> Item.encode_with({:item, 0}, %{}) end
+
+    it = Item.new(dummy_netid)
+    assert_raise KeyError, fn -> Item.encode_with(it, %{}) end
+    assert_raise KeyError, fn -> Item.encode_with(it, %{0 => 0}) end
+  end
+
+  test "encode_with() works with decode_with()" do
+    it = Item.new(dummy_netid)
+    encoded = Item.encode_with(it, %{dummy_netid => 1231})
+    {decoded, <<>>} = Item.decode_with(encoded, %{1231 => dummy_netid})
+    assert decoded == it
+
+    # decode_with fails on bad input
+    assert_raise KeyError, fn -> Item.decode_with(encoded, %{}) end
+    assert_raise KeyError, fn -> Item.decode_with(encoded, %{0 => 0}) end
+    assert_raise FunctionClauseError, fn -> Item.decode_with(encoded, %{1231 => 0}) end
+  end
 end
