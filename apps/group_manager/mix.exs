@@ -11,7 +11,7 @@ defmodule GroupManager.Mixfile do
       deps: deps,
       deps_path: "../../deps",
       lockfile: "../../mix.lock"
-   ]
+    ]
   end
 
   def application do
