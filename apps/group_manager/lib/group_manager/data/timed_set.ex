@@ -4,9 +4,9 @@ defmodule GroupManager.Data.TimedSet do
   require GroupManager.Data.Item
   require GroupManager.Data.LocalClock
   require GroupManager.Data.TimedItem
-  require Common.NetID
+  require Chatter.NetID
   alias GroupManager.Data.TimedItem
-  alias Common.NetID
+  alias Chatter.NetID
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
 

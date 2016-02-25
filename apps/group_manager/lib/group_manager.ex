@@ -4,17 +4,17 @@ defmodule GroupManager do
   `GroupManager` is the top level wrapper over the group management
   services provided by other modules:
 
-  - `GroupManager.Chatter` is responsible for network communication
-  - `GroupManager.Chatter.PeerDB` is a wrapper over the Chatter's knowledge about peers, stored in ETS
+  - `Chatter` is responsible for network communication
+  - `Chatter.PeerDB` is a wrapper over the Chatter's knowledge about peers, stored in ETS
   - `GroupManager.TopologyDB` stores information about groups and their topology (ETS)
   """
 
   use Application
   require Logger
-  require Common.NetID
+  require Chatter.NetID
   require GroupManager.Data.Item
-  alias Common.NetID
-  alias GroupManager.Chatter
+  alias Chatter.NetID
+  alias Chatter
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Item
   alias GroupManager.Data.TimedItem

@@ -2,7 +2,7 @@ defmodule GroupManager.Data.ItemTest do
 
   use ExUnit.Case
   alias GroupManager.Data.Item
-  alias Common.NetID
+  alias Chatter.NetID
 
   defp dummy_netid do
     NetID.new({1,2,3,4},1)

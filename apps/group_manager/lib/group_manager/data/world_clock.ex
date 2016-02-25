@@ -2,9 +2,9 @@ defmodule GroupManager.Data.WorldClock do
 
   require Record
   require GroupManager.Data.LocalClock
-  require Common.NetID
+  require Chatter.NetID
   alias GroupManager.Data.LocalClock
-  alias Common.NetID
+  alias Chatter.NetID
 
   Record.defrecord :world_clock,
                    time: []

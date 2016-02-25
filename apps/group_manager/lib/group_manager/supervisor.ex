@@ -2,7 +2,6 @@ defmodule GroupManager.Supervisor do
 
   use Supervisor
 
-  alias GroupManager.Chatter
   alias GroupManager.TopologyDB
   alias GroupManager.Receiver
 
@@ -18,8 +17,7 @@ defmodule GroupManager.Supervisor do
   def init(:no_args) do
     children = [
       supervisor(Receiver,   [[name: Receiver.id_atom()]]),
-      supervisor(TopologyDB, [[name: TopologyDB.id_atom()]]),
-      supervisor(Chatter,    [[name: Chatter.id_atom()]])
+      supervisor(TopologyDB, [[name: TopologyDB.id_atom()]])
     ]
     {:ok, pid} = supervise(children, strategy: :one_for_one)
   end

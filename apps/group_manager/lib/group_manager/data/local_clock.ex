@@ -1,9 +1,9 @@
 defmodule GroupManager.Data.LocalClock do
 
   require Record
-  require Common.NetID
-  alias Common.NetID
-  alias Common.Serializer
+  require Chatter.NetID
+  alias Chatter.NetID
+  alias Chatter.Serializer
 
   Record.defrecord :local_clock,
                    member: nil,

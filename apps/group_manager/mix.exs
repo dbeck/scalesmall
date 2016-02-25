@@ -23,7 +23,7 @@ defmodule GroupManager.Mixfile do
 
   defp deps do
     [
-      {:common, path: "../../apps/common/lib"},
+      {:chatter, path: "../../apps/chatter/lib"},
       {:snappy, "~> 1.1"},
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
       {:exactor, "~> 2.2"},

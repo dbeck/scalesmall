@@ -3,8 +3,8 @@ defmodule GroupManager.Data.TimedSetTest do
   use ExUnit.Case
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
-  alias Common.NetID
   alias GroupManager.Data.LocalClock
+  alias Chatter.NetID
 
   test "basic test for new" do
     assert TimedSet.valid?(TimedSet.new())

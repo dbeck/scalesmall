@@ -3,11 +3,11 @@ defmodule GroupManager.Data.TimedItem do
   require Record
   require GroupManager.Data.Item
   require GroupManager.Data.LocalClock
-  require Common.NetID
+  require Chatter.NetID
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
-  alias Common.NetID
-  alias Common.Serializer
+  alias Chatter.NetID
+  alias Chatter.Serializer
 
   Record.defrecord :timed_item,
                    item: nil,

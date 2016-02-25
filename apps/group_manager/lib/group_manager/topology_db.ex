@@ -2,7 +2,7 @@ defmodule GroupManager.TopologyDB do
 
   use ExActor.GenServer
   require GroupManager
-  require Common.NetID
+  require Chatter.NetID
   require GroupManager.Data.Message
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
@@ -12,8 +12,8 @@ defmodule GroupManager.TopologyDB do
   alias GroupManager.Data.LocalClock
   alias GroupManager.Data.Item
   alias GroupManager.Data.TimedItem
-  alias Common.NetID
-  alias GroupManager.Chatter
+  alias Chatter.NetID
+  alias Chatter
 
   defstart start_link(opts \\ []),
     gen_server_opts: opts

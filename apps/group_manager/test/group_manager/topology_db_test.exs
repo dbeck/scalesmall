@@ -8,12 +8,12 @@ defmodule GroupManager.TopologyDBTest do
   require GroupManager.Data.LocalClock
   require GroupManager.Data.TimedSet
   require GroupManager.Data.TimedItem
-  require Common.NetID
+  require Chatter.NetID
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Message
   alias GroupManager.Data.Item
   alias GroupManager.Data.TimedItem
-  alias Common.NetID
+  alias Chatter.NetID
 
   defp dummy_netid do
     NetID.new({1,2,3,4},1)

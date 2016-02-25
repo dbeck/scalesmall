@@ -8,7 +8,7 @@ defmodule GroupManager.Data.MessageTest do
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
   alias GroupManager.Data.Item
-  alias Common.NetID
+  alias Chatter.NetID
 
   defp dummy_me do
     NetID.new({1,2,3,4},1)
