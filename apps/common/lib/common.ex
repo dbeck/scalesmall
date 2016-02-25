@@ -1,0 +1,2 @@
+defmodule Common do
+end

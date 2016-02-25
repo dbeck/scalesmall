@@ -1,19 +1,25 @@
 defmodule StreamPipe do
   use Application
 
-  # See http://elixir-lang.org/docs/stable/elixir/Application.html
-  # for more information on OTP Applications
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    children = [
-      # Define workers and child supervisors to be supervised
-      # worker(StreamPipe.Worker, [arg1, arg2, arg3]),
-    ]
+    children = []
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: StreamPipe.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  # publisher interface
+  # - publish("group_name", message)
+
+  # subscriber interface
+  # - first_positon
+  # - last_position
+  # - subscribe("group_name", fun)
+  # - subscribe("group_name", fun, start_position)
+  # - unsubscribe("group_name", fun)
+
+  # server interface
+  # - start("group_name")
 end
