@@ -1,18 +1,18 @@
-defmodule GroupManager.Chatter.Serializer do
+defmodule Common.Serializer do
 
-  require GroupManager
   require GroupManager.Chatter.Gossip
-  require GroupManager.Chatter.BroadcastID
-  require GroupManager.Chatter.NetID
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
   require GroupManager.Data.TimedItem
   require GroupManager.Data.Item
   require GroupManager.Data.LocalClock
   require GroupManager.Data.Message
+  require GroupManager
+  require Common.BroadcastID
+  require Common.NetID
   alias GroupManager.Chatter.Gossip
-  alias GroupManager.Chatter.NetID
   alias GroupManager.Data.Message
+  alias Common.NetID
 
   @spec encode(Gossip.t, binary) :: binary
   def encode(gossip, key)

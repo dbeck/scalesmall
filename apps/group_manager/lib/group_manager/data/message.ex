@@ -6,14 +6,14 @@ defmodule GroupManager.Data.Message do
   require GroupManager.Data.TimedItem
   require GroupManager.Data.Item
   require GroupManager.Data.LocalClock
-  require GroupManager.Chatter.NetID
+  require Common.NetID
   require GroupManager
   alias GroupManager.Data.WorldClock
   alias GroupManager.Data.TimedSet
   alias GroupManager.Data.TimedItem
   alias GroupManager.Data.Item
-  alias GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.Serializer
+  alias Common.NetID
+  alias Common.Serializer
 
   Record.defrecord :message,
                    time: nil,

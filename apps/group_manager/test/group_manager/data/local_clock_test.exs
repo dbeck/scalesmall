@@ -1,7 +1,7 @@
 defmodule GroupManager.Data.LocalClockTest do
   use ExUnit.Case
   alias GroupManager.Data.LocalClock
-  alias GroupManager.Chatter.NetID
+  alias Common.NetID
 
   defp dummy_me do
     NetID.new({1,2,3,4},1)

@@ -1,9 +1,9 @@
-defmodule GroupManager.Chatter.SerializerTest do
+defmodule Common.SerializerTest do
   use ExUnit.Case
 
   alias GroupManager.Chatter.Gossip
-  alias GroupManager.Chatter.Serializer
-  alias GroupManager.Chatter.NetID
+  alias Common.Serializer
+  alias Common.NetID
   alias GroupManager.Data.Message
 
   @default_key "01234567890123456789012345678901"

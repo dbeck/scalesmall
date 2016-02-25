@@ -1,13 +1,13 @@
 defmodule GroupManager.Chatter.OutgoingHandler do
 
   use ExActor.GenServer
-  require Logger
   require GroupManager.Chatter.Gossip
-  require GroupManager.Chatter.BroadcastID
-  require GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.NetID
+  require Common.BroadcastID
+  require Common.NetID
+  require Logger
   alias GroupManager.Chatter.Gossip
-  alias GroupManager.Chatter.Serializer
+  alias Common.NetID
+  alias Common.Serializer
 
   defstart start_link([own_id: own_id, peer_id: peer_id, key: key], opts),
     gen_server_opts: opts

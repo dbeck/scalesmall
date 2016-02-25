@@ -1,7 +1,7 @@
-defmodule GroupManager.Chatter.NetIDTest do
+defmodule Common.NetIDTest do
 
   use ExUnit.Case
-  alias GroupManager.Chatter.NetID
+  alias Common.NetID
 
   test "basic test for new" do
     assert NetID.valid?(NetID.new({127,0,0,1}, 29999))

@@ -1,7 +1,8 @@
-defmodule GroupManager.Chatter.BroadcastIDTest do
+defmodule Common.BroadcastIDTest do
+
   use ExUnit.Case
-  alias GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.BroadcastID
+  alias Common.NetID
+  alias Common.BroadcastID
 
   defp dummy_me do
     NetID.new({1,2,3,4},1)

@@ -1,15 +1,15 @@
 defmodule GroupManager.Chatter.IncomingHandler do
 
-  require Logger
   require GroupManager.Chatter.Gossip
-  require GroupManager.Chatter.BroadcastID
-  require GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.NetID
+  require Common.BroadcastID
+  require Common.NetID
+  require Logger
   alias GroupManager.Chatter.Gossip
-  alias GroupManager.Chatter.Serializer
   alias GroupManager.Chatter.PeerDB
   alias GroupManager.Chatter
   alias GroupManager.Receiver
+  alias Common.NetID
+  alias Common.Serializer
 
   def start_link(ref, socket, transport, opts) do
     pid = spawn_link(__MODULE__, :init, [ref, socket, transport, opts])

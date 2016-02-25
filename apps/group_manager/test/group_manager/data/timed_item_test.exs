@@ -3,7 +3,7 @@ defmodule GroupManager.Data.TimedItemTest do
   alias GroupManager.Data.TimedItem
   alias GroupManager.Data.Item
   alias GroupManager.Data.LocalClock
-  alias GroupManager.Chatter.NetID
+  alias Common.NetID
 
   defp dummy_me do
     NetID.new({1,2,3,4},1)

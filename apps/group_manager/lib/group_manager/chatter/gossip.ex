@@ -1,10 +1,10 @@
 defmodule GroupManager.Chatter.Gossip do
 
   require Record
-  require GroupManager.Chatter.BroadcastID
-  require GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.BroadcastID
-  alias GroupManager.Chatter.NetID
+  require Common.BroadcastID
+  require Common.NetID
+  alias Common.BroadcastID
+  alias Common.NetID
 
   Record.defrecord :gossip,
                    current_id: nil,
@@ -124,7 +124,7 @@ defmodule GroupManager.Chatter.Gossip do
   when is_valid(g)
   do
     Enum.reduce(gossip(g, :seen_ids), [], fn(x, acc) ->
-      [GroupManager.Chatter.BroadcastID.origin(x)|acc]
+      [Common.BroadcastID.origin(x)|acc]
     end)
   end
 

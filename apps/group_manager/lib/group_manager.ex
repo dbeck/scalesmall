@@ -11,9 +11,9 @@ defmodule GroupManager do
 
   use Application
   require Logger
-  require GroupManager.Chatter.NetID
+  require Common.NetID
   require GroupManager.Data.Item
-  alias GroupManager.Chatter.NetID
+  alias Common.NetID
   alias GroupManager.Chatter
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Item

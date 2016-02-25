@@ -1,8 +1,8 @@
 defmodule GroupManager.ChatterTest do
   use ExUnit.Case
-  require GroupManager.Chatter.NetID
+  require Common.NetID
   alias GroupManager.Chatter
-  alias GroupManager.Chatter.NetID
+  alias Common.NetID
 
   test "locate() returns valid pid" do
     assert is_pid(Chatter.locate)

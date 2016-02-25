@@ -6,15 +6,15 @@ defmodule GroupManager.Chatter do
   require GroupManager.Data.WorldClock
   require GroupManager.Data.TimedSet
   require GroupManager.Chatter.Gossip
-  require GroupManager.Chatter.BroadcastID
-  require GroupManager.Chatter.NetID
   require GroupManager
+  require Common.BroadcastID
+  require Common.NetID
   alias GroupManager.Chatter.OutgoingSupervisor
   alias GroupManager.Chatter.MulticastHandler
   alias GroupManager.Chatter.PeerDB
-  alias GroupManager.Chatter.NetID
   alias GroupManager.Chatter.Gossip
   alias GroupManager.Data.Message
+  alias Common.NetID
 
   def start_link(opts \\ [])
   do

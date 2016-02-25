@@ -1,7 +1,7 @@
-defmodule GroupManager.Chatter.NetID do
+defmodule Common.NetID do
 
   require Record
-  alias GroupManager.Chatter.Serializer
+  alias Common.Serializer
 
   Record.defrecord :net_id,
                    ip: nil,

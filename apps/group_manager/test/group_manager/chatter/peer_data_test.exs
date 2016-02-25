@@ -2,8 +2,8 @@ defmodule GroupManager.Chatter.PeerDataTest do
 
   use ExUnit.Case
   alias GroupManager.Chatter.PeerData
-  alias GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.BroadcastID
+  alias Common.NetID
+  alias Common.BroadcastID
 
   test "basic test for new" do
     assert PeerData.valid?(PeerData.new(NetID.new({127,0,0,1}, 29999)))

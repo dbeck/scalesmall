@@ -1,7 +1,7 @@
 defmodule GroupManagerTest do
 
   use ExUnit.Case
-  alias GroupManager.Chatter.NetID
+  alias Common.NetID
 
   test "check if we can join and leave a new group" do
     my_id = GroupManager.my_id

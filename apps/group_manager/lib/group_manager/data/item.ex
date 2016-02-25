@@ -1,9 +1,9 @@
 defmodule GroupManager.Data.Item do
 
   require Record
-  require GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.NetID
-  alias GroupManager.Chatter.Serializer
+  require Common.NetID
+  alias Common.NetID
+  alias Common.Serializer
 
   Record.defrecord :item,
                    member:       nil,
