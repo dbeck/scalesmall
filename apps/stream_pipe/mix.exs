@@ -16,12 +16,15 @@ defmodule StreamPipe.Mixfile do
 
   def application do
     [
-      applications: [:logger, :group_manager],
+      applications: [:logger, :chatter, :group_manager],
       mod: {StreamPipe, []}
     ]
   end
 
   defp deps do
-    []
+    [
+      {:chatter, path: "../../apps/chatter"},
+      {:group_manager, path: "../../apps/group_manager"}
+    ]
   end
 end

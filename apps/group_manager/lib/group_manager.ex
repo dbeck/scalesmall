@@ -14,6 +14,8 @@ defmodule GroupManager do
   require Chatter.NetID
   require GroupManager.Data.Item
   alias Chatter.NetID
+  alias Chatter.EncoderDecoder
+  alias Chatter.SerializerDB
   alias Chatter
   alias GroupManager.TopologyDB
   alias GroupManager.Data.Item
@@ -41,6 +43,17 @@ defmodule GroupManager do
   def start(_type, args)
   do
     :random.seed(:os.timestamp)
+
+    # register encoder and decoder for the Message type
+    msg = Message.new("dummy")
+    extract_fn  = fn(id)       -> Message.extract_netids(id) end
+    encode_fn   = fn(id, ids)  -> Message.encode_with(id, ids) end
+    decode_fn   = fn(bin, ids) -> Message.decode_with(bin, ids) end
+    encdec = EncoderDecoder.new(msg, extract_fn, encode_fn, decode_fn)
+    ser_db = SerializerDB.locate!
+    SerializerDB.add(ser_db, encdec)
+    {:ok, _encded} = SerializerDB.get(ser_db, msg)
+
     GroupManager.Supervisor.start_link(args)
   end
 

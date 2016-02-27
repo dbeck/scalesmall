@@ -16,14 +16,14 @@ defmodule GroupManager.Mixfile do
 
   def application do
     [
-      applications: [:logger, :xxhash, :ranch],
+      applications: [:logger, :xxhash, :ranch, :chatter],
       mod: {GroupManager, []}
     ]
   end
 
   defp deps do
     [
-      {:chatter, path: "../../apps/chatter/lib"},
+      {:chatter, path: "../../apps/chatter"},
       {:snappy, "~> 1.1"},
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
       {:exactor, "~> 2.2"},
