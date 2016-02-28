@@ -18,6 +18,7 @@ defmodule GroupManager do
   alias Chatter.SerializerDB
   alias Chatter
   alias GroupManager.TopologyDB
+  alias GroupManager.Receiver
   alias GroupManager.Data.Item
   alias GroupManager.Data.TimedItem
   alias GroupManager.Data.TimedSet
@@ -49,7 +50,8 @@ defmodule GroupManager do
     extract_fn  = fn(id)       -> Message.extract_netids(id) end
     encode_fn   = fn(id, ids)  -> Message.encode_with(id, ids) end
     decode_fn   = fn(bin, ids) -> Message.decode_with(bin, ids) end
-    encdec = MessageHandler.new(msg, extract_fn, encode_fn, decode_fn)
+    dispatch_fn = fn(msg) -> Receiver.handle(Receiver.locate!, msg) end
+    encdec = MessageHandler.new(msg, extract_fn, encode_fn, decode_fn, dispatch_fn)
     ser_db = SerializerDB.locate!
     SerializerDB.add(ser_db, encdec)
     {:ok, _encded} = SerializerDB.get(ser_db, msg)
