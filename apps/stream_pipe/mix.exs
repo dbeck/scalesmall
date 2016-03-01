@@ -23,7 +23,7 @@ defmodule StreamPipe.Mixfile do
 
   defp deps do
     [
-      {:chatter, path: "../../apps/chatter"},
+      {:chatter, "~> 0.0.10"},
       {:group_manager, path: "../../apps/group_manager"}
     ]
   end
