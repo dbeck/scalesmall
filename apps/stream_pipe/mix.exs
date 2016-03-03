@@ -24,8 +24,8 @@ defmodule StreamPipe.Mixfile do
   defp deps do
     [
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
-      {:chatter, "~> 0.0.11"},
-      {:group_manager, "~> 0.0.11"}
+      {:chatter, "~> 0.0.12"},
+      {:group_manager, "~> 0.0.7"}
     ]
   end
 end
