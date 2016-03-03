@@ -3,28 +3,6 @@ ScaleSmall
 
 ScaleSmall project is an experiment for creating a high performance, distributed system for handling large quantities of small data. The first component written in this experiment is responsible for managing group membership. This GroupManager is available under [apps/group_manager](apps/group_manager)
 
-To use the `GroupManager` it is highly recomended to add config items like this:
-
-```elixir
-use Mix.Config
-
-config :group_manager,
-  my_addr: System.get_env("GROUP_MANAGER_ADDRESS"),
-  my_port: System.get_env("GROUP_MANAGER_PORT") || "29999",
-  multicast_addr: System.get_env("GROUP_MANAGER_MULTICAST_ADDRESS") || "224.1.1.1",
-  multicast_port: System.get_env("GROUP_MANAGER_MULTICAST_PORT") || "29999",
-  multicast_ttl: System.get_env("GROUP_MANAGER_MULTICAST_TTL") || "4",
-  key: System.get_env("GROUP_MANAGER_KEY") || "01234567890123456789012345678912"
-```
-
-Add this to your dependencies:
-
-```elixir
-{:scalesmall, git: "https://github.com/dbeck/scalesmall.git", tag: "0.0.6"}
-```
-
-And start the `group_manager` application.
-
 The group manager usage is documented [here](apps/group_manager) and [here](apps/group_manager/lib/group_manager.ex).
 
 License

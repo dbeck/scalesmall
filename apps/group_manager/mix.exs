@@ -23,7 +23,7 @@ defmodule GroupManager.Mixfile do
 
   defp deps do
     [
-      {:chatter, "~> 0.0.10"},
+      {:chatter, "~> 0.0.11"},
       {:snappy, "~> 1.1"},
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
       {:exactor, "~> 2.2"},
