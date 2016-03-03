@@ -1,8 +1,9 @@
-%{"chatter": {:hex, :chatter, "0.0.10"},
+%{"chatter": {:hex, :chatter, "0.0.12"},
   "earmark": {:hex, :earmark, "0.2.1"},
   "ex_doc": {:hex, :ex_doc, "0.11.4"},
   "exactor": {:hex, :exactor, "2.2.0"},
   "fsm": {:hex, :fsm, "0.2.0"},
+  "group_manager": {:hex, :group_manager, "0.0.7"},
   "ranch": {:hex, :ranch, "1.2.0"},
   "snappy": {:hex, :snappy, "1.1.1"},
   "xxhash": {:git, "https://github.com/pierresforge/erlang-xxhash", "a4de034201dfd8691d031a5b4128327484861aec", []}}
