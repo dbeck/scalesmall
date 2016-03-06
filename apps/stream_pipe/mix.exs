@@ -4,7 +4,7 @@ defmodule StreamPipe.Mixfile do
   def project do
     [
       app: :stream_pipe,
-      version: "0.0.7",
+      version: "0.0.8",
       elixir: "~> 1.1",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
@@ -24,8 +24,8 @@ defmodule StreamPipe.Mixfile do
   defp deps do
     [
       {:xxhash, git: "https://github.com/pierresforge/erlang-xxhash"},
-      {:chatter, "~> 0.0.12"},
-      {:group_manager, "~> 0.0.7"}
+      {:chatter, "~> 0.0.14"},
+      {:group_manager, "~> 0.0.8"}
     ]
   end
 end

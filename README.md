@@ -1,14 +1,21 @@
 ScaleSmall
 ==========
 
-ScaleSmall project is an experiment for creating a high performance, distributed system for handling large quantities of small data. The first component written in this experiment is responsible for managing group membership. This GroupManager is available under [apps/group_manager](apps/group_manager)
+ScaleSmall project is an experiment for creating a high performance, distributed system for handling large quantities of small data. The first component written in this experiment is responsible for managing group membership.
 
-The group manager usage is documented [here](apps/group_manager) and [here](apps/group_manager/lib/group_manager.ex).
+ScaleSmall is also an incubator of standalone components:
+
+- [Chatter](https://github.com/dbeck/chatter_ex)
+- [GroupManager](https://github.com/dbeck/groupman_ex)
+
+The current component under development is:
+
+- [StreamPipe](apps/stream_pipe)
 
 License
 =======
 
-Copyright (c) 2015 [David Beck](http://dbeck.github.io)
+Copyright (c) 2015-2016 [David Beck](http://dbeck.github.io)
 
 MIT License
 
